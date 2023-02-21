@@ -17,8 +17,8 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
     strategy:
-      compiler:
-        - clang
+      matrix:
+        compiler: [gcc, clang]
 
     steps:
     - uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
       run: |
         mkdir ${{github.workspace}}/c/build && cd build
         cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-              -D CMAKE_C_COMPILER=${{ compiler }} \
+              -D CMAKE_C_COMPILER=${{ matrix.compiler }} \
               --log-context ..
 
     - name: Build

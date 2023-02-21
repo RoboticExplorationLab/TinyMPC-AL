@@ -11,36 +11,42 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
-    strategy:
-      compiler:
-        - clang
-
+  say-hello:
     steps:
-    - uses: actions/checkout@v2
+      - checkout
+      - run:
+        name: "Say Hello"
+        command: "echo Hello, World!"
+  # build:
+  #   # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+  #   # You can convert this to a matrix build if you need cross-platform coverage.
+  #   # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     compiler:
+  #       - clang
 
-    - name: Install Dependencies
-      run: | 
-        sudo apt-get install libeigen3-dev -y
-        sudo apt-get install clang -y
+  #   steps:
+  #   - uses: actions/checkout@v2
 
-    - name: Configure CMake
-      run: |
-        mkdir ${{github.workspace}}/c/build && cd build
-        cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-              -D CMAKE_C_COMPILER=${{ compiler }} \
-              --log-context ..
+  #   - name: Install Dependencies
+  #     run: | 
+  #       sudo apt-get install libeigen3-dev -y
+  #       sudo apt-get install clang -y
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/c/build --config ${{ env.BUILD_TYPE }}
+  #   - name: Configure CMake
+  #     run: |
+  #       mkdir ${{github.workspace}}/c/build && cd build
+  #       cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+  #             -D CMAKE_C_COMPILER=${{ compiler }} \
+  #             --log-context ..
 
-    - name: Test
-      working-directory: ${{ github.workspace }}/c/build
-      run: ctest -C ${{ env.BUILD_TYPE }} .
+  #   - name: Build
+  #     run: cmake --build ${{github.workspace}}/c/build --config ${{ env.BUILD_TYPE }}
+
+  #   - name: Test
+  #     working-directory: ${{ github.workspace }}/c/build
+  #     run: ctest -C ${{ env.BUILD_TYPE }} .
       
 #   codecov:
 #     runs-on: ubuntu-latest

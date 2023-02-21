@@ -1,5 +1,5 @@
-//
-// Created by Brian Edward Jackson on 1/31/23.
+// Check README.md
+// Sources: Lec. 7 Code on double integrator
 //
 
 #include "slap/slap.h"

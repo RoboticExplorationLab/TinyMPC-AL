@@ -32,17 +32,17 @@ jobs:
 
     - name: Configure CMake
       run: |
-        mkdir ${{github.workspace}}/c/build && cd build
+        mkdir ${{github.workspace}}/../c/build && cd build
         cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
               -D CMAKE_C_COMPILER=${{ matrix.compiler[0] }} \
               -D CMAKE_CXX_COMPILER=${{ matrix.compiler[1] }} \
               --log-context ..
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/c/build --config ${{ env.BUILD_TYPE }}
+      run: cmake --build ${{github.workspace}}/../c/build --config ${{ env.BUILD_TYPE }}
 
     - name: Test
-      working-directory: ${{ github.workspace }}/c/build
+      working-directory: ${{ github.workspace }}/../c/build
       run: ctest -C ${{ env.BUILD_TYPE }} .
       
   # codecov:

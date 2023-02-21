@@ -11,7 +11,15 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  say-hello:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
     steps:
       - checkout
       - run:
@@ -34,12 +42,12 @@ jobs:
   #       sudo apt-get install libeigen3-dev -y
   #       sudo apt-get install clang -y
 
-  #   - name: Configure CMake
-  #     run: |
-  #       mkdir ${{github.workspace}}/c/build && cd build
-  #       cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-  #             -D CMAKE_C_COMPILER=${{ compiler }} \
-  #             --log-context ..
+    - name: Configure CMake
+      run: |
+        mkdir ${{github.workspace}}/c/build && cd build
+        cmake -D CMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+              -D CMAKE_C_COMPILER=${{ matrix.compiler }} \
+              --log-context ..
 
   #   - name: Build
   #     run: cmake --build ${{github.workspace}}/c/build --config ${{ env.BUILD_TYPE }}

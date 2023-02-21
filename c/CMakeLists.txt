@@ -4,10 +4,6 @@ project(tinyMPC VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Add compile options
-add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas)
-add_compile_options(-mavx2 -mfma)
-
 # Handle default build type
 set(SLAP_DEFAULT_BUILD_TYPE "Release")
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -21,8 +17,16 @@ endif ()
 ##############################
 
 # Compile options
-add_compile_options(-Wall -Wextra -pedantic -Werror)
+add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas)
+add_compile_options(-O2 -mavx2 -mfma)
+# add_compile_options(-Wall -Wextra -Wpedantic 
+#                     -Wformat=2 -Wno-unused-parameter -Wshadow 
+#                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
+#                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
 
+if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+  add_compile_options(-Wjump-misses-init -Wlogical-op)
+endif ()                    
 # Make all includes relative to src/ directory
 include_directories(${PROJECT_SOURCE_DIR})
 

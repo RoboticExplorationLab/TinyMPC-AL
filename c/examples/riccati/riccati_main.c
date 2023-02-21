@@ -26,7 +26,7 @@ double Kd_data[NINPUTS * (NSTATES + 1) * NHORIZON]; //stores K and d
 
 double x_data[NSTATES * NHORIZON];
 double u_data[NINPUTS * (NHORIZON - 1)];
-double y_data[NSTATES * NHORIZON];  // dual variables
+double y_data[NSTATES * NHORIZON];  // dual variables lambda
 
 int main(void) {
   // Create matrix from array data
@@ -90,7 +90,7 @@ int main(void) {
   slap_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, xf, x0, Khist, dhist, 
                               Phist, phist, xhist, uhist, yhist);
 
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON-1; k+=1) {
     printf("x[%d] = ", k);
     slap_PrintMatrix(slap_Transpose(xhist[k]));
     printf("u[%d] = ", k);

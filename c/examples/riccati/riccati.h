@@ -61,10 +61,10 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(int N, const Matrix A, const Mat
 
 // You don't need to solve general case, just provide Q, R and do normal Riccati
 // TODO: tiny_LQR_LTI
-// enum tiny_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B, 
-//                                  const Matrix Q, const Matrix R, const Matrix q,
-//                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-//                                  Matrix* p, Matrix S_temp);
+enum slap_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B, 
+                                 const Matrix Q, const Matrix R, const Matrix q,
+                                 const Matrix r, Matrix* K, Matrix* d, Matrix* P,
+                                 Matrix* p, Matrix S_temp);
 
 // You don't need to solve general casa, ust provide Q, R and do normal Riccati.
 // A and B is list of matrices

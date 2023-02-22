@@ -10,5 +10,10 @@
 4. `./examples/riccati/riccati_example`: still inside `build` run the executable, or  
 
 `./getting_started` 
- 
+
 5. Iterate via 3 to develop your programs.
+
+## Notes:
+
+- Use `slap_MatMulAdd(C, A, B, 1, 0)` instead of `slap_MatMulAB(C, A, B)` because
+the later one ignores all metadata.

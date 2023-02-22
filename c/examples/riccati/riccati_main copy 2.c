@@ -1,6 +1,6 @@
 // Check README.md
 // Sources: Lec. 7 Code on double integrator
-//TODO: convert this to test Riccati
+//
 
 #include "slap/slap.h"
 #include "riccati.h"
@@ -18,7 +18,7 @@ double r_data[NINPUTS] = {0.};
 
 double A_data[NSTATES * NSTATES] = {1, 0, H, 1};
 double B_data[NSTATES * NINPUTS] = {0.5*H*H, H};
-double xf_data[NSTATES] = {2., 0.};  //equilibrium point
+double xf_data[NSTATES] = {3., 0.};  //equilibrium point
 double uf_data[NINPUTS] = {0.};
 double x0_data[NSTATES] = {-1., 1.};
 
@@ -45,7 +45,6 @@ int main(void) {
   Matrix B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   printf("\nB = \n");
   slap_PrintMatrix(B);
-  printf("End of problem\n");
   Matrix xf = slap_MatrixFromArray(NSTATES, 1, xf_data);
   Matrix uf = slap_MatrixFromArray(NINPUTS, 1, uf_data);
   Matrix x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
@@ -87,25 +86,22 @@ int main(void) {
 
   // Temporary matrix for underlying calculation 
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
-
   // Could work for delta_x and delta_u as well
   tiny_Riccati_LTI(NHORIZON - 1, A, B, Q, R, q, r, 
                    Khist, dhist, Phist, phist, S);
-  // for (int k = 0; k < NHORIZON-1; k+=1) {
-  //   printf("K[%d] = ", k);
-  //   slap_PrintMatrix(Khist[k]);
-  // }
-  // tiny_LQR_LTI(NHORIZON - 1, A, B, Q, R, q, r, 
-  //                  Khist, dhist, Phist, phist, S);
+  // Just calculate absolute control and step
   tiny_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, x0, xf, uf, 
                               Khist, dhist, Phist, phist, xhist, uhist, yhist);
+
   for (int k = 0; k < NHORIZON-1; k+=1) {
     printf("x[%d] = ", k);
     slap_PrintMatrix(slap_Transpose(xhist[k]));
-    printf("u[%d] = ", k);
-    slap_PrintMatrix(slap_Transpose(uhist[k]));
+    // printf("u[%d] = ", k);
+    // slap_PrintMatrix(slap_Transpose(uhist[k]));
   }
   
+  // printf("K[%d] = ", 1);
+  // slap_PrintMatrix(Khist[1]);
   // printf("y[N] = ");
   // slap_PrintMatrix(slap_Transpose(yhist[NHORIZON-1]));
   slap_FreeMatrix(S);

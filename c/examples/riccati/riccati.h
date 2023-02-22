@@ -8,7 +8,7 @@
 
 /**
  * @brief Solve a Linear Time-Invariant LQR problem using Riccati recursion, calculating
- * the feedback gains and cost-to-go
+ * the feedback gains and cost-to-go. Drive arbitrary initial state to an equalibirum.
  *
  * @param[in] N Number of segments (horizon length - 1)
  * @param[in] A State transition Matrix (n,n)

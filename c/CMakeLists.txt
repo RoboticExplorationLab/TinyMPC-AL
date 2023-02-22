@@ -17,9 +17,9 @@ endif ()
 ##############################
 
 # Compile options
-add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas)
+add_compile_options(-Wall -Wextra -pedantic -Wno-error=unknown-pragmas)
 add_compile_options(-O2 -mavx2 -mfma)
-# add_compile_options(-Wall -Wextra -Wpedantic 
+# add_compile_options(-Wall -Wextra -Wpedantic -Werror
 #                     -Wformat=2 -Wno-unused-parameter -Wshadow 
 #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
 #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)

@@ -18,7 +18,7 @@ double r_data[NINPUTS] = {0.};
 
 double A_data[NSTATES * NSTATES] = {1, 0, H, 1};
 double B_data[NSTATES * NINPUTS] = {0.5*H*H, H};
-double xf_data[NSTATES] = {0., 0.5};  //equilibrium point
+double xf_data[NSTATES] = {0., 0.};  //equilibrium point
 double x0_data[NSTATES] = {1.0, 0};
 
 double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON]; //stores P and p

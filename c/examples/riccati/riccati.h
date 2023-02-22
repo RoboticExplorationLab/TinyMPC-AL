@@ -25,7 +25,7 @@
  * @param S_temp Storage for temparary values (n+m, n+m+1)
  * @return
  */
-enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, const Matrix f,
+enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, 
                                      const Matrix Q, const Matrix R, const Matrix q,
                                      const Matrix r, Matrix* K, Matrix* d, Matrix* P,
                                      Matrix* p, Matrix S_temp);
@@ -49,7 +49,7 @@ enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, cons
  * @return
  */
 enum slap_ErrorCode slap_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
-                                                const Matrix f, const Matrix x0,
+                                                const Matrix x0, const Matrix xf, const Matrix uf,
                                                 const Matrix* K, const Matrix* d,
                                                 const Matrix* P, const Matrix* p, Matrix* x,
                                                 Matrix* u, Matrix* y);

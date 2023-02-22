@@ -1,9 +1,9 @@
 //
-// Created by Brian Edward Jackson on 1/31/23.
+// Check Lecture 10 on DDP/iLQR
 //
 
 #include "riccati.h"
-enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, const Matrix f,
+enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B,
                                      const Matrix Q, const Matrix R, const Matrix q,
                                      const Matrix r, Matrix* K, Matrix* d, Matrix* P,
                                      Matrix* p, Matrix S_temp) {
@@ -27,15 +27,14 @@ enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, cons
   Matrix Quu_temp = slap_Reshape(P[N], m, m);
 
   for (--k; k >= 0; --k) {
-    // State Gradient: Sx = q + A' * (P * f + p)
+    // State Gradient: Sx = q + A' * p
     slap_MatrixCopy(p[k], p[k+1]);
-    slap_MatMulAdd(p[k], P[k+1], f, 1, 1);              // p = P * f + p
     slap_MatrixCopy(Sx, q);                             // Sx = q
-    slap_MatMulAdd(Sx, slap_Transpose(A), p[k], 1, 1);  // Sx = q + A' * (P*f + p)
+    slap_MatMulAdd(Sx, slap_Transpose(A), p[k], 1, 1);  // Sx += A' * p
 
-    // Control Gradient: Su = r + B' * (P * f + p)
+    // Control Gradient: Su = r + B' * p
     slap_MatrixCopy(Su, r);                               // Su = r
-    slap_MatMulAdd(Su, slap_Transpose(B), p[k], 1, 1);    // Su = r + B' * (P*f + p)
+    slap_MatMulAdd(Su, slap_Transpose(B), p[k], 1, 1);    // Su += B' * p
 
     // State Hessian: Sxx = Q + A'P*A
     slap_MatMulAdd(P[k], P[k+1], A, 1, 0);                   // P[k] = P * A (temp in P)
@@ -79,7 +78,7 @@ enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, cons
   return SLAP_NO_ERROR;
 }
 enum slap_ErrorCode slap_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
-                                            const Matrix f, const Matrix x0,
+                                            const Matrix x0, const Matrix xf, const Matrix uf, 
                                             const Matrix* K, const Matrix* d,
                                             const Matrix* P, const Matrix* p, Matrix* x,
                                             Matrix* u, Matrix* y) {
@@ -89,10 +88,12 @@ enum slap_ErrorCode slap_RiccatiForwardPass_LTI(int N, const Matrix A, const Mat
   for (int k = 0; k <= N; ++k) {
     // Calculate primal variables (via closed-loop forward simulation)
     if (k < N) {
-      slap_MatrixCopy(u[k], d[k]);              // u[k] = d[k]
+      // Control input: u = uf + K*(x - xf) + d
+      slap_MatrixAddition(u[k], uf, d[k], 1);    // u[k] = uf + d[k]
       slap_MatMulAdd(u[k], K[k], x[k], 1, 1);   // u[k] += K[k] * x[k]
-      slap_MatrixCopy(x[k + 1], f);             // x[k+1] = f
-      slap_MatMulAdd(x[k + 1], A, x[k], 1, 1);  // x[k+1] += A * x[k]
+      slap_MatMulAdd(u[k], K[k], xf, -1, 1);   // u[k] -= K[k] * xf
+      // Next state: x = A*x + B*u
+      slap_MatMulAdd(x[k + 1], A, x[k], 1, 0);  // x[k+1] = A * x[k]
       slap_MatMulAdd(x[k + 1], B, u[k], 1, 1);  // x[k+1] += B * u[k]
     }
 

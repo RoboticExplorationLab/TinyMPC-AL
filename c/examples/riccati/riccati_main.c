@@ -18,8 +18,9 @@ double r_data[NINPUTS] = {0.};
 
 double A_data[NSTATES * NSTATES] = {1, 0, H, 1};
 double B_data[NSTATES * NINPUTS] = {0.5*H*H, H};
-double xf_data[NSTATES] = {0., 0.};  //equilibrium point
-double x0_data[NSTATES] = {1.0, 0};
+double xf_data[NSTATES] = {2., 0.};  //equilibrium point
+double uf_data[NINPUTS] = {0.};
+double x0_data[NSTATES] = {-1., 1.};
 
 double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON]; //stores P and p
 double Kd_data[NINPUTS * (NSTATES + 1) * NHORIZON]; //stores K and d 
@@ -45,6 +46,7 @@ int main(void) {
   printf("B = \n");
   slap_PrintMatrix(B);
   Matrix xf = slap_MatrixFromArray(NSTATES, 1, xf_data);
+  Matrix uf = slap_MatrixFromArray(NINPUTS, 1, uf_data);
   Matrix x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
 
   // Matrix of pointers
@@ -84,11 +86,11 @@ int main(void) {
 
   // Temporary matrix for underlying calculation 
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
-  slap_Riccati_LTI(NHORIZON - 1, A, B, xf, Q, R, q, r, 
-                  Khist, dhist, Phist, phist, S);
+  slap_Riccati_LTI(NHORIZON - 1, A, B, Q, R, q, r, 
+                   Khist, dhist, Phist, phist, S);
 
-  slap_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, xf, x0, Khist, dhist, 
-                              Phist, phist, xhist, uhist, yhist);
+  slap_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, x0, xf, uf, 
+                              Khist, dhist, Phist, phist, xhist, uhist, yhist);
 
   for (int k = 0; k < NHORIZON-1; k+=1) {
     printf("x[%d] = ", k);

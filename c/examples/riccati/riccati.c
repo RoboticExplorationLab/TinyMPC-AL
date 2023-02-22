@@ -3,7 +3,7 @@
 //
 
 #include "riccati.h"
-enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B,
+enum slap_ErrorCode tiny_Riccati_LTI(int N, const Matrix A, const Matrix B,
                                      const Matrix Q, const Matrix R, const Matrix q,
                                      const Matrix r, Matrix* K, Matrix* d, Matrix* P,
                                      Matrix* p, Matrix S_temp) {
@@ -77,7 +77,7 @@ enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B,
 //  slap_FreeMatrix(temp);
   return SLAP_NO_ERROR;
 }
-enum slap_ErrorCode slap_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
+enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
                                             const Matrix x0, const Matrix xf, const Matrix uf, 
                                             const Matrix* K, const Matrix* d,
                                             const Matrix* P, const Matrix* p, Matrix* x,

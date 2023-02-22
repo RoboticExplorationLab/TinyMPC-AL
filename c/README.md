@@ -1,12 +1,14 @@
 ## How to compile and run
-`cd build`    //create and enter a build folder  
+1. `cd build`: create and enter a `build` directory  
 
-`cmake ..`    //config compiler out-source  
+2. `cmake ..`: config compiler out-source  
 
-`make`        //build all targets, or  
+3. `make`: build all targets, or  
 
-`make riccati_example`        //build this target  
+`make riccati_example`: build this target  
 
-`./examples/riccati/riccati_example`      //run the executable, or  
+4. `./examples/riccati/riccati_example`: still inside `build` run the executable, or  
 
-`./getting_started`  
+`./getting_started` 
+ 
+5. Iterate via 3 to develop your programs.

@@ -18,7 +18,7 @@ double r_data[NINPUTS] = {0.};
 
 double A_data[NSTATES * NSTATES] = {1, 0, H, 1};
 double B_data[NSTATES * NINPUTS] = {0.5*H*H, H};
-double xf_data[NSTATES] = {2., 0.};  //equilibrium point
+double xf_data[NSTATES] = {3., 0.};  //equilibrium point
 double uf_data[NINPUTS] = {0.};
 double x0_data[NSTATES] = {-1., 1.};
 
@@ -32,18 +32,18 @@ double y_data[NSTATES * NHORIZON];  // dual variables lambda
 int main(void) {
   // Create matrix from array data
   Matrix Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  printf("Q = \n");
+  printf("\nQ = \n");
   slap_PrintMatrix(Q);
   Matrix R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  printf("R = ");
+  printf("\nR = ");
   slap_PrintMatrix(R);
   Matrix q = slap_MatrixFromArray(NSTATES, 1, q_data);
   Matrix r = slap_MatrixFromArray(NINPUTS, 1, r_data);
   Matrix A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  printf("A = \n");
+  printf("\nA = \n");
   slap_PrintMatrix(A);
   Matrix B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  printf("B = \n");
+  printf("\nB = \n");
   slap_PrintMatrix(B);
   Matrix xf = slap_MatrixFromArray(NSTATES, 1, xf_data);
   Matrix uf = slap_MatrixFromArray(NINPUTS, 1, uf_data);
@@ -86,21 +86,22 @@ int main(void) {
 
   // Temporary matrix for underlying calculation 
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
-  slap_Riccati_LTI(NHORIZON - 1, A, B, Q, R, q, r, 
+  // Could work for delta_x and delta_u as well
+  tiny_Riccati_LTI(NHORIZON - 1, A, B, Q, R, q, r, 
                    Khist, dhist, Phist, phist, S);
-
-  slap_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, x0, xf, uf, 
+  // Just calculate absolute control and step
+  tiny_RiccatiForwardPass_LTI(NHORIZON - 1, A, B, x0, xf, uf, 
                               Khist, dhist, Phist, phist, xhist, uhist, yhist);
 
   for (int k = 0; k < NHORIZON-1; k+=1) {
     printf("x[%d] = ", k);
     slap_PrintMatrix(slap_Transpose(xhist[k]));
-    printf("u[%d] = ", k);
-    slap_PrintMatrix(slap_Transpose(uhist[k]));
+    // printf("u[%d] = ", k);
+    // slap_PrintMatrix(slap_Transpose(uhist[k]));
   }
   
-  printf("K[%d] = ", 1);
-  slap_PrintMatrix(Khist[1]);
+  // printf("K[%d] = ", 1);
+  // slap_PrintMatrix(Khist[1]);
   // printf("y[N] = ");
   // slap_PrintMatrix(slap_Transpose(yhist[NHORIZON-1]));
   slap_FreeMatrix(S);

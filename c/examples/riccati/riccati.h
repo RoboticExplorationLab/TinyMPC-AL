@@ -25,7 +25,7 @@
  * @param S_temp Storage for temparary values (n+m, n+m+1)
  * @return
  */
-enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B, 
+enum slap_ErrorCode tiny_Riccati_LTI(int N, const Matrix A, const Matrix B, 
                                      const Matrix Q, const Matrix R, const Matrix q,
                                      const Matrix r, Matrix* K, Matrix* d, Matrix* P,
                                      Matrix* p, Matrix S_temp);
@@ -48,13 +48,28 @@ enum slap_ErrorCode slap_Riccati_LTI(int N, const Matrix A, const Matrix B,
  * @param[out] y Co-state trajectory N x (n,1)
  * @return
  */
-enum slap_ErrorCode slap_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
+enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
                                                 const Matrix x0, const Matrix xf, const Matrix uf,
                                                 const Matrix* K, const Matrix* d,
                                                 const Matrix* P, const Matrix* p, Matrix* x,
                                                 Matrix* u, Matrix* y);
 
-int slap_RiccatiDataSize_LTI(int N, int num_states, int num_inputs);
+// int tiny_RiccatiDataSize_LTI(int N, int num_states, int num_inputs);
 
 
-double slap_Stationarity_LTI(int N, const Matrix A, const Matrix B, const Matrix f);
+// double tiny_Stationarity_LTI(int N, const Matrix A, const Matrix B, const Matrix f);
+
+// You don't need to solve general case, just provide Q, R and do normal Riccati
+// TODO: tiny_LQR_LTI
+// enum tiny_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B, 
+//                                  const Matrix Q, const Matrix R, const Matrix q,
+//                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
+//                                  Matrix* p, Matrix S_temp);
+
+// You don't need to solve general casa, ust provide Q, R and do normal Riccati.
+// A and B is list of matrices
+// TODO: tiny_LQR_LTV
+// enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* A, const Matrix* B, 
+//                                  const Matrix Q, const Matrix R, const Matrix q,
+//                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
+//                                  Matrix* p, Matrix S_temp);

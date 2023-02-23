@@ -73,3 +73,11 @@ enum slap_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B,
 //                                  const Matrix Q, const Matrix R, const Matrix q,
 //                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
 //                                  Matrix* p, Matrix S_temp);
+
+// You don't need to solve general casa, ust provide Q, R and do normal Riccati.
+// pointer to function
+// TODO: tiny_LQR_LTV                                 
+// enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* pA, const Matrix* pB, 
+//                                  const Matrix Q, const Matrix R, const Matrix q,
+//                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
+//                                  Matrix* p, Matrix S_temp);

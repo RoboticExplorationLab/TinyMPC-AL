@@ -110,4 +110,4 @@ int main(void) {
   // slap_PrintMatrix(slap_Transpose(yhist[NHORIZON-1]));
   slap_FreeMatrix(S);
   return 0;
-}
+}slap_get

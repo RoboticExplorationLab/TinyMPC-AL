@@ -5,7 +5,7 @@
 
 3. `make`: build all targets, or  
 
-`make riccati_example`: build this target  
+`make riccati_example`: build a particular one (check `CMakeLists.txt`)
 
 4. `./examples/riccati/riccati_example`: still inside `build` run the executable, or  
 
@@ -17,3 +17,4 @@
 
 - Use `slap_MatMulAdd(C, A, B, 1, 0)` instead of `slap_MatMulAB(C, A, B)` because
 the later one ignores all metadata.
+- Can use `slap_MatrixAddition(C, C, A, alp)` to bias `C = C + alp*A`.

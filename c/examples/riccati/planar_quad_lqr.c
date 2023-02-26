@@ -34,6 +34,7 @@ int main(void) {
   double B_data[NSTATES * NINPUTS];
 
   double x0_data[NSTATES] = {2, 2, 0, 0, 0, 0};
+  double xref_data[NSTATES] = {0, 1, 0, 0, 0, 0};
   double xhover_data[NSTATES] = {0};
   double uhover_data[NINPUTS] = {0.5*model.m*model.g, 0.5*model.m*model.g};
 
@@ -64,6 +65,8 @@ int main(void) {
   printf("\nuhover = \n"); slap_PrintMatrix(uhover);
   Matrix x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
   printf("\nx0 = \n"); slap_PrintMatrix(x0);
+  Matrix xref = slap_MatrixFromArray(NSTATES, 1, xref_data);
+  tiny_Print(xref);
   // Matrix of pointers
   Matrix Phist[NHORIZON];
   Matrix phist[NHORIZON];
@@ -123,15 +126,15 @@ int main(void) {
     // printf("\nK0 = \n");slap_PrintMatrix(Khist[0]);
 
     // Control input: u = uf - d - K*(x - xf) 
-    slap_MatrixAddition(uhist[k], uhist[k], dhist[0], -1);    // u[k] = un[k] - d[k]
+    slap_MatrixAddition(uhist[k], uhover, dhist[0], -1);    // u[k] = un[k] - d[k]
     slap_MatMulAdd(uhist[k], Khist[0], xhist[k], -1, 1);   // u[k] -= K[k] * x[k]
-    slap_MatMulAdd(uhist[k], Khist[0], xhover, 1, 1);   // u[k] += K[k] * xn[k]
+    slap_MatMulAdd(uhist[k], Khist[0], xref, 1, 1);   // u[k] += K[k] * xn[k]
 
     // Next state: x = A*x + B*u
-    slap_MatMulAdd(xhist[k + 1], A, xhist[k], 1, 0);  // x[k+1] = A * x[k]
-    slap_MatMulAdd(xhist[k + 1], B, uhist[k], 1, 1);  // x[k+1] += B * u[k]
-    
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xhover, xhist[k]));
+    // slap_MatMulAdd(xhist[k + 1], A, xhist[k], 1, 0);  // x[k+1] = A * x[k]
+    // slap_MatMulAdd(xhist[k + 1], B, uhist[k], 1, 1);  // x[k+1] += B * u[k]
+    tiny_Dynamics_RK4(xhist[k+1].data, xhist[k].data, uhist[k].data);
+    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xref, xhist[k]));
     // printf("x[%d] = ", k);
     // slap_PrintMatrix(slap_Transpose(xhist[k]));
     // printf("u[%d] = ", k);

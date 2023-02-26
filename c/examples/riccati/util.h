@@ -11,7 +11,7 @@
 //========================================
 // Print matrix with its name (dummy)
 //========================================
-#define tiny_Print(mat) ({printf("\n%s = \n", #mat); slap_PrintMatrix(mat);})
+#define tiny_Print(mat) {printf("\n%s = \n", #mat); slap_PrintMatrix(mat);}
 
 //========================================
 // Read data from file

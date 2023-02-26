@@ -4,8 +4,18 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <math.h>
+
 #include "slap/slap.h"
 
+//========================================
+// Print matrix with its name (dummy)
+//========================================
+#define tiny_Print(mat) ({printf("\n%s = \n", #mat); slap_PrintMatrix(mat);})
+
+//========================================
+// Read data from file
+//========================================
 int tiny_ReadData(const char* filename, double* des, const int size, bool verbose)
 {
     FILE *input;
@@ -47,15 +57,3 @@ int tiny_ReadData(const char* filename, double* des, const int size, bool verbos
 
     return EXIT_SUCCESS;
 }
-
-// Matrix tiny_RK4(const Matrix (*dynamics)(const Matrix, const Matrix), 
-//                 const Matrix x, const Matrix u, const float h)
-// {
-//     Matrix k1 = (*dynamics)(x, u);
-//     slap_MatMulAdd(x, )
-//     Matrix k2 = (*dynamics)(x + 0.5*h*k1, uk);
-//     Matrix k3 = (*dynamics)(model, xk+0.5*h*k2, uk);
-//     Matrix k4 = (*dynamics)(model, xk+h*k3, uk);
-//     Matrix x = xk + h*(k1+2k2+2k3+k4)/6;
-//     return x;
-// }

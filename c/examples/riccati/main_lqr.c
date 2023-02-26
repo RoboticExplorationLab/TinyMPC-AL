@@ -23,7 +23,7 @@ double uf_data[NINPUTS] = {0.};
 double x0_data[NSTATES] = {-1., 1.};
 
 double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON]; //stores P and p
-double Kd_data[NINPUTS * (NSTATES + 1) * NHORIZON]; //stores K and d 
+double Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON-1)]; //stores K and d 
 
 double x_data[NSTATES * NHORIZON];
 double u_data[NINPUTS * (NHORIZON - 1)];
@@ -53,10 +53,10 @@ int main(void) {
   // Matrix of pointers
   Matrix Phist[NHORIZON];
   Matrix phist[NHORIZON];
-  Matrix Khist[NHORIZON];
-  Matrix dhist[NHORIZON];
+  Matrix Khist[NHORIZON-1];
+  Matrix dhist[NHORIZON-1];
   Matrix xhist[NHORIZON];
-  Matrix uhist[NHORIZON];
+  Matrix uhist[NHORIZON-1];
   Matrix yhist[NHORIZON]; // dual variable: lambda
 
   // Pointer to the pre-allocated array
@@ -71,17 +71,20 @@ int main(void) {
     Pp += NSTATES * NSTATES;
     phist[k] = slap_MatrixFromArray(NSTATES, 1, Pp);
     Pp += NSTATES;
+    xhist[k] = slap_MatrixFromArray(NSTATES, 1, xp);
+    xp += NSTATES;
+    yhist[k] = slap_MatrixFromArray(NSTATES, 1, yp);
+    yp += NSTATES;
+    if (k < NHORIZON - 1)
+    {
     Khist[k] = slap_MatrixFromArray(NINPUTS, NSTATES, Kd);
     Kd += NINPUTS * NSTATES;
     dhist[k] = slap_MatrixFromArray(NINPUTS, 1, Kd);
     Kd += NINPUTS;
-
-    xhist[k] = slap_MatrixFromArray(NSTATES, 1, xp);
-    xp += NSTATES;
     uhist[k] = slap_MatrixFromArray(NINPUTS, 1, up);
     up += NINPUTS;
-    yhist[k] = slap_MatrixFromArray(NSTATES, 1, yp);
-    yp += NSTATES;
+
+    }
   }
   // End of initializing memory and variables
 

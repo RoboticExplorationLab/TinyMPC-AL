@@ -251,6 +251,7 @@ enum slap_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B,
     slap_MatMulAdd(P[k], slap_Transpose(A), temp_nn2, 1, 1);
   }
   // slap_FreeMatrix(temp_nn2);
+  return SLAP_NO_ERROR;
 }                      
 
 enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* A, const Matrix* B, 
@@ -295,4 +296,5 @@ enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* A, const Matrix* B,
     slap_MatMulAdd(P[k], slap_Transpose(A[k]), temp_nn2, 1, 1);
   }
   // slap_FreeMatrix(temp_nn2);
+  return SLAP_NO_ERROR;
 }

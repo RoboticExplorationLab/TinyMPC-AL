@@ -25,15 +25,24 @@
  * @param S_temp Storage for temparary values (n+m, n+m+1)
  * @return
  */
-enum slap_ErrorCode tiny_Riccati_LTI(int N, const Matrix A, const Matrix B, 
-                                     const Matrix Q, const Matrix R, const Matrix q,
-                                     const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-                                     Matrix* p, Matrix S_temp);
+enum slap_ErrorCode tiny_Riccati_LTI(
+        int N, const Matrix A, const Matrix B, 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
 
-enum slap_ErrorCode tiny_Riccati_LTV(int N, const Matrix* A, const Matrix* B, 
-                                     const Matrix Q, const Matrix R, const Matrix q,
-                                     const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-                                     Matrix* p, Matrix S_temp);
+// TVLQR with Jacobians fixed
+enum slap_ErrorCode tiny_Riccati_LTV(
+        int N, const Matrix* A, const Matrix* B, 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
+
+// TVLQR with Jacobians function compute
+enum slap_ErrorCode tiny_Riccati_LTVf(
+        int N, Matrix A, Matrix B,
+        void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix), 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, 
+        const Matrix* Un, const Matrix* Xn, Matrix S_temp);
 
 /**
  * @brief Calculate the optimal state, input, and co-state (i.e. dual variables)
@@ -53,17 +62,17 @@ enum slap_ErrorCode tiny_Riccati_LTV(int N, const Matrix* A, const Matrix* B,
  * @param[out] y Co-state trajectory N x (n,1)
  * @return
  */
-enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(int N, const Matrix A, const Matrix B,
-                                                const Matrix x0, const Matrix xf, const Matrix uf,
-                                                const Matrix* K, const Matrix* d,
-                                                const Matrix* P, const Matrix* p, Matrix* x,
-                                                Matrix* u, Matrix* y);
+enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(
+        int N, const Matrix A, const Matrix B,
+        const Matrix x0, const Matrix xf, const Matrix uf,
+        const Matrix* K, const Matrix* d, const Matrix* P, const Matrix* p, 
+        Matrix* x, Matrix* u, Matrix* y);
 
-enum slap_ErrorCode tiny_RiccatiForwardPass_LTV(int N, const Matrix* A, const Matrix* B,
-                                                const Matrix x0, const Matrix xf, const Matrix uf,
-                                                const Matrix* K, const Matrix* d,
-                                                const Matrix* P, const Matrix* p, Matrix* x,
-                                                Matrix* u, Matrix* y);
+enum slap_ErrorCode tiny_RiccatiForwardPass_LTV(
+        int N, const Matrix* A, const Matrix* B,
+        const Matrix x0, const Matrix xf, const Matrix uf,
+        const Matrix* K, const Matrix* d, const Matrix* P, const Matrix* p, 
+        Matrix* x, Matrix* u, Matrix* y);
 
 
 // int tiny_RiccatiDataSize_LTI(int N, int num_states, int num_inputs);
@@ -72,24 +81,23 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTV(int N, const Matrix* A, const Ma
 // double tiny_Stationarity_LTI(int N, const Matrix A, const Matrix B, const Matrix f);
 
 // You don't need to solve general case, just provide Q, R and do normal Riccati
-// TODO: tiny_LQR_LTI
-enum slap_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B, 
-                                 const Matrix Q, const Matrix R, const Matrix q,
-                                 const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-                                 Matrix* p, Matrix S_temp);
+enum slap_ErrorCode tiny_LQR_LTI(
+        int N, const Matrix A, const Matrix B, 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
 
-// You don't need to solve general casa, ust provide Q, R and do normal Riccati.
+// You don't need to solve general case, ust provide Q, R and do normal Riccati.
 // A and B is list of matrices
-// TODO: tiny_LQR_LTV
-enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* A, const Matrix* B, 
-                                 const Matrix Q, const Matrix R, const Matrix q,
-                                 const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-                                 Matrix* p, Matrix S_temp);
+enum slap_ErrorCode tiny_LQR_LTV(
+        int N, const Matrix* A, const Matrix* B, 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
 
-// You don't need to solve general casa, ust provide Q, R and do normal Riccati.
-// pointer to function
-// TODO: tiny_LQR_LTV                                 
-// enum slap_ErrorCode tiny_LQR_LTV(int N, const Matrix* jac_A, const Matrix* jac_B, 
-//                                  const Matrix Q, const Matrix R, const Matrix q,
-//                                  const Matrix r, Matrix* K, Matrix* d, Matrix* P,
-//                                  Matrix* p, Matrix S_temp);
+// You don't need to solve general case, ust provide Q, R and do normal Riccati.
+// pointer to function                               
+enum slap_ErrorCode tiny_LQR_LTVf(
+        int N, Matrix A, Matrix B,
+        void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix), 
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p, 
+        const Matrix* Un, const Matrix* Xn, Matrix S_temp);

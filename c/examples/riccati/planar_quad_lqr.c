@@ -1,6 +1,6 @@
 // Check README.md
-// Sources: Lec. 7 Code on double integrator
-// Time-varying LQR, A and B from generated function
+// Sources: Lec. 9 Code on planar quadrotor
+// Code generation for Jacobians and dynamics
 //TODO: convert this to test Riccati
 
 #include <stdio.h>
@@ -130,9 +130,8 @@ int main(void) {
     slap_MatMulAdd(uhist[k], Khist[0], xhist[k], -1, 1);   // u[k] -= K[k] * x[k]
     slap_MatMulAdd(uhist[k], Khist[0], xref, 1, 1);   // u[k] += K[k] * xn[k]
 
-    // Next state: x = A*x + B*u
-    // slap_MatMulAdd(xhist[k + 1], A, xhist[k], 1, 0);  // x[k+1] = A * x[k]
-    // slap_MatMulAdd(xhist[k + 1], B, uhist[k], 1, 1);  // x[k+1] += B * u[k]
+    // Next state: x = f(x, u)
+    tiny_Clamps(uhist[k].data, model.umin, model.umax, NINPUTS);
     tiny_Dynamics_RK4(xhist[k+1].data, xhist[k].data, uhist[k].data);
     printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xref, xhist[k]));
     // printf("x[%d] = ", k);

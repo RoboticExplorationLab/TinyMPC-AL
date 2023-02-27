@@ -31,7 +31,7 @@ double x_data[NSTATES * NSIM];
 double u_data[NINPUTS * (NSIM - 1)];
 
 int main(void) {
-  // Read nominal trajectory from files
+  // Read reference trajectory from files
   const char *file_xn = "../examples/riccati/data/xn_data.txt";
   const char *file_un = "../examples/riccati/data/un_data.txt";
   int size_xn = NSTATES * NSIM;

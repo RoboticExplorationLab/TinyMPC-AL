@@ -7,7 +7,7 @@
 //========================================
 // Planar quadrotor model parameters
 //========================================
-struct Models {
+struct tiny_Model_PlanarQuadrotor {
   double g;
   double m;
   double l;

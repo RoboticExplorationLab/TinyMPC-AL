@@ -1,5 +1,5 @@
 // Check README.md
-// Second-order bicycle model tracking TVLQR
+// Second-order bicycle model tracking TVLQR MPC style
 // Code generation for Jacobians and dynamics
 //TODO: convert this to test Riccati
 
@@ -50,8 +50,8 @@ int main(void) {
   // Read reference trajectory from files
   const char *file_xref = "../examples/riccati/data/xref_data.txt";
   const char *file_uref = "../examples/riccati/data/uref_data.txt";
-  tiny_ReadData(file_xref, xref_data, NSTATES * NSIM, false);
-  tiny_ReadData(file_uref, uref_data, NINPUTS * (NSIM - 1), false);  
+  // tiny_ReadData(file_xref, xref_data, NSTATES * NSIM, false);
+  // tiny_ReadData(file_uref, uref_data, NINPUTS * (NSIM - 1), false);  
   tiny_ReadData_ExtendGoal(file_xref, xref_data, xf_data, NSTATES, NSTATES * NSIM, false);
   tiny_ReadData_ExtendGoal(file_uref, uref_data, uf_data, NINPUTS, NINPUTS * (NSIM-1), false);
   // tiny_ReadData_Extend(file_xref, xref_data, NSTATES, NSTATES * NSIM, false);

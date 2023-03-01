@@ -30,13 +30,13 @@ enum slap_ErrorCode tiny_Riccati_LTI(
         const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
         Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
 
-// TVLQR with Jacobians fixed
+// TVLQR with Jacobians array provided
 enum slap_ErrorCode tiny_Riccati_LTV(
         int N, const Matrix* A, const Matrix* B, 
         const Matrix Q, const Matrix R, const Matrix q, const Matrix r, 
         Matrix* K, Matrix* d, Matrix* P, Matrix* p, Matrix S_temp);
 
-// TVLQR with Jacobians function compute
+// TVLQR with Jacobians function provided
 enum slap_ErrorCode tiny_Riccati_LTVf(
         int N, Matrix A, Matrix B,
         void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix), 

@@ -1,6 +1,7 @@
 // Check README.md
-// Second-order bicycle model tracking TVLQR MPC style
-// Code generation for Jacobians and dynamics
+// Second-order bicycle model tracking TVLQR in MPC style
+// New: Code generation for Jacobians and dynamics
+// Task: LTV system to track a reference trajectory
 //TODO: convert this to test Riccati
 
 #include <stdio.h>
@@ -132,14 +133,13 @@ int main(void) {
   for (int k = 0; k < NSIM - NHORIZON; ++k) {
     tiny_LQR_LTVf(NHORIZON - 1, A, B, tiny_GetJacobians, Q, R, q, r, 
                      Khist, dhist, Phist, phist, &xref[k], &uref[k], S);
-    // tiny_Print(Khist[0]);
 
     // Control input: u = uf - d - K*(x - xf) 
-    slap_MatrixAddition(uhist[k], uref[k], dhist[0], -1);    // u[k] = un[k] - d[k]
+    slap_MatrixAddition(uhist[k], uref[k], dhist[0], -1);  // u[k] = un[k] - d[k]
     // slap_PrintMatrix(slap_Transpose(uhist[k]));
-    slap_MatMulAdd(uhist[k], Khist[0], xhist[k], -1, 1);   // u[k] -= K[k] * x[k]
+    slap_MatMulAdd(uhist[k], Khist[0], xhist[k], -1, 1);  // u[k] -= K[k] * x[k]
     // slap_PrintMatrix(slap_Transpose(uhist[k]));
-    slap_MatMulAdd(uhist[k], Khist[0], xref[k], 1, 1);   // u[k] += K[k] * xn[k]
+    slap_MatMulAdd(uhist[k], Khist[0], xref[k], 1, 1);  // u[k] += K[k] * xn[k]
     // printf("u[%d] = ", k);
     // slap_PrintMatrix(slap_Transpose(uhist[k]));
 

@@ -14,13 +14,13 @@ struct tiny_Model_PlanarQuadrotor {
   double J;
   double umin[2];
   double umax[2];
-};
+} tiny_Model_Default = {9.81, 1, 0.018, 0.3, {0, 0}, {19.62, 19.62}};
 
 //========================================
-// Codes generated from julia/Jacobians.ipynb
+// Codes generated from julia/planar_quad_gen
 // Discrete dynamics of planar quadrotor
 //========================================
-void tiny_Dynamics_RK4(double* xn, const double* x, const double* u) {
+void tiny_Dynamics_RK4_Raw(double* xn, const double* x, const double* u) {
   xn[0] = 0.16666666666666666 * (0.2 * (0.05 * (u[0] + u[1]) * sin(0.05 * x[5] + x[2]) + x[3]) + 0.1 * (0.1 * (u[0] + u[1]) * sin(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + x[3]) + 0.2 * (0.05 * (u[0] + u[1]) * sin(x[2]) + x[3]) + 0.1 * x[3]) + x[0];
   xn[1] = 0.16666666666666666 * (0.2 * (0.05 * (-9.81 + (u[0] + u[1]) * cos(0.05 * x[5] + x[2])) + x[4]) + 0.2 * (0.05 * (-9.81 + (u[0] + u[1]) * cos(x[2])) + x[4]) + 0.1 * (0.1 * (-9.81 + (u[0] + u[1]) * cos(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2])) + x[4]) + 0.1 * x[4]) + x[1];
   xn[2] = 0.16666666666666666 * (0.4 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + 0.1 * (0.8333333333333335 * (-1 * u[0] + u[1]) + x[5]) + 0.1 * x[5]) + x[2];
@@ -29,12 +29,16 @@ void tiny_Dynamics_RK4(double* xn, const double* x, const double* u) {
   xn[5] = 0.8333333333333336 * (-1 * u[0] + u[1]) + x[5];
 }
 
+void tiny_Dynamics_RK4(Matrix xn, const Matrix x, const Matrix u)
+{
+  tiny_Dynamics_RK4_Raw(xn.data, x.data, u.data);
+}
 
 //========================================
-// Codes generated from julia/Jacobians.ipynb
+// Codes generated from julia/planar_quad_gen
 // Jacobians of discrete dynamics of planar quadrotor
 //========================================
-void tiny_GetJacobianA(double* A, const double* x, const double* u) {
+void tiny_GetJacobianA_Raw(double* A, const double* x, const double* u) {
   A[0] = 1;
   A[1] = 0;
   A[2] = 0;
@@ -73,7 +77,7 @@ void tiny_GetJacobianA(double* A, const double* x, const double* u) {
   A[35] = 1;
 }
 
-void tiny_GetJacobianB(double* B, const double* x, const double* u) {
+void tiny_GetJacobianB_Raw(double* B, const double* x, const double* u) {
   B[0] = 0.16666666666666666 * (0.01 * sin(0.05 * x[5] + x[2]) + 0.01 * sin(x[2]) + 0.1 * (0.1 * sin(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + -0.002083333333333334 * (u[0] + u[1]) * cos(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2])));
   B[1] = 0.16666666666666666 * (0.01 * (0.02083333333333334 * (u[0] + u[1]) * sin(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + cos(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2])) + 0.01 * cos(0.05 * x[5] + x[2]) + 0.01 * cos(x[2]));
   B[2] = -0.04166666666666667;
@@ -86,4 +90,10 @@ void tiny_GetJacobianB(double* B, const double* x, const double* u) {
   B[9] = 0.16666666666666666 * (0.2 * sin(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + 0.1 * sin(0.1 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + 0.1 * sin(x[2]) + 0.2 * sin(0.05 * x[5] + x[2]) + 0.004166666666666668 * (u[0] + u[1]) * cos(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + 0.004166666666666668 * (u[0] + u[1]) * cos(0.1 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]));
   B[10] = 0.16666666666666666 * (0.1 * (-0.04166666666666668 * (u[0] + u[1]) * sin(0.1 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + cos(0.1 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2])) + 0.1 * cos(x[2]) + 0.2 * (-0.02083333333333334 * (u[0] + u[1]) * sin(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2]) + cos(0.05 * (0.41666666666666674 * (-1 * u[0] + u[1]) + x[5]) + x[2])) + 0.2 * cos(0.05 * x[5] + x[2]));
   B[11] = 0.8333333333333336;
+}
+
+void tiny_GetJacobians(Matrix A, Matrix B, const Matrix x, const Matrix u) 
+{
+  tiny_GetJacobianA_Raw(A.data, x.data, u.data);
+  tiny_GetJacobianB_Raw(B.data, x.data, u.data);
 }

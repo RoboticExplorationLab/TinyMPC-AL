@@ -1,5 +1,6 @@
 // Check README.md
 // Sources: Lec. 7 Code on double integrator
+// Task: drive LTI system from initial to goal state
 //TODO: convert this to test Riccati
 
 #include "slap/slap.h"

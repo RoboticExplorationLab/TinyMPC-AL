@@ -177,7 +177,7 @@ enum slap_ErrorCode tiny_Riccati_LTVf(
   for (--k; k >= 0; --k) {
     // Get Jacobians of dynamics
     (*get_jacobians)(A, B, Xn[k], Un[k]);
-    // slap_PrintMatrix(B);
+
     // State Gradient: Sx = q + A' * p
     slap_MatrixCopy(p[k], p[k+1]);
     // slap_PrintMatrix(p[k]);
@@ -188,13 +188,10 @@ enum slap_ErrorCode tiny_Riccati_LTVf(
     // Control Gradient: Su = r + B' * p
     slap_MatrixCopy(Su, r);                               // Su = r
     slap_MatMulAdd(Su, slap_Transpose(B), p[k], 1, 1);    // Su += B' * p
-    // printf("\nSx\n"); slap_PrintMatrix(P[k]);
+
     // State Hessian: Sxx = Q + A'P*A
     slap_MatMulAdd(P[k], P[k+1], A, 1, 0);                   // P[k] = P * A (temp in P)
     
-    // printf("\nSx\n"); slap_PrintMatrix(P[k+1]);
-    // printf("\nSx\n"); slap_PrintMatrix(P[k]);
-    // printf("\nSx\n"); slap_PrintMatrix(A);
     slap_MatrixCopy(Sxx, Q);                                 // Sxx = Q
     slap_MatMulAdd(Sxx, slap_Transpose(A), P[k], 1, 1);      // Sxx = Q + A'P*A
 
@@ -205,7 +202,7 @@ enum slap_ErrorCode tiny_Riccati_LTVf(
 
     // Hessian Cross-Term
     slap_MatMulAdd(Sux, slap_Transpose(B), P[k], 1, 0);       // Sux = B'P*A
-    // slap_PrintMatrix(Sux);
+  
     // Calculate Gains
     slap_MatrixCopy(Quu_temp, Suu);
     slap_Cholesky(Quu_temp);

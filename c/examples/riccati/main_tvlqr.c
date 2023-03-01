@@ -1,6 +1,8 @@
 // Check README.md
 // Sources: Lec. 7 Code on double integrator
-// Time-varying LQR, A and B from files
+// New: Time-varying LQR, precomputed A and B from files (in fact they are
+// constants)
+// Task: Drive LTV model from initial to goal state.
 //TODO: convert this to test Riccati
 
 #include "slap/slap.h"
@@ -51,10 +53,6 @@ int main(void) {
   slap_PrintMatrix(R);
   Matrix q = slap_MatrixFromArray(NSTATES, 1, q_data);
   Matrix r = slap_MatrixFromArray(NINPUTS, 1, r_data);
-  // printf("\nA = \n");
-  // slap_PrintMatrix(A);
-  // printf("\nB = \n");
-  // slap_PrintMatrix(B);
   printf("End of problem\n");
   Matrix xf = slap_MatrixFromArray(NSTATES, 1, xf_data);
   Matrix uf = slap_MatrixFromArray(NINPUTS, 1, uf_data);

@@ -1,6 +1,6 @@
 // Check README.md
 // Sources: Lec. 7 Code on double integrator
-// Track a nominal trajectory in MPC style
+// Task: LTI system track a nominal trajectory in MPC style
 //TODO: convert this to test Riccati
 
 #include "slap/slap.h"

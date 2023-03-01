@@ -59,7 +59,7 @@ int tiny_ReadData(const char* filename, double* des, const int size, bool verbos
 }
 
 //========================================
-// Read data from file and copy the last chunk into 
+// Read data from file and copy the last knot point into 
 // remaining space of the array. Useful for extend horizon at the end.
 //========================================
 int tiny_ReadData_Extend(const char* filename, double* des, 

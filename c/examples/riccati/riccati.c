@@ -39,17 +39,17 @@ enum slap_ErrorCode tiny_Riccati_LTI(int N, const Matrix A, const Matrix B,
     slap_MatMulAdd(Su, slap_Transpose(B), p[k], 1, 1);    // Su += B' * p
 
     // State Hessian: Sxx = Q + A'P*A
-    slap_MatMulAdd(P[k], P[k+1], A, 1, 0);                   // P[k] = P * A (temp in P)
-    slap_MatrixCopy(Sxx, Q);                                 // Sxx = Q
-    slap_MatMulAdd(Sxx, slap_Transpose(A), P[k], 1, 1);      // Sxx = Q + A'P*A
+    slap_MatMulAdd(P[k], P[k + 1], A, 1, 0);  // P[k] = P * A (temp in P)
+    slap_MatrixCopy(Sxx, Q);                  // Sxx = Q
+    slap_MatMulAdd(Sxx, slap_Transpose(A), P[k], 1, 1);  // Sxx = Q + A'P*A
 
     // Control Hessian Suu = R + B'P*B
-    slap_MatMulAdd(Sxu, P[k+1], B, 1, 0);                    // Sxu = P * B
-    slap_MatrixCopy(Suu, R);                                 // Suu = R
-    slap_MatMulAdd(Suu, slap_Transpose(B), Sxu, 1, 1);       // Suu = R + B'P*B
+    slap_MatMulAdd(Sxu, P[k + 1], B, 1, 0);             // Sxu = P * B
+    slap_MatrixCopy(Suu, R);                            // Suu = R
+    slap_MatMulAdd(Suu, slap_Transpose(B), Sxu, 1, 1);  // Suu = R + B'P*B
 
     // Hessian Cross-Term
-    slap_MatMulAdd(Sux, slap_Transpose(B), P[k], 1, 0);       // Sux = B'P*A
+    slap_MatMulAdd(Sux, slap_Transpose(B), P[k], 1, 0);  // Sux = B'P*A
 
     // Calculate Gains
     slap_MatrixCopy(Quu_temp, Suu);
@@ -144,6 +144,7 @@ enum slap_ErrorCode tiny_Riccati_LTV(int N, const Matrix* A, const Matrix* B,
     slap_MatMulAdd(p[k], Sxu, d[k], 1, 1);                   // p += K'Suu*d
     slap_MatMulAdd(p[k], slap_Transpose(K[k]), Su, -1, 1);    // p -= K'Su
     slap_MatMulAdd(p[k], slap_Transpose(Sux), d[k], -1, 1);   // p -= Sux'd
+
   }
   slap_MatrixCopy(P[N], Q);  // Replace P[N] since we used it for Quu_temp
   // slap_FreeMatrix(temp);
@@ -252,8 +253,8 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTI(int N, const Matrix A, const Mat
 
     // Calculate dual variables
     if (y) {
-      slap_MatrixCopy(y[k], p[k]);              // y[k] = p[k];
-      slap_MatMulAdd(y[k], P[k], x[k], 1, 1);   // y[k] += P[k] x[k]
+      slap_MatrixCopy(y[k], p[k]);             // y[k] = p[k];
+      slap_MatMulAdd(y[k], P[k], x[k], 1, 1);  // y[k] += P[k] x[k]
     }
   }
   return SLAP_NO_ERROR;

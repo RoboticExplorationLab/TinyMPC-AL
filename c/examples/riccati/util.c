@@ -1,5 +1,10 @@
 #include "util.h"
 
+#include <errno.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 //========================================
 // Read data from file
 //========================================

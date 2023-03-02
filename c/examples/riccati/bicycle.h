@@ -8,11 +8,12 @@
 // Bicycle model parameters
 //========================================
 struct tiny_Model_Bicycle {
-  double x45min[2];
-  double x45max[2];
-  double umin[2];
-  double umax[2];
-};
+  double drive_min[2];
+  double drive_max[2];
+  double u_min[2];
+  double u_max[2];
+} tiny_DefaultModel_Bicycle = {{-2, -0.5}, {2, 0.5}, 
+                              {-4, -0.7}, {4, 0.7}};
 
 //========================================
 // Codes generated from julia/bicycle_tvlqr

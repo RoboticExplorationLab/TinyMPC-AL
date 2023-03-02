@@ -2,13 +2,14 @@
 // Second-order bicycle model tracking TVLQR, test forward
 // New: Code generation for Jacobians and dynamics
 // Task: LTV system to track a reference trajectory
-//TODO: convert this to test Riccati
+// TODO: convert this to test Riccati
 
 #include <stdio.h>
-#include "util.h"
-#include "slap/slap.h"
-#include "riccati.h"
+
 #include "bicycle.h"
+#include "riccati.h"
+#include "slap/slap.h"
+#include "util.h"
 
 #define H 0.1
 #define NSTATES 5
@@ -17,13 +18,7 @@
 
 int main(void) {
   printf("\n*** PROBLEM DEFINITION ***\n");
-  struct tiny_Model_Bicycle model;
-  model.x45max[0] = 2;      // velocity max
-  model.x45max[1] = 0.5;    // steering rate max
-  model.umax[0] = 4;        // accel max
-  model.umax[1] = 0.7;      // steering angle max
-  model.x45min[0] = -model.x45max[0]; model.x45min[1] = -model.x45max[1];
-  model.umin[0] = -model.umax[0];model.umin[1] = -model.umax[1];
+  struct tiny_Model_Bicycle model = tiny_DefaultModel_Bicycle;
 
   // array data to construct matrix, each column
   double Q_data[NSTATES * NSTATES] = {0};
@@ -35,23 +30,24 @@ int main(void) {
   double A_data[NSTATES * NSTATES] = {0};
   double B_data[NSTATES * NINPUTS] = {0};
 
-  double x0_data[NSTATES] = {2, 0, 0, 0, 0};
-  double xf_data[NSTATES] = {20, 20, M_PI/4, 0, 0};
+  double x0_data[NSTATES] = {1, -1, 0, 1, 1};
+  double xf_data[NSTATES] = {20, 20, M_PI / 4, 0, 0};
   double uf_data[NINPUTS] = {0};
 
-  double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON] = {0}; //stores P and p
-  double Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON - 1)] = {0}; //stores K and d 
+  double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON] = {0};  // stores P and p
+  double Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON - 1)] = {
+      0};  // stores K and d
 
   double x_data[NSTATES * NHORIZON] = {0};
   double u_data[NINPUTS * (NHORIZON - 1)] = {0};
   double xref_data[NSTATES * NHORIZON] = {0};
-  double uref_data[NINPUTS * (NHORIZON - 1)] = {0}; 
+  double uref_data[NINPUTS * (NHORIZON - 1)] = {0};
 
   // Read reference trajectory from files
   const char *file_xref = "../examples/riccati/data/xref_data.txt";
   const char *file_uref = "../examples/riccati/data/uref_data.txt";
   tiny_ReadData(file_xref, xref_data, NSTATES * NHORIZON, false);
-  tiny_ReadData(file_uref, uref_data, NINPUTS * (NHORIZON - 1), false);  
+  tiny_ReadData(file_uref, uref_data, NINPUTS * (NHORIZON - 1), false);
   // Create matrix from array data
   Matrix Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(Q, 1);
@@ -59,18 +55,20 @@ int main(void) {
   tiny_Print(Q);
   Matrix R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(R, 0.01);
-  printf("\nR = \n"); slap_PrintMatrix(R);
+  printf("\nR = \n");
+  slap_PrintMatrix(R);
   Matrix q = slap_MatrixFromArray(NSTATES, 1, q_data);
-  // printf("\nq = \n"); slap_PrintMatrix(q);  
+  // printf("\nq = \n"); slap_PrintMatrix(q);
   Matrix r = slap_MatrixFromArray(NINPUTS, 1, r_data);
-  // printf("\nr = \n"); slap_PrintMatrix(r);  
+  // printf("\nr = \n"); slap_PrintMatrix(r);
   Matrix A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
   Matrix B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
 
   Matrix x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  printf("\nx0 = \n"); slap_PrintMatrix(x0);
+  printf("\nx0 = \n");
+  slap_PrintMatrix(x0);
   Matrix xf = slap_MatrixFromArray(NSTATES, 1, xf_data);
-  tiny_Print(xf);  
+  tiny_Print(xf);
 
   // Matrix of pointers
   Matrix Phist[NHORIZON];
@@ -90,7 +88,7 @@ int main(void) {
   double *urefp = uref_data;
 
   for (int k = 0; k < NHORIZON; ++k) {
-    // Pointer to each block, then next 
+    // Pointer to each block, then next
     Phist[k] = slap_MatrixFromArray(NSTATES, NSTATES, Pp);
     Pp += NSTATES * NSTATES;
     phist[k] = slap_MatrixFromArray(NSTATES, 1, Pp);
@@ -99,9 +97,8 @@ int main(void) {
     xp += NSTATES;
     xref[k] = slap_MatrixFromArray(NSTATES, 1, xrefp);
     xrefp += NSTATES;
-    
-    if (k < NHORIZON - 1)
-    {
+
+    if (k < NHORIZON - 1) {
       uhist[k] = slap_MatrixFromArray(NINPUTS, 1, up);
       up += NINPUTS;
       uref[k] = slap_MatrixFromArray(NINPUTS, 1, urefp);
@@ -114,20 +111,22 @@ int main(void) {
   }
   // End of initializing memory and variables
 
-  // Temporary matrix for underlying calculation 
+  // Temporary matrix for underlying calculation
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
-  slap_MatrixCopy(xhist[0], x0);  
+  slap_MatrixCopy(xhist[0], x0);
   printf("\n*** START SOLVING ***\n");
-
-  tiny_Riccati_LTVf(NHORIZON - 1, A, B, tiny_GetJacobians, Q, R, q, r, 
-                    Khist, dhist, Phist, phist, xref, uref, S);
-  // tiny_RiccatiForwardPass_LTVf(NHORIZON - 1, A, B, tiny_GetJacobians, 
-  //     x0, xref, uref, Khist, dhist, Phist, phist, xhist, uhist, NULL);
-  for (int k = 0; k < NHORIZON - 1; k += 1){
+  int test = 100 - 61;
+  tiny_Riccati_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, Q, R, q, r, Khist,
+                    dhist, Phist, phist, xref, uref, S);
+  tiny_RiccatiForwardPass_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, x0, xref,
+                               uref, Khist, dhist, Phist, phist, xhist, uhist,
+                               NULL);
+  for (int k = 0; k < NHORIZON - test; k += 1) {
     // Tracking errors (show different metrics)
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xref[k], xhist[k]));
+    printf("ex[%d] = %.4f\n", k,
+           slap_MatrixNormedDifference(xref[k], xhist[k]));
     // printf("x[%d] = ", k);
-    slap_PrintMatrix(slap_Transpose(xref[k]));
+    // slap_PrintMatrix(slap_Transpose(uhist[k]));
     // tiny_Print(Khist[k]);
   }
 

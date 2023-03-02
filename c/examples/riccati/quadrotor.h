@@ -14,7 +14,7 @@ struct tiny_Model_PlanarQuadrotor {
   double J;
   double umin[2];
   double umax[2];
-} tiny_Model_Default = {9.81, 1, 0.018, 0.3, {0, 0}, {19.62, 19.62}};
+} tiny_DefaultModel_PlanarQuadrotor = {9.81, 1, 0.018, 0.3, {0, 0}, {19.62, 19.62}};
 
 //========================================
 // Codes generated from julia/planar_quad_gen

@@ -1,4 +1,5 @@
 //
+// Created by Brian Edward Jackson on 1/31/23.
 // Check Lecture 10 on DDP/iLQR
 //
 

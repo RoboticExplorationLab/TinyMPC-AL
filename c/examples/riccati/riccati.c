@@ -178,7 +178,7 @@ enum slap_ErrorCode tiny_Riccati_LTVf(
   for (--k; k >= 0; --k) {
     // Get Jacobians of dynamics
     (*get_jacobians)(A, B, Xn[k], Un[k]);
-
+    // slap_PrintMatrix(slap_Transpose(Xn[N-1]));
     // State Gradient: Sx = q + A' * p
     slap_MatrixCopy(p[k], p[k+1]);
     // slap_PrintMatrix(p[k]);
@@ -288,6 +288,41 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTV(int N, const Matrix* A, const Ma
     }
   }
   return SLAP_NO_ERROR;
+}
+
+enum slap_ErrorCode tiny_RiccatiForwardPass_LTVf(
+        int N, Matrix A, Matrix B,
+        void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix), 
+        const Matrix x0, const Matrix* xref, const Matrix* uref, 
+        const Matrix* K, const Matrix* d, const Matrix* P, const Matrix* p, 
+        Matrix* x, Matrix* u, Matrix* y)
+{
+  // Initial condition
+  slap_MatrixCopy(x[0], x0);
+
+  for (int k = 0; k <= N; ++k) {
+    // Calculate primal variables (via closed-loop forward simulation)
+    if (k < N) {
+      // Get Jacobians of dynamics
+      (*get_jacobians)(A, B, xref[k], uref[k]);
+      // Control input: u = uf - d - K*(x - xf) 
+      slap_MatrixAddition(u[k], uref[k], d[k], -1);    // u[k] = uf - d[k]
+      slap_MatMulAdd(u[k], K[k], x[k], -1, 1);   // u[k] -= K[k] * x[k]
+      slap_MatMulAdd(u[k], K[k], xref[k], 1, 1);   // u[k] += K[k] * xf
+      // Next state: x = A*x + B*u
+      tiny_Dynamics_RK4_Raw(x[k+1].data, x[k].data, u[k].data);
+      // slap_PrintMatrix(slap_Transpose(xref[k]));
+      // slap_MatMulAdd(x[k + 1], A, x[k], 1, 0);  // x[k+1] = A * x[k]
+      // slap_MatMulAdd(x[k + 1], B, u[k], 1, 1);  // x[k+1] += B * u[k]
+    }
+
+    // Calculate dual variables
+    if (y) {
+      slap_MatrixCopy(y[k], p[k]);              // y[k] = p[k];
+      slap_MatMulAdd(y[k], P[k], x[k], 1, 1);   // y[k] += P[k] x[k]
+    }
+  }
+  return SLAP_NO_ERROR;  
 }
 
 enum slap_ErrorCode tiny_LQR_LTI(int N, const Matrix A, const Matrix B, 

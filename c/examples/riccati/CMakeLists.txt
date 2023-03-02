@@ -13,8 +13,12 @@ add_executable(planar_quad_lqr
 add_executable(bicycle_tvlqr
     riccati.h riccati.c util.h bicycle.h bicycle_tvlqr.c)
 
+add_executable(bicycle_tvlqr2
+    riccati.h riccati.c util.h bicycle.h bicycle_tvlqr2.c)  
+
 target_link_libraries(main_tvlqr PRIVATE slap::slap)
 target_link_libraries(main_lqr PRIVATE slap::slap)
 target_link_libraries(main_lqr_track PRIVATE slap::slap)
 target_link_libraries(planar_quad_lqr PRIVATE slap::slap)
 target_link_libraries(bicycle_tvlqr PRIVATE slap::slap)
+target_link_libraries(bicycle_tvlqr2 PRIVATE slap::slap)

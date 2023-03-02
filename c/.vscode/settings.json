@@ -12,6 +12,8 @@
         "qr.h": "c",
         "printing.h": "c",
         "copy_matrix.h": "c",
-        "matrix.h": "c"
+        "matrix.h": "c",
+        "riccati.h": "c",
+        "slap.h": "c"
     }
 }

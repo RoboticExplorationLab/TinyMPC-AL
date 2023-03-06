@@ -44,7 +44,7 @@ enum slap_ErrorCode tiny_Riccati_LTVf(
     int N, Matrix A, Matrix B,
     void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix),
     const Matrix Q, const Matrix R, const Matrix q, const Matrix r, Matrix* K,
-    Matrix* d, Matrix* P, Matrix* p, const Matrix* Un, const Matrix* Xn,
+    Matrix* d, Matrix* P, Matrix* p, const Matrix* Xn, const Matrix* Un,
     Matrix S_temp);
 
 /**
@@ -81,6 +81,7 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTVf(
     const Matrix x0, const Matrix* xref, const Matrix* uref, const Matrix* K,
     const Matrix* d, const Matrix* P, const Matrix* p, Matrix* x, Matrix* u,
     Matrix* y);
+
 // int tiny_RiccatiDataSize_LTI(int N, int num_states, int num_inputs);
 
 // double tiny_Stationarity_LTI(int N, const Matrix A, const Matrix B, const

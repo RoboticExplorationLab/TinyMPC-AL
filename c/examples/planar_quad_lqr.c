@@ -19,7 +19,7 @@
 
 int main(void) {
   printf("\n*** PROBLEM DEFINITION ***\n");
-  struct tiny_Model_PlanarQuadrotor model = tiny_Model_Default;
+  struct tiny_Model_PlanarQuadrotor model = tiny_DefaultModel_PlanarQuadrotor;
   model.umin[0] = 0.2*model.m*model.g;
   model.umin[1] = model.umin[0];
   model.umax[0] = 0.6*model.m*model.g; model.umax[1] = model.umax[0];

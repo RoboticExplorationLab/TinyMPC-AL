@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(tinyMPC VERSION 0.1.0 LANGUAGES C CXX)
+project(TinyMPC VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Handle default build type
-set(SLAP_DEFAULT_BUILD_TYPE "Release")
+set(TINY_DEFAULT_BUILD_TYPE "Release")
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "No build type specified. Setting CMAKE_BUILD_TYPE to ${SLAP_DEFAULT_BUILD_TYPE}")
-  set(CMAKE_BUILD_TYPE ${SLAP_DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)
+  message(STATUS "No build type specified. Setting CMAKE_BUILD_TYPE to ${TINY_DEFAULT_BUILD_TYPE}")
+  set(CMAKE_BUILD_TYPE ${TINY_DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
@@ -18,7 +18,7 @@ endif ()
 
 # Compile options
 add_compile_options(-Wall -Wextra -pedantic -Wno-error=unknown-pragmas)
-add_compile_options(-O2 -mavx2 -mfma)
+# add_compile_options(-O2 -mavx2 -mfma)
 # add_compile_options(-Wall -Wextra -Wpedantic -Werror
 #                     -Wformat=2 -Wno-unused-parameter -Wshadow 
 #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
@@ -32,11 +32,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 # Build source files
 add_subdirectory(slap)
-
-##############################
-# Examples
-##############################
-add_executable(getting_started examples/getting_started.c)
-target_link_libraries(getting_started PRIVATE slap::slap)
-
-add_subdirectory(examples/riccati)
+# add_subdirectory(examples)
+add_subdirectory(src)
+add_subdirectory(test)

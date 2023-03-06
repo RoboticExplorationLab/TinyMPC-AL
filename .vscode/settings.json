@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "test_utils.h": "c",
+        "augmented_lagrangian_lqr.h": "c"
+    }
+}

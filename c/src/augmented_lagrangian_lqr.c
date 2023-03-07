@@ -55,29 +55,44 @@ const tiny_ProblemData kDefaultProblemData = {
 
 enum slap_ErrorCode tiny_BackwardPass(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix S_temp)
-{
+    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix S_temp) {
   return SLAP_NO_ERROR;
 }
 
 enum slap_ErrorCode tiny_ForwardPass(
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    Matrix* X, Matrix* U, const tiny_Solver solver)
-{
-  return SLAP_NO_ERROR;
+    Matrix* X, Matrix* U) {
+  int N = prob.nhorizon;
+  double alpha = 1.0;
+  double u_data[prob.ninputs];
+  double x_data[prob.nstates];
+  Matrix Un = slap_MatrixFromArray(prob.ninputs, 1, u_data);
+  Matrix Xn = slap_MatrixFromArray(prob.nstates, 1, x_data);
+  slap_MatrixCopy(Xn, prob.x0);
+  for (int k = 0; k < N; ++k) {
+    // Control input: u = uf - d - K*(x - xf) 
+    slap_MatrixAddition(Un, U[k], prob.d[k], -1);    // u[k] = uf - d[k]
+    slap_MatMulAdd(Un, prob.K[k], X[k], -1, 1);   // u[k] -= K[k] * x[k]
+    slap_MatMulAdd(Un, prob.K[k], Xn, 1, 1);   // u[k] += K[k] * xf
+    slap_MatrixCopy(U[k], Un);
+    // Next state: x = A*x + B*u + f
+    slap_MatrixCopy(Xn, X[k + 1]);
+    slap_MatMulAdd(X[k + 1], model.A, X[k], 1, 0);  // x[k+1] = A * x[k]
+    slap_MatMulAdd(X[k + 1], model.B, U[k], 1, 1);  // x[k+1] += B * u[k]
+    slap_MatrixAddition(X[k + 1], X[k + 1], model.f, 1);  // x[k+1] += f
+  }
+  return SLAP_NO_ERROR; 
 }
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model,
-    Matrix* X, Matrix* U, const int verbose)
-{
+    Matrix* X, Matrix* U, const int verbose) {
   return SLAP_NO_ERROR;
 }
 
 // [u-p.u_max;-u + p.u_min]
 void tiny_IneqInputs(
-    Matrix ineq, const tiny_ProblemData prob, const Matrix u)
-{
+    Matrix ineq, const tiny_ProblemData prob, const Matrix u) {
   slap_SetConst(ineq, 0);  //clear before processing
   Matrix upper_half = slap_CreateSubMatrix(ineq, 0, 0, prob.ninputs, 1);
   Matrix lower_half = slap_CreateSubMatrix(ineq, prob.ninputs, 0, 
@@ -87,8 +102,7 @@ void tiny_IneqInputs(
 }
 
 void tiny_IneqInputsJacobian(
-    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u)
-{
+    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u) {
   slap_SetConst(ineq_jac, 0);  //clear before processing
   Matrix upper_half = slap_CreateSubMatrix(ineq_jac, 0, 0, 
                                           prob.ninputs, prob.ninputs);
@@ -99,8 +113,7 @@ void tiny_IneqInputsJacobian(
 }
   
 void tiny_ActiveIneqMask(
-    Matrix mask, const Matrix input_dual, const Matrix ineq)
-{    
+    Matrix mask, const Matrix input_dual, const Matrix ineq) {    
   slap_SetConst(mask, 0);  //clear before processing
   for (int i = 0; i < ineq.rows; ++i) {
     // When variables are on the boundary or violating constraints
@@ -108,3 +121,4 @@ void tiny_ActiveIneqMask(
     slap_SetElement(mask, i, i, active); 
   }
 }
+

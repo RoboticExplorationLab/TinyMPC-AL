@@ -71,7 +71,7 @@ enum slap_ErrorCode tiny_BackwardPass(
 
 enum slap_ErrorCode tiny_ForwardPass(
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    Matrix* X, Matrix* U, const tiny_Solver solver);
+    Matrix* X, Matrix* U);
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model,
@@ -85,3 +85,4 @@ void tiny_IneqInputsJacobian(
 
 void tiny_ActiveIneqMask(
   Matrix mask, const Matrix input_dual, const Matrix ineq);    
+

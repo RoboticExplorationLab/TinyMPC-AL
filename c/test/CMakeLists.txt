@@ -32,4 +32,4 @@ target_include_directories(simpletest
 
 # Add tests
 add_al_lqr_test(lqrdata)
-add_al_lqr_test(riccati)
+add_al_lqr_test(lqr_ineq_utils)

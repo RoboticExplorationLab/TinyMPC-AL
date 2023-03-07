@@ -74,27 +74,37 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
   return SLAP_NO_ERROR;
 }
 
-// [x-p.x_max;-x + p.x_min]
-Matrix tiny_IneqInputs(
-    const tiny_ProblemData prob, const Matrix u) 
+// [u-p.u_max;-u + p.u_min]
+void tiny_IneqInputs(
+    Matrix ineq, const tiny_ProblemData prob, const Matrix u)
 {
-  double ineq_data[prob.ncstr_inputs];
-  Matrix mat = slap_MatrixFromArray(prob.ncstr_inputs, 1, ineq_data);
-  Matrix upper_half = slap_CreateSubMatrix(mat, 0, 0, prob.ninputs, 0);
-  Matrix lower_half = slap_CreateSubMatrix(mat, prob.ninputs, 0, 
-                                          prob.ncstr_inputs, 0);
-  slap_MatrixAddition(lower_half, u, prob.u_max, -1);
-  return kNullMat;
+  slap_SetConst(ineq, 0);  //clear before processing
+  Matrix upper_half = slap_CreateSubMatrix(ineq, 0, 0, prob.ninputs, 1);
+  Matrix lower_half = slap_CreateSubMatrix(ineq, prob.ninputs, 0, 
+                                          prob.ninputs, 1);
+  slap_MatrixAddition(upper_half, u, prob.u_max, -1);
+  slap_MatrixAddition(lower_half, prob.u_min, u, -1);
 }
 
-Matrix tiny_IneqInputsJacobian(
-    const tiny_ProblemData prob, const Matrix u) 
+void tiny_IneqInputsJacobian(
+    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u)
 {
-  return kNullMat;
+  slap_SetConst(ineq_jac, 0);  //clear before processing
+  Matrix upper_half = slap_CreateSubMatrix(ineq_jac, 0, 0, 
+                                          prob.ninputs, prob.ninputs);
+  Matrix lower_half = slap_CreateSubMatrix(ineq_jac, prob.ninputs, 0, 
+                                          prob.ninputs, prob.ninputs);  
+  slap_SetIdentity(upper_half, 1);
+  slap_SetIdentity(lower_half, -1);
 }
   
-Matrix tiny_ActiveIneqMask(
-    const tiny_Solver solver, const Matrix ineq) 
+void tiny_ActiveIneqMask(
+    Matrix mask, const Matrix input_dual, const Matrix ineq)
 {    
-  return kNullMat;
+  slap_SetConst(mask, 0);  //clear before processing
+  for (int i = 0; i < ineq.rows; ++i) {
+    // When variables are on the boundary or violating constraints
+    bool active = input_dual.data[i] > 0 || ineq.data[i] > 0;
+    slap_SetElement(mask, i, i, active); 
+  }
 }

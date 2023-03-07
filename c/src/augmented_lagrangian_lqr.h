@@ -77,11 +77,11 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model,
     Matrix* X, Matrix* U, const int verbose);
 
-Matrix tiny_IneqInputs(
-    const tiny_ProblemData prob, const Matrix u);
+void tiny_IneqInputs(
+  Matrix ineq, const tiny_ProblemData prob, const Matrix u);
 
-Matrix tiny_IneqInputsJacobian(
-    const tiny_ProblemData prob, const Matrix u);
+void tiny_IneqInputsJacobian(
+    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u);
 
-Matrix tiny_ActiveIneqMask(
-    const tiny_Solver solver, const Matrix ineq);    
+void tiny_ActiveIneqMask(
+  Matrix mask, const Matrix input_dual, const Matrix ineq);    

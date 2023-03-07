@@ -30,6 +30,9 @@ target_include_directories(simpletest
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
   )
 
+# add_subdirectory(data)
+
 # Add tests
 add_al_lqr_test(lqrdata)
 add_al_lqr_test(lqr_ineq_utils)
+add_al_lqr_test(forward_pass)

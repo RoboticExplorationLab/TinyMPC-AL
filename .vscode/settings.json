@@ -3,6 +3,9 @@
         "test_utils.h": "c",
         "augmented_lagrangian_lqr.h": "c",
         "string_view": "c",
-        "tuple": "c"
+        "tuple": "c",
+        "forward_pass_data.h": "c",
+        "slap.h": "c",
+        "math.h": "c"
     }
 }

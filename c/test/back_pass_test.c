@@ -7,17 +7,16 @@
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "data/lqr_data.h"
+#include "data/back_pass_data.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 3
 
-double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,0.1,0, 0,0.1,0,0.1};
+double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
 double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
 double f_data[NSTATES] = {0,0,0,0};
-double x0_data[NSTATES] = {5,7,2,-1.4};
-double x_data[NSTATES*NHORIZON] = {0};
+// double x0_data[NSTATES] = {5,7,2,-1.4};
 
 void ForwardPassTest() {
   const double tol = 1e-8;
@@ -29,7 +28,7 @@ void ForwardPassTest() {
   model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  // model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
 
   Matrix X[NHORIZON];
   Matrix Xsln[NHORIZON];
@@ -61,17 +60,50 @@ void ForwardPassTest() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.x0 = model.x0;  // check if possible
+  prob.x0 = X[0];  // check if possible
   prob.K = K;
   prob.d = d;
+  
+  uptr = u_data;
+  xsol_ptr = xsol_data;
+  xptr = x_data;  
+  Kptr = K_data;
+  dptr = d_data;
+  for (int i = 0; i < NHORIZON; ++i) {
+    if (i < NHORIZON - 1) {
+      TEST(U[i].rows == NINPUTS);
+      TEST(U[i].cols == 1);  
+      TEST(SumOfSquaredError(U[i].data, uptr, NINPUTS) < tol);
+      uptr += NINPUTS;
+      TEST(prob.K[i].rows == NINPUTS);
+      TEST(prob.K[i].cols == NSTATES);  
+      TEST(SumOfSquaredError(prob.K[i].data, Kptr, NINPUTS*NSTATES) < tol);
+      Kptr += NINPUTS*NSTATES;
+      TEST(prob.d[i].rows == NINPUTS);
+      TEST(prob.d[i].cols == 1);  
+      TEST(SumOfSquaredError(prob.d[i].data, dptr, NINPUTS) < tol);
+      dptr += NINPUTS;    
+    }
+    TEST(X[i].rows == NSTATES);
+    TEST(X[i].cols == 1);  
+    TEST(SumOfSquaredError(X[i].data, xptr, NSTATES) < tol);
+    xptr += NSTATES;
+    TEST(Xsln[i].rows == NSTATES);
+    TEST(Xsln[i].cols == 1);  
+    TEST(SumOfSquaredError(Xsln[i].data, xsol_ptr, NSTATES) < tol);
+    xsol_ptr += NSTATES;
+  }  
 
   tiny_ForwardPass(prob, model, X, U);
-  for (int i = 1; i < NHORIZON; ++i) {
+  for (int i = 0; i < NHORIZON; ++i) {
+    // slap_PrintMatrix(X[i]);
+    // println();
     TEST(SumOfSquaredError(X[i].data, Xsln[i].data, NSTATES) < tol);
   }
 }
 
 int main() {
   ForwardPassTest();
+  PrintTestResult();
   return TestResult();
 }

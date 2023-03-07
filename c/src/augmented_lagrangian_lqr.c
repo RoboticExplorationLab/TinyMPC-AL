@@ -56,9 +56,18 @@ const tiny_ProblemData kDefaultProblemData = {
 enum slap_ErrorCode tiny_BackwardPass(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
     const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix S_temp) {
+  // Copy terminal cost-to-go
+  int k = prob.nhorizon;
+  slap_MatrixCopy(P[k], prob.Qf);
+  slap_MatrixCopy(p[k], prob.qf);
+  int n = slap_NumCols(A);
+  int m = slap_NumCols(B);
+
   return SLAP_NO_ERROR;
 }
 
+// Roll out the closed-loop dynamics with K and d from backward pass, 
+// calculate new X, U in place
 enum slap_ErrorCode tiny_ForwardPass(
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
     Matrix* X, Matrix* U) {
@@ -69,7 +78,8 @@ enum slap_ErrorCode tiny_ForwardPass(
   Matrix Un = slap_MatrixFromArray(prob.ninputs, 1, u_data);
   Matrix Xn = slap_MatrixFromArray(prob.nstates, 1, x_data);
   slap_MatrixCopy(Xn, prob.x0);
-  for (int k = 0; k < N; ++k) {
+  for (int k = 0; k < N - 1; ++k) {
+    // delta_x and delta_u over previous X, U
     // Control input: u = uf - d - K*(x - xf) 
     slap_MatrixAddition(Un, U[k], prob.d[k], -1);    // u[k] = uf - d[k]
     slap_MatMulAdd(Un, prob.K[k], X[k], -1, 1);   // u[k] -= K[k] * x[k]

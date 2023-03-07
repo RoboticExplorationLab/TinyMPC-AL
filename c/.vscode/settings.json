@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "new_matrix.h": "c",
+        "unary_ops.h": "c",
+        "binary_ops.h": "c",
+        "vector_ops.h": "c",
+        "vector_products.h": "c",
+        "function_mapping.h": "c",
+        "strided_matrix.h": "c",
+        "matmul.h": "c",
+        "cholesky.h": "c",
+        "qr.h": "c",
+        "printing.h": "c",
+        "copy_matrix.h": "c",
+        "matrix.h": "c"
+    }
+}

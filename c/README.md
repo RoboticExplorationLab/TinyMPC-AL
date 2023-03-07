@@ -1,12 +1,28 @@
 ## How to compile and run
-`cd build`    //create and enter a build folder  
+1. `cd build`: create and enter a `build` directory  
 
-`cmake ..`    //config compiler out-source  
+2. `cmake ..`: config compiler out-source  
 
-`make`        //build all targets, or  
+3. `make`: build all targets, or  
 
-`make riccati_example`        //build this target  
+`make main_tvlqr`: build a particular one (check `CMakeLists.txt`)
 
-`./examples/riccati/riccati_example`      //run the executable, or  
+4. `./examples/riccati/main_tvlqr`: still inside `build`, run the executable
 
-`./getting_started`  
+5. Iterate via 3 to develop your programs.
+
+## Notes:
+
+- Use `slap_MatMulAdd(C, A, B, 1, 0)` instead of `slap_MatMulAB(C, A, B)` because
+the later one ignores all metadata.  
+- Can use `slap_MatrixAddition(C, C, A, alp)` to bias `C = C + alp*A`.  
+- Should use zero-initialization of array.
+
+## Done:
+
+- LQR for LTI systems with arbitrary start and goal (double integrator).  
+- Tracking LQR for LTI systems.  
+- LQR for LTV systems (Jacobians fixed) with arbitrary start and goal.  
+- LQR for LTV systems (Jacobians compute) with arbitrary start and goal (planar
+quadrotor).  
+- Complete tracking LQR for LTV systems (bicycle). 

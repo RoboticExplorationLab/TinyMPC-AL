@@ -70,7 +70,7 @@ void LqrLtiTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      slap_SetConst(U[i], 0.1);
+      slap_SetConst(U[i], 0.01);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;

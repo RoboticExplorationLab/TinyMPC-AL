@@ -19,12 +19,15 @@ const tiny_KnotPoint kDefaultKnotPoint = {
 
 const tiny_Solver kDefaultSolver = {
   .regu = 0.0,
+  .regu_min = 1e-8,
+  .regu_max = 1e2,
   .input_duals = NULL,
   .state_duals = NULL,
   .goal_dual = kNullMat,
-  .penalty_min = 0.0,
-  .penalty_max = 0.0,
-  .penalty_mul = 0.0,
+  .penalty_max = 1e8,
+  .penalty_mul = 10,
+  .max_primal_iters = 10,
+  .max_search_iters = 5,
 };
 
 const tiny_ProblemData kDefaultProblemData = {
@@ -204,8 +207,10 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
   return SLAP_NO_ERROR;
   int N = prob.nhorizon;
   for (int k = 0; k < N - 1; ++k) {
-
+    tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
   }
+  // for 
+  return SLAP_NO_ERROR; 
 }
 
 // [u-p.u_max;-u + p.u_min]

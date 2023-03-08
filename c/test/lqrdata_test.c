@@ -39,9 +39,12 @@ double regu = 1e-8;
 double input_duals_data[2*NINPUTS*(NHORIZON-1)] = {1, 2,  3, 4};
 double state_duals_data[2*NSTATES*(NHORIZON)] = {1,2,3,4, 5,6,7,8, 2,4,5,6};
 double goal_duals_data[NSTATES] = {1,2};
-double penalty_min = 1;
-double penalty_max = 1e8;
-double penalty_mul = 10;
+double regu_min = 1;
+double regu_max = 100;
+double penalty_max = 1e5;
+double penalty_mul = 1;
+int max_primal_iters = 100;
+int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
   const double tol = 1e-8;
@@ -123,17 +126,23 @@ void SolverTest() {
 
   tiny_Solver solver = kDefaultSolver;
   solver.regu = regu;
+  solver.regu_min = regu_min;
+  solver.regu_max = regu_max;
   solver.input_duals = input_duals;
   solver.state_duals = state_duals;
   solver.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_duals_data);
   solver.penalty_max = penalty_max;
-  solver.penalty_min = penalty_min;
   solver.penalty_mul = penalty_mul;
+  solver.max_primal_iters = max_primal_iters;
+  solver.max_search_iters = max_search_iters;
 
   TEST(solver.regu == regu);
+  TEST(solver.regu_max == regu_max);
+  TEST(solver.regu_min == regu_min);
   TEST(solver.penalty_max == penalty_max);
-  TEST(solver.penalty_min == penalty_min);
   TEST(solver.penalty_mul == penalty_mul);
+  TEST(solver.max_primal_iters == max_primal_iters);
+  TEST(solver.max_search_iters == max_search_iters);
   TEST(SumOfSquaredError(solver.goal_dual.data, goal_duals_data, NSTATES) < tol);
   input_dual_ptr = input_duals_data;
   state_dual_ptr = state_duals_data;  

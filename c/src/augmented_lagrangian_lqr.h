@@ -27,12 +27,15 @@ extern const tiny_KnotPoint kDefaultKnotPoint;
 
 typedef struct {
   double regu;
+  double regu_min;
+  double regu_max;
   Matrix* input_duals;
   Matrix* state_duals;
   Matrix goal_dual;
-  double penalty_min;
   double penalty_max;
   double penalty_mul;
+  int max_primal_iters;
+  int max_search_iters;
 } tiny_Solver;
 
 extern const tiny_Solver kDefaultSolver;

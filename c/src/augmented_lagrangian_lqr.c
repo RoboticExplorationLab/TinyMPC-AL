@@ -54,7 +54,7 @@ const tiny_ProblemData kDefaultProblemData = {
   .K = NULL,
   .d = NULL,
   .P = NULL,
-  .p = NULL,  
+  .p = NULL,
 };
 
 void tiny_AddStageCost(
@@ -110,8 +110,7 @@ enum slap_ErrorCode tiny_BackwardPass(
   tiny_ExpandTerminalCost(&(prob.P[N-1]), &(prob.p[N-1]), prob, X[N-1]);
   int n = prob.nstates;
   int m = prob.ninputs;
-  // slap_PrintMatrix(prob.P[N-1]);
-  // slap_PrintMatrix(prob.p[N-1]);
+
   Matrix Gxx = slap_CreateSubMatrix(G_temp, 0, 0, n, n);
   Matrix Gxu = slap_CreateSubMatrix(G_temp, 0, n, n, m);
   Matrix Gux = slap_CreateSubMatrix(G_temp, n, 0, m, n);
@@ -125,11 +124,6 @@ enum slap_ErrorCode tiny_BackwardPass(
   for (int k = N - 2; k >= 0; --k) {
     // Stage cost expansion
     tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, prob, X[k], U[k], k);
-    // printf("Q = \n"); slap_PrintMatrix(prob.Q);
-    // printf("Gxx = \n"); slap_PrintMatrix(Gxx);
-    // printf("Gx = \n"); slap_PrintMatrix(Gx);
-    // printf("Guu = \n"); slap_PrintMatrix(Guu);
-    // printf("Gu = \n"); slap_PrintMatrix(Gu);
     // State Gradient: Gx = q + A'(P*f + p)
     slap_MatrixCopy(prob.p[k], prob.p[k+1]);
     slap_MatMulAdd(prob.p[k], prob.P[k+1], model.f, 1, 1);  //p[k] = P[k+1]*f + p[k+1]
@@ -154,7 +148,6 @@ enum slap_ErrorCode tiny_BackwardPass(
     slap_Cholesky(Quu_temp);
     slap_MatrixCopy(prob.K[k], Gux);
     slap_MatrixCopy(prob.d[k], Gu); 
-    // slap_PrintMatrix(prob.d[k]);
     slap_CholeskySolve(Quu_temp, prob.d[k]);  // d = Guu\Gu
     slap_CholeskySolve(Quu_temp, prob.K[k]);  // K = Guu\Gux
 
@@ -203,13 +196,28 @@ enum slap_ErrorCode tiny_ForwardPass(
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     Matrix* X, Matrix* U, tiny_ProblemData prob, 
-    const tiny_LinearDiscreteModel model, const int verbose) {
-  return SLAP_NO_ERROR;
+    const tiny_LinearDiscreteModel model,
+    const tiny_Solver solver, const int verbose) {
   int N = prob.nhorizon;
+  int n = prob.nstates;
+  int m = prob.ninputs;
   for (int k = 0; k < N - 1; ++k) {
     tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
   }
-  // for 
+  double G_temp_data[(n + m) * (n + m + 1)];
+  Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
+  for (int iter = 0; iter < solver.max_primal_iters; ++iter) {
+    tiny_BackwardPass(prob, model, solver, X, U, G_temp);
+    tiny_ForwardPass(X, U, prob, model);
+    if (verbose == 1) {
+      printf("Outer loop");
+      // printf("iter     J           ΔJ        |d|         α        reg         ρ\n");
+      // printf("---------------------------------------------------------------------\n");
+      // printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
+      //         iter, J, ΔJ, dmax, α, reg, ρ)    
+    }
+    
+  }
   return SLAP_NO_ERROR; 
 }
 

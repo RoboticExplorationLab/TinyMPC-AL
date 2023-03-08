@@ -11,7 +11,7 @@
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 71
+#define NHORIZON 51
 //U, X, Psln
 void LqrLtiTest() {
   double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
@@ -66,11 +66,10 @@ void LqrLtiTest() {
   double* dptr = d_data;
   double* Pptr = P_data;
   double* pptr = p_data;
-
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      slap_SetConst(U[i], 0.01);
+      // slap_SetConst(U[i], 0.01);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
@@ -82,17 +81,16 @@ void LqrLtiTest() {
       dptr += NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    slap_MatrixCopy(X[i], model.x0);
     Xptr += NSTATES;    
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    slap_MatrixCopy(Xref[i], xg);
+    // slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;   
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES*NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }  
-
+  slap_MatrixCopy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
@@ -116,15 +114,16 @@ void LqrLtiTest() {
   solver.regu = 1e-8;
   solver.input_duals = uduals;
   solver.penalty_mul = 10;
+  solver.max_primal_iters = 1;
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
                                       G_temp_data);
-  tiny_BackwardPass(prob, model, solver, X, U, G_temp);
-  tiny_ForwardPass(X, U, prob, model);
+  tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON; ++k) {
     tiny_Print(X[k]);
   }
+  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < 1e-1);
 }
 
 int main() {

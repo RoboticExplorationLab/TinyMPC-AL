@@ -49,6 +49,7 @@ typedef struct tiny_ProblemData {
   Matrix q;
   Matrix r;
   Matrix Qf;
+  Matrix qf;
   Matrix u_max;
   Matrix u_min;
   Matrix x_max;
@@ -65,9 +66,24 @@ typedef struct tiny_ProblemData {
 
 extern const tiny_ProblemData kDefaultProblemData;
 
+void tiny_AddStageCost(
+    double* cost, const tiny_ProblemData prob, 
+    const Matrix x, const Matrix u, const int k);
+
+void tiny_AddTerminalCost(
+    double* cost, const tiny_ProblemData prob, const Matrix x);
+
+void tiny_ExpandStageCost(
+    Matrix* hes_el_xx, Matrix* grad_el_x, Matrix* hes_el_uu, Matrix* grad_el_u,
+    const tiny_ProblemData prob, const Matrix x, const Matrix u, const int k);
+
+void tiny_ExpandTerminalCost(
+    Matrix* hes_el_xx, Matrix* grad_el_x, 
+    const tiny_ProblemData prob, const Matrix x);
+
 enum slap_ErrorCode tiny_BackwardPass(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix S_temp);
+    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix G_temp);
 
 enum slap_ErrorCode tiny_ForwardPass(
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 

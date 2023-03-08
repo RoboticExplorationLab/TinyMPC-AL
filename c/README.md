@@ -20,7 +20,8 @@ the later one ignores all metadata.
 - Can use `slap_MatrixAddition(C, C, A, alp)` to bias `C = C + alp*A`.  
 - Should use zero-initialization of array in global scope.  
 - Consider to function-initialize defaults!?  
-- Should pass instead of return type
+- Should pass instead of return type  
+- Linear term q, qf, r come from reference trajectories, ie. q = -Q*xref
 
 ## Done
 

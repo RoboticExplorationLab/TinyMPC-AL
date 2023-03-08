@@ -36,3 +36,5 @@ target_include_directories(simpletest
 add_al_lqr_test(lqrdata)
 add_al_lqr_test(lqr_ineq_utils)
 add_al_lqr_test(forward_pass)
+add_al_lqr_test(cost)
+add_al_lqr_test(back_pass)

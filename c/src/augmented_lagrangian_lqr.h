@@ -83,15 +83,15 @@ void tiny_ExpandTerminalCost(
 
 enum slap_ErrorCode tiny_BackwardPass(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix G_temp);
+    const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp);
 
 enum slap_ErrorCode tiny_ForwardPass(
-    const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    Matrix* X, Matrix* U);
+    Matrix* X, Matrix* U,
+    const tiny_ProblemData prob, const tiny_LinearDiscreteModel model);
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    tiny_ProblemData prob, const tiny_LinearDiscreteModel model,
-    Matrix* X, Matrix* U, const int verbose);
+    Matrix* X, Matrix* U, tiny_ProblemData prob, 
+    const tiny_LinearDiscreteModel model, const int verbose);
 
 void tiny_IneqInputs(
   Matrix ineq, const tiny_ProblemData prob, const Matrix u);
@@ -102,3 +102,6 @@ void tiny_IneqInputsJacobian(
 void tiny_ActiveIneqMask(
   Matrix mask, const Matrix input_dual, const Matrix ineq);    
 
+void tiny_DiscreteDynamics(
+    Matrix *xn, const Matrix x, const Matrix u, 
+    const tiny_LinearDiscreteModel model);

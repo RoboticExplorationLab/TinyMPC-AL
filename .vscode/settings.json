@@ -6,6 +6,7 @@
         "tuple": "c",
         "forward_pass_data.h": "c",
         "slap.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "back_pass_data.h": "c"
     }
 }

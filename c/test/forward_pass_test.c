@@ -94,10 +94,9 @@ void ForwardPassTest() {
     xsol_ptr += NSTATES;
   }  
 
-  tiny_ForwardPass(prob, model, X, U);
+  // Include discrete dynamics test
+  tiny_ForwardPass(X, U, prob, model);
   for (int i = 0; i < NHORIZON; ++i) {
-    // slap_PrintMatrix(X[i]);
-    // println();
     TEST(SumOfSquaredError(X[i].data, Xsln[i].data, NSTATES) < tol);
   }
 }

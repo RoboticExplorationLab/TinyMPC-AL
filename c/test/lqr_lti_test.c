@@ -4,16 +4,16 @@
 #include <string.h>
 
 #include "augmented_lagrangian_lqr.h"
+#include "util.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "data/back_pass_data.h"
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 3
+#define NHORIZON 71
 //U, X, Psln
-void BackPassTest() {
+void LqrLtiTest() {
   double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
   double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
   double f_data[NSTATES] = {0};
@@ -21,8 +21,8 @@ void BackPassTest() {
   double xg_data[NSTATES] = {0};
   double Xref_data[NSTATES*NHORIZON] = {0};
   double Uref_data[NINPUTS*(NHORIZON-1)] = {0};
-  // double X_data[NSTATES*NHORIZON] = {0};
-  // double U_data[NINPUTS*(NHORIZON-1)] = {0};
+  double X_data[NSTATES*NHORIZON] = {0};
+  double U_data[NINPUTS*(NHORIZON-1)] = {0};
   double K_data[NINPUTS*NSTATES*(NHORIZON-1)] = {0};
   double d_data[NINPUTS*(NHORIZON-1)] = {0};
   double P_data[NSTATES*NSTATES*(NHORIZON)] = {0};
@@ -45,6 +45,7 @@ void BackPassTest() {
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON-1];
@@ -69,6 +70,7 @@ void BackPassTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+      slap_SetConst(U[i], 0.1);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
@@ -80,8 +82,10 @@ void BackPassTest() {
       dptr += NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+    slap_MatrixCopy(X[i], model.x0);
     Xptr += NSTATES;    
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
+    slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;   
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES*NSTATES;
@@ -117,11 +121,14 @@ void BackPassTest() {
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
                                       G_temp_data);
   tiny_BackwardPass(prob, model, solver, X, U, G_temp);
-  TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON-1)*NINPUTS) < tol);
+  tiny_ForwardPass(X, U, prob, model);
+  for (int k = 0; k < NHORIZON; ++k) {
+    tiny_Print(X[k]);
+  }
 }
 
 int main() {
-  BackPassTest();
+  LqrLtiTest();
   PrintTestResult();
   return TestResult();
 }

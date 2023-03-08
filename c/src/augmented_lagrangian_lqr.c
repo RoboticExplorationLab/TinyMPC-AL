@@ -101,7 +101,7 @@ void tiny_ExpandTerminalCost(
 // Riccati recursion and augmented Lagrange
 enum slap_ErrorCode tiny_BackwardPass(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    const Matrix* X, const Matrix* U, const tiny_Solver solver, Matrix G_temp) {
+    const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp) {
   // Copy terminal cost-to-go
   int N = prob.nhorizon;
   tiny_ExpandTerminalCost(&(prob.P[N-1]), &(prob.p[N-1]), prob, X[N-1]);
@@ -175,8 +175,8 @@ enum slap_ErrorCode tiny_BackwardPass(
 // Roll out the closed-loop dynamics with K and d from backward pass, 
 // calculate new X, U in place
 enum slap_ErrorCode tiny_ForwardPass(
-    const tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
-    Matrix* X, Matrix* U) {
+    Matrix* X, Matrix* U,
+    const tiny_ProblemData prob, const tiny_LinearDiscreteModel model) {
   int N = prob.nhorizon;
   double alpha = 1.0;
   double u_data[prob.ninputs];
@@ -193,17 +193,19 @@ enum slap_ErrorCode tiny_ForwardPass(
     slap_MatrixCopy(U[k], Un);
     // Next state: x = A*x + B*u + f
     slap_MatrixCopy(Xn, X[k + 1]);
-    slap_MatMulAdd(X[k + 1], model.A, X[k], 1, 0);  // x[k+1] = A * x[k]
-    slap_MatMulAdd(X[k + 1], model.B, U[k], 1, 1);  // x[k+1] += B * u[k]
-    slap_MatrixAddition(X[k + 1], X[k + 1], model.f, 1);  // x[k+1] += f
+    tiny_DiscreteDynamics(&X[k+1], X[k], U[k], model);
   }
   return SLAP_NO_ERROR; 
 }
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    tiny_ProblemData prob, const tiny_LinearDiscreteModel model,
-    Matrix* X, Matrix* U, const int verbose) {
+    Matrix* X, Matrix* U, tiny_ProblemData prob, 
+    const tiny_LinearDiscreteModel model, const int verbose) {
   return SLAP_NO_ERROR;
+  int N = prob.nhorizon;
+  for (int k = 0; k < N - 1; ++k) {
+
+  }
 }
 
 // [u-p.u_max;-u + p.u_min]
@@ -238,3 +240,10 @@ void tiny_ActiveIneqMask(
   }
 }
 
+void tiny_DiscreteDynamics(
+    Matrix *xn, const Matrix x, const Matrix u, 
+    const tiny_LinearDiscreteModel model) {
+      slap_MatMulAdd(*xn, model.A, x, 1, 0);  // x[k+1] = A * x[k]
+      slap_MatMulAdd(*xn, model.B, u, 1, 1);  // x[k+1] += B * u[k]
+      slap_MatrixAddition(*xn, *xn, model.f, 1);  // x[k+1] += f
+    }

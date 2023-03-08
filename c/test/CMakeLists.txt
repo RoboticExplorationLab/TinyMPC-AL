@@ -2,7 +2,7 @@
 #
 # Adds a new executable test called <name>_test.
 # Assumes thes source code is in a file called <name>_test.
-function(add_al_lqr_test name)
+function(add_my_test name)
   set(TEST_NAME ${name}_test)
   add_executable(${TEST_NAME}
     ${TEST_NAME}.c
@@ -33,8 +33,9 @@ target_include_directories(simpletest
 # add_subdirectory(data)
 
 # Add tests
-add_al_lqr_test(lqrdata)
-add_al_lqr_test(lqr_ineq_utils)
-add_al_lqr_test(forward_pass)
-add_al_lqr_test(cost)
-add_al_lqr_test(back_pass)
+add_my_test(lqrdata)
+add_my_test(lqr_ineq_utils)
+add_my_test(forward_pass)
+add_my_test(cost)
+add_my_test(back_pass)
+add_my_test(lqr_lti)

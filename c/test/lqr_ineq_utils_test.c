@@ -34,7 +34,7 @@ void IneqInputsTest() {
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
   Matrix mat = slap_MatrixFromArray(NINPUTS*2, 1, ineq_data);
-  tiny_IneqInputs(mat, prob, u);
+  tiny_IneqInputs(&mat, prob, u);
   // slap_PrintMatrix(mat);
   TEST(SumOfSquaredError(mat.data, ans, NINPUTS*2) < tol);
 }
@@ -58,7 +58,7 @@ void IneqInputsJacobianTest() {
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
   Matrix mat = slap_MatrixFromArray(NINPUTS*2, NINPUTS, jac_data);
-  tiny_IneqInputsJacobian(mat, prob, u);
+  tiny_IneqInputsJacobian(&mat, prob, u);
   // slap_PrintMatrix(mat);
   TEST(SumOfSquaredError(mat.data, ans, NINPUTS*2*NINPUTS) < tol);
 }
@@ -88,10 +88,10 @@ void ActiveIneqMaskTest() {
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
   Matrix ineq = slap_MatrixFromArray(NINPUTS*2, 1, ineq_data);
-  tiny_IneqInputs(ineq, prob, u);
+  tiny_IneqInputs(&ineq, prob, u);
   Matrix input_dual = slap_MatrixFromArray(NINPUTS*2, 1, dual_data);
   Matrix mask = slap_MatrixFromArray(NINPUTS*2, NINPUTS*2, mask_data);
-  tiny_ActiveIneqMask(mask, input_dual, ineq);
+  tiny_ActiveIneqMask(&mask, input_dual, ineq);
   // slap_PrintMatrix(mask);
   TEST(SumOfSquaredError(ineq.data, ans1, NINPUTS*2) < tol);
   TEST(SumOfSquaredError(mask.data, ans2, NINPUTS*2*NINPUTS*2) < tol);

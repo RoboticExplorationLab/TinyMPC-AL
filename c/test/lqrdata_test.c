@@ -111,26 +111,10 @@ void KnotPointTest() {
 
 void SolverTest() {
   const double tol = 1e-8;
-  Matrix input_duals[NHORIZON-1];
-  Matrix state_duals[NHORIZON];
-  double* input_dual_ptr = input_duals_data;
-  double* state_dual_ptr = state_duals_data;
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      input_duals[i] = slap_MatrixFromArray(NINPUTS, 1, input_dual_ptr);
-      input_dual_ptr += NINPUTS;
-    }
-    state_duals[i] = slap_MatrixFromArray(NSTATES, 1, state_dual_ptr);
-    state_dual_ptr += NSTATES;    
-  }
-
   tiny_Solver solver = kDefaultSolver;
   solver.regu = regu;
   solver.regu_min = regu_min;
   solver.regu_max = regu_max;
-  solver.input_duals = input_duals;
-  solver.state_duals = state_duals;
-  solver.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_duals_data);
   solver.penalty_max = penalty_max;
   solver.penalty_mul = penalty_mul;
   solver.max_primal_iters = max_primal_iters;
@@ -143,21 +127,6 @@ void SolverTest() {
   TEST(solver.penalty_mul == penalty_mul);
   TEST(solver.max_primal_iters == max_primal_iters);
   TEST(solver.max_search_iters == max_search_iters);
-  TEST(SumOfSquaredError(solver.goal_dual.data, goal_duals_data, NSTATES) < tol);
-  input_dual_ptr = input_duals_data;
-  state_dual_ptr = state_duals_data;  
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      TEST(solver.input_duals[i].rows == NINPUTS);
-      TEST(solver.input_duals[i].cols == 1);  
-      TEST(SumOfSquaredError(solver.input_duals[i].data, input_dual_ptr, NINPUTS) < tol);
-      input_dual_ptr += NINPUTS;
-    }
-      TEST(solver.state_duals[i].rows == NSTATES);
-      TEST(solver.state_duals[i].cols == 1);  
-      TEST(SumOfSquaredError(solver.state_duals[i].data, state_dual_ptr, NSTATES) < tol);
-      state_dual_ptr += NSTATES; 
-  }  
 }
 
 void ProblemDataTest() {
@@ -168,10 +137,14 @@ void ProblemDataTest() {
   Matrix d[NHORIZON-1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
+  Matrix input_duals[NHORIZON-1];
+  Matrix state_duals[NHORIZON];
   double* uptr = u_ref_data;
   double* xptr = x_ref_data;  
   double* Kd_ptr = Kd_data;
   double* Pp_ptr = Pp_data;
+  double* input_dual_ptr = input_duals_data;
+  double* state_dual_ptr = state_duals_data;  
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U_ref[i] = slap_MatrixFromArray(NINPUTS, 1, uptr);
@@ -180,6 +153,8 @@ void ProblemDataTest() {
       Kd_ptr += NINPUTS*NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, Kd_ptr);
       Kd_ptr += NINPUTS;
+      input_duals[i] = slap_MatrixFromArray(NINPUTS, 1, input_dual_ptr);
+      input_dual_ptr += NINPUTS;
     }
     X_ref[i] = slap_MatrixFromArray(NSTATES, 1, xptr);
     xptr += NSTATES;    
@@ -187,6 +162,8 @@ void ProblemDataTest() {
     Pp_ptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, Pp_ptr);
     Pp_ptr += NSTATES;
+    state_duals[i] = slap_MatrixFromArray(NSTATES, 1, state_dual_ptr);
+    state_dual_ptr += NSTATES;  
   }
 
   tiny_ProblemData prob = kDefaultProblemData;
@@ -213,6 +190,9 @@ void ProblemDataTest() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
+  prob.input_duals = input_duals;
+  prob.state_duals = state_duals;
+  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_duals_data);
 
   TEST(prob.nstates == NSTATES);
   TEST(prob.ninputs == NINPUTS);
@@ -230,10 +210,13 @@ void ProblemDataTest() {
   TEST(SumOfSquaredError(prob.x_max.data, x_max_data, NSTATES) < tol);
   TEST(SumOfSquaredError(prob.x_min.data, x_min_data, NSTATES) < tol);
   TEST(SumOfSquaredError(prob.x0.data, x0_data, NSTATES) < tol);
+  TEST(SumOfSquaredError(prob.goal_dual.data, goal_duals_data, NSTATES) < tol); 
   uptr = u_ref_data;
   xptr = x_ref_data;  
   Kd_ptr = Kd_data;
   Pp_ptr = Pp_data;
+  input_dual_ptr = input_duals_data;
+  state_dual_ptr = state_duals_data; 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       TEST(prob.U_ref[i].rows == NINPUTS);
@@ -248,6 +231,10 @@ void ProblemDataTest() {
       TEST(prob.d[i].cols == 1);  
       TEST(SumOfSquaredError(prob.d[i].data, Kd_ptr, NINPUTS) < tol);
       Kd_ptr += NINPUTS;    
+      TEST(prob.input_duals[i].rows == NINPUTS);
+      TEST(prob.input_duals[i].cols == 1);  
+      TEST(SumOfSquaredError(prob.input_duals[i].data, input_dual_ptr, NINPUTS) < tol);
+      input_dual_ptr += NINPUTS;      
     }
     TEST(prob.X_ref[i].rows == NSTATES);
     TEST(prob.X_ref[i].cols == 1);  
@@ -261,6 +248,10 @@ void ProblemDataTest() {
     TEST(prob.p[i].cols == 1);  
     TEST(SumOfSquaredError(prob.p[i].data, Pp_ptr, NSTATES) < tol);
     Pp_ptr += NSTATES;    
+    TEST(prob.state_duals[i].rows == NSTATES);
+    TEST(prob.state_duals[i].cols == 1);  
+    TEST(SumOfSquaredError(prob.state_duals[i].data, state_dual_ptr, NSTATES) < tol);
+    state_dual_ptr += NSTATES;     
   }  
 }
 

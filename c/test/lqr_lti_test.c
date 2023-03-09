@@ -32,7 +32,6 @@ void LqrLtiTest() {
   double Qf_data[NSTATES*NSTATES] = {0};
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
-  double udual_data[NINPUTS*(NHORIZON-1)] = {0};
 
   tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
   tiny_ProblemData prob = kDefaultProblemData;
@@ -50,7 +49,6 @@ void LqrLtiTest() {
   Matrix U[NHORIZON-1];
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON-1];
-  Matrix uduals[NHORIZON-1];
   Matrix K[NHORIZON-1];
   Matrix d[NHORIZON-1];
   Matrix P[NHORIZON];
@@ -60,7 +58,6 @@ void LqrLtiTest() {
   double* Xref_ptr = Xref_data;
   double* Uptr = U_data;
   double* Uref_ptr = Uref_data;
-  double* udual_ptr = udual_data;
   double* Kptr = K_data;
   double* dptr = d_data;
   double* Pptr = P_data;
@@ -72,8 +69,6 @@ void LqrLtiTest() {
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
-      uduals[i] = slap_MatrixFromArray(NINPUTS, 1, udual_ptr);
-      udual_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS*NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
@@ -111,7 +106,6 @@ void LqrLtiTest() {
   prob.p = p;
   
   solver.regu = 1e-8;
-  solver.input_duals = uduals;
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
@@ -123,7 +117,7 @@ void LqrLtiTest() {
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
                                       G_temp_data);
-  tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
+  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
   tiny_ForwardPassLti(X, U, prob, model);
   
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);

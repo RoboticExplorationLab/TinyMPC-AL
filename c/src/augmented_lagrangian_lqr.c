@@ -21,9 +21,6 @@ const tiny_Solver kDefaultSolver = {
   .regu = 0.0,
   .regu_min = 1e-8,
   .regu_max = 1e2,
-  .input_duals = NULL,
-  .state_duals = NULL,
-  .goal_dual = kNullMat,
   .penalty_max = 1e8,
   .penalty_mul = 10,
   .max_primal_iters = 10,
@@ -55,6 +52,9 @@ const tiny_ProblemData kDefaultProblemData = {
   .d = NULL,
   .P = NULL,
   .p = NULL,
+  .input_duals = NULL,
+  .state_duals = NULL,
+  .goal_dual = kNullMat,
 };
 
 void tiny_AddStageCost(
@@ -103,13 +103,13 @@ void tiny_ExpandTerminalCost(
 
 // Riccati recursion for LTI without constraints
 enum slap_ErrorCode tiny_BackwardPassLti(
-    tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
+    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model, 
     const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp) {
   // Copy terminal cost-to-go
-  int N = prob.nhorizon;
-  tiny_ExpandTerminalCost(&(prob.P[N-1]), &(prob.p[N-1]), prob, X[N-1]);
-  int n = prob.nstates;
-  int m = prob.ninputs;
+  int N = prob->nhorizon;
+  tiny_ExpandTerminalCost(&(prob->P[N-1]), &(prob->p[N-1]), *prob, X[N-1]);
+  int n = prob->nstates;
+  int m = prob->ninputs;
 
   Matrix Gxx = slap_CreateSubMatrix(G_temp, 0, 0, n, n);
   Matrix Gxu = slap_CreateSubMatrix(G_temp, 0, n, n, m);
@@ -120,51 +120,128 @@ enum slap_ErrorCode tiny_BackwardPassLti(
 
   // Hijack the first part of P[N] to use for Cholesky decomposition
   // NOTE: Assumes m <= n
-  Matrix Quu_temp = slap_Reshape(prob.P[N-1], m, m);
+  Matrix Quu_temp = slap_Reshape(prob->P[N-1], m, m);
   for (int k = N - 2; k >= 0; --k) {
     // Stage cost expansion
-    tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, prob, X[k], U[k], k);
+    tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, *prob, X[k], U[k], k);
     // State Gradient: Gx = q + A'(P*f + p)
-    slap_MatrixCopy(prob.p[k], prob.p[k+1]);
-    slap_MatMulAdd(prob.p[k], prob.P[k+1], model.f, 1, 1);  //p[k] = P[k+1]*f + p[k+1]
-    slap_MatMulAdd(Gx, slap_Transpose(model.A), prob.p[k], 1, 1); 
+    slap_MatrixCopy(prob->p[k], prob->p[k+1]);
+    slap_MatMulAdd(prob->p[k], prob->P[k+1], model.f, 1, 1);  //p[k] = P[k+1]*f + p[k+1]
+    slap_MatMulAdd(Gx, slap_Transpose(model.A), prob->p[k], 1, 1); 
     
     // Control Gradient: Gu = r + B'(P*f + p)
-    slap_MatMulAdd(Gu, slap_Transpose(model.B), prob.p[k], 1, 1);    
+    slap_MatMulAdd(Gu, slap_Transpose(model.B), prob->p[k], 1, 1);    
   
     // State Hessian: Gxx = Q + A'P*A
-    slap_MatMulAdd(prob.P[k], prob.P[k+1], model.A, 1, 0);                   // P[k] = P[k+1]*A 
-    slap_MatMulAdd(Gxx, slap_Transpose(model.A), prob.P[k], 1, 1);      // Gxx = Q + A'P*A
+    slap_MatMulAdd(prob->P[k], prob->P[k+1], model.A, 1, 0);                   // P[k] = P[k+1]*A 
+    slap_MatMulAdd(Gxx, slap_Transpose(model.A), prob->P[k], 1, 1);      // Gxx = Q + A'P*A
 
     // Control Hessian Guu = R + B'P*B
-    slap_MatMulAdd(Gxu, prob.P[k+1], model.B, 1, 0);                    // Gxu = P * B
+    slap_MatMulAdd(Gxu, prob->P[k+1], model.B, 1, 0);                    // Gxu = P * B
     slap_MatMulAdd(Guu, slap_Transpose(model.B), Gxu, 1, 1);       // Guu = R + B'P*B
     slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.regu, 1);
     // Hessian Cross-Term
-    slap_MatMulAdd(Gux, slap_Transpose(model.B), prob.P[k], 1, 0);       // Gux = B'P*A
+    slap_MatMulAdd(Gux, slap_Transpose(model.B), prob->P[k], 1, 0);       // Gux = B'P*A
   
     // Calculate Gains
     slap_MatrixCopy(Quu_temp, Guu);
     slap_Cholesky(Quu_temp);
-    slap_MatrixCopy(prob.K[k], Gux);
-    slap_MatrixCopy(prob.d[k], Gu); 
-    slap_CholeskySolve(Quu_temp, prob.d[k]);  // d = Guu\Gu
-    slap_CholeskySolve(Quu_temp, prob.K[k]);  // K = Guu\Gux
+    slap_MatrixCopy(prob->K[k], Gux);
+    slap_MatrixCopy(prob->d[k], Gu); 
+    slap_CholeskySolve(Quu_temp, prob->d[k]);  // d = Guu\Gu
+    slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Guu\Gux
 
     // Cost-to-Go Hessian: P = Gxx + K'Guu*K - K'Gux - Gux'K
-    slap_MatrixCopy(prob.P[k], Gxx);                              // P = Gxx
-    slap_MatMulAdd(Gxu, slap_Transpose(prob.K[k]), Guu, 1, 0);    // Gxu = K'Guu
-    slap_MatMulAdd(prob.P[k], Gxu, prob.K[k], 1, 1);                   // P += K'Guu*K
-    slap_MatMulAdd(prob.P[k], slap_Transpose(prob.K[k]), Gux, -1, 1);   // P -= K'Gux
-    slap_MatMulAdd(prob.P[k], slap_Transpose(Gux), prob.K[k], -1, 1);   // P -= Gux'K
+    slap_MatrixCopy(prob->P[k], Gxx);                              // P = Gxx
+    slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);    // Gxu = K'Guu
+    slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);                   // P += K'Guu*K
+    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -1, 1);   // P -= K'Gux
+    slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1, 1);   // P -= Gux'K
 
     // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
-    slap_MatrixCopy(prob.p[k], Gx);                               // p = Gx
-    slap_MatMulAdd(prob.p[k], Gxu, prob.d[k], 1, 1);                   // p += K'Guu*d
-    slap_MatMulAdd(prob.p[k], slap_Transpose(prob.K[k]), Gu, -1, 1);    // p -= K'Gu
-    slap_MatMulAdd(prob.p[k], slap_Transpose(Gux), prob.d[k], -1, 1);   // p -= Gux'd
+    slap_MatrixCopy(prob->p[k], Gx);                               // p = Gx
+    slap_MatMulAdd(prob->p[k], Gxu, prob->d[k], 1, 1);                   // p += K'Guu*d
+    slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Gu, -1, 1);    // p -= K'Gu
+    slap_MatMulAdd(prob->p[k], slap_Transpose(Gux), prob->d[k], -1, 1);   // p -= Gux'd
   }
-  tiny_ExpandTerminalCost(&(prob.P[N-1]), &(prob.p[N-1]), prob, X[N-1]);  // Replace P[N] since we used it for Quu_temp (need improving later)
+  tiny_ExpandTerminalCost(&(prob->P[N-1]), &(prob->p[N-1]), *prob, X[N-1]);  // Replace P[N] since we used it for Quu_temp (need improving later)
+  return SLAP_NO_ERROR;
+}  
+
+// Riccati recursion for LTI with constraints
+enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
+    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model, 
+    const tiny_Solver solver, const Matrix* X, const Matrix* U,  
+    Matrix* G_temp, Matrix* ineq_temp) {
+  // Copy terminal cost-to-go
+  int N = prob->nhorizon;
+  tiny_ExpandTerminalCost(&(prob->P[N-1]), &(prob->p[N-1]), *prob, X[N-1]);
+  int n = prob->nstates;
+  int m = prob->ninputs;
+
+  Matrix Gxx = slap_CreateSubMatrix(*G_temp, 0, 0, n, n);
+  Matrix Gxu = slap_CreateSubMatrix(*G_temp, 0, n, n, m);
+  Matrix Gux = slap_CreateSubMatrix(*G_temp, n, 0, m, n);
+  Matrix Guu = slap_CreateSubMatrix(*G_temp, n, n, m, m);
+  Matrix Gx = slap_CreateSubMatrix(*G_temp, 0, n + m, n, 1);
+  Matrix Gu = slap_CreateSubMatrix(*G_temp, n, n + m, m, 1);
+
+  // Hijack the first part of P[N] to use for Cholesky decomposition
+  // NOTE: Assumes m <= n
+  Matrix Quu_temp = slap_Reshape(prob->P[N-1], m, m);
+  Matrix ineq = slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_inputs, 1);
+  Matrix mask = slap_CreateSubMatrix(*ineq_temp, 0, prob->ncstr_inputs, 
+                                    prob->ncstr_inputs, prob->ncstr_inputs);
+  Matrix ineq_jac = slap_CreateSubMatrix(*ineq_temp, 0, 2*prob->ncstr_inputs, 
+                                        prob->ncstr_inputs, prob->ninputs);
+  for (int k = N - 2; k >= 0; --k) {
+    // Stage cost expansion
+    tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, *prob, X[k], U[k], k);
+    // State Gradient: Gx = q + A'(P*f + p)
+    slap_MatrixCopy(prob->p[k], prob->p[k+1]);
+    slap_MatMulAdd(prob->p[k], prob->P[k+1], model.f, 1, 1);  //p[k] = P[k+1]*f + p[k+1]
+    slap_MatMulAdd(Gx, slap_Transpose(model.A), prob->p[k], 1, 1); 
+    
+    // Control Gradient: Gu = r + B'(P*f + p)
+    slap_MatMulAdd(Gu, slap_Transpose(model.B), prob->p[k], 1, 1);    
+  
+    // State Hessian: Gxx = Q + A'P*A
+    slap_MatMulAdd(prob->P[k], prob->P[k+1], model.A, 1, 0);                   // P[k] = P[k+1]*A 
+    slap_MatMulAdd(Gxx, slap_Transpose(model.A), prob->P[k], 1, 1);      // Gxx = Q + A'P*A
+
+    // Control Hessian Guu = R + B'P*B
+    slap_MatMulAdd(Gxu, prob->P[k+1], model.B, 1, 0);                    // Gxu = P * B
+    slap_MatMulAdd(Guu, slap_Transpose(model.B), Gxu, 1, 1);       // Guu = R + B'P*B
+    slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.regu, 1);
+    // Hessian Cross-Term
+    slap_MatMulAdd(Gux, slap_Transpose(model.B), prob->P[k], 1, 0);       // Gux = B'P*A
+
+    // Control constraints
+    tiny_IneqInputs(&ineq, *prob, U[k]);  // ineq size = 2*NINPUTS
+    tiny_ActiveIneqMask(&mask, prob->input_duals[k], ineq);
+
+    // Calculate Gains
+    slap_MatrixCopy(Quu_temp, Guu);
+    slap_Cholesky(Quu_temp);
+    slap_MatrixCopy(prob->K[k], Gux);
+    slap_MatrixCopy(prob->d[k], Gu); 
+    slap_CholeskySolve(Quu_temp, prob->d[k]);  // d = Guu\Gu
+    slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Guu\Gux
+
+    // Cost-to-Go Hessian: P = Gxx + K'Guu*K - K'Gux - Gux'K
+    slap_MatrixCopy(prob->P[k], Gxx);                              // P = Gxx
+    slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);    // Gxu = K'Guu
+    slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);                   // P += K'Guu*K
+    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -1, 1);   // P -= K'Gux
+    slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1, 1);   // P -= Gux'K
+
+    // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
+    slap_MatrixCopy(prob->p[k], Gx);                               // p = Gx
+    slap_MatMulAdd(prob->p[k], Gxu, prob->d[k], 1, 1);                   // p += K'Guu*d
+    slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Gu, -1, 1);    // p -= K'Gu
+    slap_MatMulAdd(prob->p[k], slap_Transpose(Gux), prob->d[k], -1, 1);   // p -= Gux'd
+  }
+  tiny_ExpandTerminalCost(&(prob->P[N-1]), &(prob->p[N-1]), *prob, X[N-1]);  // Replace P[N] since we used it for Quu_temp (need improving later)
   return SLAP_NO_ERROR;
 }  
 
@@ -194,20 +271,20 @@ enum slap_ErrorCode tiny_ForwardPassLti(
 }
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    Matrix* X, Matrix* U, tiny_ProblemData prob, 
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, 
     const tiny_LinearDiscreteModel model,
     const tiny_Solver solver, const int verbose) {
-  int N = prob.nhorizon;
-  int n = prob.nstates;
-  int m = prob.ninputs;
+  int N = prob->nhorizon;
+  int n = prob->nstates;
+  int m = prob->ninputs;
   for (int k = 0; k < N - 1; ++k) {
     tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
   }
   double G_temp_data[(n + m) * (n + m + 1)];
   Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
   for (int iter = 0; iter < solver.max_primal_iters; ++iter) {
-    tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
-    tiny_ForwardPassLti(X, U, prob, model);
+    tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
+    tiny_ForwardPassLti(X, U, *prob, model);
     if (verbose == 1) {
       printf("Outer loop");
       // printf("iter     J           ΔJ        |d|         α        reg         ρ\n");
@@ -222,33 +299,33 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
 
 // [u-p.u_max;-u + p.u_min]
 void tiny_IneqInputs(
-    Matrix ineq, const tiny_ProblemData prob, const Matrix u) {
-  slap_SetConst(ineq, 0);  //clear before processing
-  Matrix upper_half = slap_CreateSubMatrix(ineq, 0, 0, prob.ninputs, 1);
-  Matrix lower_half = slap_CreateSubMatrix(ineq, prob.ninputs, 0, 
+    Matrix* ineq, const tiny_ProblemData prob, const Matrix u) {
+  slap_SetConst(*ineq, 0);  //clear before processing
+  Matrix upper_half = slap_CreateSubMatrix(*ineq, 0, 0, prob.ninputs, 1);
+  Matrix lower_half = slap_CreateSubMatrix(*ineq, prob.ninputs, 0, 
                                           prob.ninputs, 1);
   slap_MatrixAddition(upper_half, u, prob.u_max, -1);
   slap_MatrixAddition(lower_half, prob.u_min, u, -1);
 }
 
 void tiny_IneqInputsJacobian(
-    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u) {
-  slap_SetConst(ineq_jac, 0);  //clear before processing
-  Matrix upper_half = slap_CreateSubMatrix(ineq_jac, 0, 0, 
+    Matrix* ineq_jac, const tiny_ProblemData prob, const Matrix u) {
+  slap_SetConst(*ineq_jac, 0);  //clear before processing
+  Matrix upper_half = slap_CreateSubMatrix(*ineq_jac, 0, 0, 
                                           prob.ninputs, prob.ninputs);
-  Matrix lower_half = slap_CreateSubMatrix(ineq_jac, prob.ninputs, 0, 
+  Matrix lower_half = slap_CreateSubMatrix(*ineq_jac, prob.ninputs, 0, 
                                           prob.ninputs, prob.ninputs);  
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
 }
   
 void tiny_ActiveIneqMask(
-    Matrix mask, const Matrix input_dual, const Matrix ineq) {    
-  slap_SetConst(mask, 0);  //clear before processing
+    Matrix* mask, const Matrix input_dual, const Matrix ineq) {    
+  slap_SetConst(*mask, 0);  //clear before processing
   for (int i = 0; i < ineq.rows; ++i) {
     // When variables are on the boundary or violating constraints
     bool active = input_dual.data[i] > 0 || ineq.data[i] > 0;
-    slap_SetElement(mask, i, i, active); 
+    slap_SetElement(*mask, i, i, active); 
   }
 }
 

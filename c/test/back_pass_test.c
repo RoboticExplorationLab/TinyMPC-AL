@@ -109,13 +109,12 @@ void BackPassTest() {
   prob.p = p;
   
   solver.regu = 1e-8;
-  solver.input_duals = uduals;
   solver.penalty_mul = 10;
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
                                       G_temp_data);
-  tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
+  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
   TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON-1)*NINPUTS) < tol);
 }
 

@@ -29,9 +29,6 @@ typedef struct {
   double regu;
   double regu_min;
   double regu_max;
-  Matrix* input_duals;
-  Matrix* state_duals;
-  Matrix goal_dual;
   double penalty_max;
   double penalty_mul;
   int max_primal_iters;
@@ -65,6 +62,9 @@ typedef struct tiny_ProblemData {
   Matrix* d;
   Matrix* P;
   Matrix* p;
+  Matrix* input_duals;
+  Matrix* state_duals;
+  Matrix goal_dual;
 } tiny_ProblemData;
 
 extern const tiny_ProblemData kDefaultProblemData;
@@ -85,27 +85,32 @@ void tiny_ExpandTerminalCost(
     const tiny_ProblemData prob, const Matrix x);
 
 enum slap_ErrorCode tiny_BackwardPassLti(
-    tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
+    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model, 
     const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp);
+
+enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
+    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model, 
+    const tiny_Solver solver, const Matrix* X, const Matrix* U,  
+    Matrix* G_temp, Matrix* ineq_temp); 
 
 enum slap_ErrorCode tiny_ForwardPassLti(
     Matrix* X, Matrix* U,
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model);
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    Matrix* X, Matrix* U, tiny_ProblemData prob, 
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, 
     const tiny_LinearDiscreteModel model,
     const tiny_Solver solver, const int verbose); 
 
 void tiny_IneqInputs(
-  Matrix ineq, const tiny_ProblemData prob, const Matrix u);
+  Matrix* ineq, const tiny_ProblemData prob, const Matrix u);
 
 void tiny_IneqInputsJacobian(
-    Matrix ineq_jac, const tiny_ProblemData prob, const Matrix u);
+    Matrix* ineq_jac, const tiny_ProblemData prob, const Matrix u);
 
 void tiny_ActiveIneqMask(
-  Matrix mask, const Matrix input_dual, const Matrix ineq);    
+  Matrix* mask, const Matrix input_dual, const Matrix ineq);    
 
 void tiny_DiscreteDynamics(
-    Matrix *xn, const Matrix x, const Matrix u, 
+    Matrix* xn, const Matrix x, const Matrix u, 
     const tiny_LinearDiscreteModel model);

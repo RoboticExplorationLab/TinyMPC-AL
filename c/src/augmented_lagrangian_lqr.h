@@ -115,6 +115,8 @@ void tiny_IneqInputsJacobian(
 void tiny_ActiveIneqMask(
   Matrix* mask, const Matrix input_dual, const Matrix ineq);    
 
+void tiny_ClampIneqDuals(tiny_ProblemData* prob, Matrix new_dual, int k);
+
 void tiny_DiscreteDynamics(
     Matrix* xn, const Matrix x, const Matrix u, 
     const tiny_LinearDiscreteModel model);

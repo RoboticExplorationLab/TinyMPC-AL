@@ -4,6 +4,9 @@ add_library(tinympc
 
   util.h
 
+  tiny_struct.h
+  tiny_struct.c
+
   augmented_lagrangian_lqr.h
   augmented_lagrangian_lqr.c
   )

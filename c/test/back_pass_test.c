@@ -31,12 +31,14 @@ void BackPassTest() {
   double Qf_data[NSTATES*NSTATES] = {0};
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
-  double udual_data[NINPUTS*(NHORIZON-1)] = {0};
   const double tol = 1e-8;
 
-  tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
-  tiny_ProblemData prob = kDefaultProblemData;
-  tiny_Solver solver = kDefaultSolver;
+  tiny_LinearDiscreteModel model;
+  tiny_InitLinearDiscreteModel(&model);
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+  tiny_Solver solver;
+  tiny_InitSolver(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
@@ -49,7 +51,6 @@ void BackPassTest() {
   Matrix U[NHORIZON-1];
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON-1];
-  Matrix uduals[NHORIZON-1];
   Matrix K[NHORIZON-1];
   Matrix d[NHORIZON-1];
   Matrix P[NHORIZON];
@@ -59,7 +60,6 @@ void BackPassTest() {
   double* Xref_ptr = Xref_data;
   double* Uptr = U_data;
   double* Uref_ptr = Uref_data;
-  double* udual_ptr = udual_data;
   double* Kptr = K_data;
   double* dptr = d_data;
   double* Pptr = P_data;
@@ -71,8 +71,6 @@ void BackPassTest() {
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
-      uduals[i] = slap_MatrixFromArray(NINPUTS, 1, udual_ptr);
-      udual_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS*NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);

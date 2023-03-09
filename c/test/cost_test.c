@@ -42,7 +42,10 @@ void AddCostTest() {
   }  
   Matrix x = slap_MatrixFromArray(NSTATES, 1, x_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
-  tiny_ProblemData prob = kDefaultProblemData;
+
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+
   prob.nstates = NSTATES;
   prob.ninputs = NINPUTS;
   prob.nhorizon = NHORIZON;
@@ -82,7 +85,10 @@ void ExpandCostTest() {
   }  
   Matrix x = slap_MatrixFromArray(NSTATES, 1, x_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
-  tiny_ProblemData prob = kDefaultProblemData;
+
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+  
   prob.nstates = NSTATES;
   prob.ninputs = NINPUTS;
   prob.nhorizon = NHORIZON;

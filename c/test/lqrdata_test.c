@@ -48,7 +48,8 @@ int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
   const double tol = 1e-8;
-  tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
+  tiny_LinearDiscreteModel model;
+  tiny_InitLinearDiscreteModel(&model);
   model.nstates = NSTATES;
   model.ninputs = NINPUTS;
   model.dt = dt;
@@ -74,8 +75,9 @@ void LinearDiscreteModelTest() {
 
 void KnotPointTest() {
   const double tol = 1e-8;
-  tiny_KnotPoint z = kDefaultKnotPoint;
-  tiny_KnotPoint Z[NHORIZON] = {kDefaultKnotPoint};
+  tiny_KnotPoint z;
+  tiny_InitKnotPoint(&z);
+  tiny_KnotPoint Z[NHORIZON];
   z.dt = dt;
   z.t = t;
   z.x = slap_MatrixFromArray(NSTATES, 1, x0_data); 
@@ -91,6 +93,7 @@ void KnotPointTest() {
   TEST(SumOfSquaredError(u0_data, z.u.data, z.u.rows) < tol);
 
   for (int i = 0; i < NHORIZON; ++i) {
+    tiny_InitKnotPoint(&Z[i]);
     Z[i].dt = dt;
     Z[i].t = t + i;
     Z[i].x = slap_MatrixFromArray(NSTATES, 1, x0_data); 
@@ -110,8 +113,9 @@ void KnotPointTest() {
 }
 
 void SolverTest() {
-  const double tol = 1e-8;
-  tiny_Solver solver = kDefaultSolver;
+  tiny_Solver solver;
+  tiny_InitSolver(&solver);
+
   solver.regu = regu;
   solver.regu_min = regu_min;
   solver.regu_max = regu_max;
@@ -166,7 +170,9 @@ void ProblemDataTest() {
     state_dual_ptr += NSTATES;  
   }
 
-  tiny_ProblemData prob = kDefaultProblemData;
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+
   prob.nstates = NSTATES;
   prob.ninputs = NINPUTS;
   prob.nhorizon = NHORIZON;

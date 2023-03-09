@@ -33,9 +33,12 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
 
-  tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
-  tiny_ProblemData prob = kDefaultProblemData;
-  tiny_Solver solver = kDefaultSolver;
+  tiny_LinearDiscreteModel model;
+  tiny_InitLinearDiscreteModel(&model);
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+  tiny_Solver solver;
+  tiny_InitSolver(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;

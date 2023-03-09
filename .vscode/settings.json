@@ -11,6 +11,7 @@
         "array": "c",
         "string": "c",
         "ranges": "c",
-        "lqr_lti_track_data.h": "c"
+        "lqr_lti_track_data.h": "c",
+        "tiny_struct.h": "c"
     }
 }

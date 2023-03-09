@@ -14,6 +14,7 @@
 #define NHORIZON 51
 //U, X, Psln
 void InputConstrainedLqrLtiTest() {
+  // double tol = 1e-4;
   double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
   double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
   double f_data[NSTATES] = {0};
@@ -30,13 +31,19 @@ void InputConstrainedLqrLtiTest() {
   double Q_data[NSTATES*NSTATES] = {0};
   double R_data[NINPUTS*NINPUTS] = {0};
   double Qf_data[NSTATES*NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
+  double umin_data[NINPUTS] = {-20, -20};
+  double umax_data[NINPUTS] = {20, 20};
+  double xmin_data[NSTATES] = {-2,-2,-2,-2};
+  double xmax_data[NSTATES] = {6,8,3,2};
   double input_dual_data[2*NINPUTS*(NHORIZON-1)] = {0};
+  double state_dual_data[2*NSTATES*(NHORIZON)] = {0};
   double goal_dual_data[NSTATES] = {0};
-  tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
-  tiny_ProblemData prob = kDefaultProblemData;
-  tiny_Solver solver = kDefaultSolver;
+  tiny_LinearDiscreteModel model;
+  tiny_InitLinearDiscreteModel(&model);
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+  tiny_Solver solver;
+  tiny_InitSolver(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
@@ -55,6 +62,7 @@ void InputConstrainedLqrLtiTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
   Matrix input_duals[NHORIZON-1];
+  Matrix state_duals[NHORIZON];
 
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
@@ -65,6 +73,7 @@ void InputConstrainedLqrLtiTest() {
   double* Pptr = P_data;
   double* pptr = p_data;
   double* udual_ptr = input_dual_data;
+  double* xdual_ptr = state_dual_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
@@ -90,6 +99,8 @@ void InputConstrainedLqrLtiTest() {
     Pptr += NSTATES*NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
+    state_duals[i] = slap_MatrixFromArray(2*NSTATES, 1, xdual_ptr);
+    xdual_ptr += 2*NSTATES;
   }  
   slap_MatrixCopy(X[0], model.x0);
   prob.ninputs = NINPUTS;
@@ -106,6 +117,8 @@ void InputConstrainedLqrLtiTest() {
   slap_SetIdentity(prob.Qf, 100*1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
+  prob.x_max = slap_MatrixFromArray(NSTATES, 1, xmax_data);
+  prob.x_min = slap_MatrixFromArray(NSTATES, 1, xmin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;  
@@ -114,16 +127,21 @@ void InputConstrainedLqrLtiTest() {
   prob.P = P;
   prob.p = p;
   prob.input_duals = input_duals;
+  prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_primal_iters = 16;
   tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
   for (int k = 0; k < NHORIZON-1; ++k) {
-    tiny_Print(X[k]);
-    TEST(slap_NormInf(U[k]) < (2+0.001));
+    // tiny_Print(X[k]);
+    TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
+      TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
+    }
   }
   tiny_Print(X[NHORIZON-1]);
-  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < 1e-2);
+  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < solver.cstr_tol);
 }
 
 int main() {

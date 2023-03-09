@@ -26,9 +26,12 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
 
-  tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
-  tiny_ProblemData prob = kDefaultProblemData;
-  tiny_Solver solver = kDefaultSolver;
+  tiny_LinearDiscreteModel model;
+  tiny_InitLinearDiscreteModel(&model);
+  tiny_ProblemData prob;
+  tiny_InitProblemData(&prob);
+  tiny_Solver solver;
+  tiny_InitSolver(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
@@ -41,7 +44,6 @@ void LqrLtiTest() {
   Matrix U[NHORIZON-1];
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON-1];
-  Matrix uduals[NHORIZON-1];
   Matrix K[NHORIZON-1];
   Matrix d[NHORIZON-1];
   Matrix P[NHORIZON];

@@ -1,13 +1,9 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "augmented_lagrangian_lqr.h"
 #include "util.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "data/lqr_lti_track_data.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -17,10 +13,7 @@ void LqrLtiTest() {
   double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
   double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5,7,2,-1.4};
-  double xg_data[NSTATES] = {0};
-  double Xref_data[NSTATES*NHORIZON] = {0};
-  double Uref_data[NINPUTS*(NHORIZON-1)] = {0};
+  double x0_data[NSTATES] = {6,6,3,-1.5};
   double X_data[NSTATES*NHORIZON] = {0};
   double U_data[NINPUTS*(NHORIZON-1)] = {0};
   double K_data[NINPUTS*NSTATES*(NHORIZON-1)] = {0};
@@ -45,7 +38,6 @@ void LqrLtiTest() {
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON-1];
@@ -83,7 +75,6 @@ void LqrLtiTest() {
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;    
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    // slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;   
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES*NSTATES;
@@ -123,10 +114,12 @@ void LqrLtiTest() {
   // tiny_BackwardPass(prob, model, solver, X, U, G_temp);
   // tiny_ForwardPass(X, U, prob, model);
   tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON; ++k) {
-    tiny_Print(X[k]);
+  for (int k = 0; k < NHORIZON-1; ++k) {
+    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
   }
-  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < 1e-1);
+  for (int k = NHORIZON-5; k < NHORIZON; ++k) {
+    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 1e-1);
+  }
 }
 
 int main() {

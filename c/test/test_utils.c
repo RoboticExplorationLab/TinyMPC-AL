@@ -14,7 +14,8 @@ double SumOfSquaredError(const double* x, const double* y, int len) {
   return sqrt(err);
 }
 
-// void DiscreteDoubleIntegratorDynamics(double h, double dim, Matrix* A, Matrix* B) {
+// void DiscreteDoubleIntegratorDynamics(double h, double dim, Matrix* A,
+// Matrix* B) {
 //   int nstates = 2 * dim;
 //   slap_MatrixSetConst(A, 0.0);
 //   slap_MatrixSetConst(B, 0.0);

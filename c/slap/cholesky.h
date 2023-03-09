@@ -17,14 +17,14 @@
 /**
  * @brief Perform a Cholesky decomposition
  *
- * Performs a Cholesky decomposition on the square matrix @p A, storing the result in the
- * lower triangular portion of @p A.
+ * Performs a Cholesky decomposition on the square matrix @p A, storing the
+ * result in the lower triangular portion of @p A.
  *
  * **Header File:** `slap/linalg.h`
  * @param  A a square symmetric matrix
  * @return slap error code. There is a dedicated code SLAP_CHOLESKY_FAIL if the
- * factorization fails due to a negative value on the diagonal (matrix isn't positive
- * definite).
+ * factorization fails due to a negative value on the diagonal (matrix isn't
+ * positive definite).
  */
 enum slap_ErrorCode slap_Cholesky(Matrix A);
 
@@ -46,15 +46,17 @@ enum slap_ErrorCode slap_Cholesky(Matrix A);
  * if `slap_GetType(L) == slap_TRIANGULAR_UPPER`.
  *
  * **Header File:** `slap/linalg.h`
- * @param[in]          L A triangular matrix. Assumed to be lower-triangular unless its
- *                       slap_MatrixType is slap_TRIANGULAR_UPPER
- * @param[inout]       b The right-hand-side vector. Stores the solution upon completion.
+ * @param[in]          L A triangular matrix. Assumed to be lower-triangular
+ * unless its slap_MatrixType is slap_TRIANGULAR_UPPER
+ * @param[inout]       b The right-hand-side vector. Stores the solution upon
+ * completion.
  * @return slap error code
  */
 enum slap_ErrorCode slap_TriSolve(Matrix L, Matrix b);
 
 /**
- * @brief Solve a linear system of equation with a precomputed Cholesky decomposition.
+ * @brief Solve a linear system of equation with a precomputed Cholesky
+ * decomposition.
  *
  * Here's a simple derivation of how the decomposition works:
  * \f{align}{
@@ -76,10 +78,10 @@ enum slap_ErrorCode slap_TriSolve(Matrix L, Matrix b);
  * ```
  *
  * **Header File:** `slap/linalg.h`
- * @param[in]    A A square matrix whose Cholesky decomposition is stored in the lower
- *               triangular portion of the matrix
- * @param[inout] b The right-hand-side vector. Stores the solution upon completion of the
- *               function.
+ * @param[in]    A A square matrix whose Cholesky decomposition is stored in the
+ * lower triangular portion of the matrix
+ * @param[inout] b The right-hand-side vector. Stores the solution upon
+ * completion of the function.
  * @return slap error code
  */
 enum slap_ErrorCode slap_CholeskySolve(Matrix A, Matrix b);

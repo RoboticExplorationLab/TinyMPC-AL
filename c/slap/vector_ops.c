@@ -13,7 +13,8 @@ MatrixIterator slap_ArgMax(Matrix mat, double* max_value) {
   MatrixIterator max_index = slap_Iterator(mat);
   double value = -INFINITY;
   double value_i;
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     value_i = mat.data[it.index];
     if (value_i > value) {
       value = value_i;
@@ -34,7 +35,8 @@ MatrixIterator slap_ArgMin(Matrix mat, double* min_value) {
   MatrixIterator min_index = slap_Iterator(mat);
   double value = +INFINITY;
   double value_i;
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     value_i = mat.data[it.index];
     if (value_i < value) {
       value = value_i;
@@ -52,7 +54,8 @@ double slap_Min(Matrix mat) {
 }
 
 double slap_NormTwoSquared(Matrix mat) {
-  SLAP_ASSERT_DENSE(mat, NAN, "NormTwoSquared must be called on a dense matrix");
+  SLAP_ASSERT_DENSE(mat, NAN,
+                    "NormTwoSquared must be called on a dense matrix");
   double value = 0;
   double value_i;
   for (int i = 0; i < slap_NumElements(mat); ++i) {
@@ -94,7 +97,8 @@ double slap_NormOne(Matrix mat) {
 
 double slap_Sum(Matrix mat) {
   double sum = 0;
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     double value_i = mat.data[it.index];
     sum += value_i;
   }

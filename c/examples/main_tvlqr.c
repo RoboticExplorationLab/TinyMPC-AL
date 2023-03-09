@@ -3,11 +3,12 @@
 // New: Time-varying LQR, precomputed A and B from files (in fact they are
 // constants)
 // Task: Drive LTV model from initial to goal state.
-//TODO: convert this to test Riccati
+// TODO: convert this to test Riccati
 
-#include "slap/slap.h"
-#include "riccati.h"
 #include <stdio.h>
+
+#include "riccati.h"
+#include "slap/slap.h"
 #include "util.h"
 
 #define H 0.1
@@ -25,12 +26,12 @@ double r_data[NINPUTS] = {0.};
 double A_data[NSTATES * NSTATES * (NHORIZON)];
 double B_data[NSTATES * NINPUTS * (NHORIZON)];
 
-double xf_data[NSTATES] = {2., 0.};  //equilibrium point
+double xf_data[NSTATES] = {2., 0.};  // equilibrium point
 double uf_data[NINPUTS] = {0.};
 double x0_data[NSTATES] = {-1., 1.};
 
-double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON]; //stores P and p
-double Kd_data[NINPUTS * (NSTATES + 1) * NHORIZON]; //stores K and d 
+double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON];  // stores P and p
+double Kd_data[NINPUTS * (NSTATES + 1) * NHORIZON];  // stores K and d
 
 double x_data[NSTATES * NHORIZON];
 double u_data[NINPUTS * (NHORIZON - 1)];
@@ -65,7 +66,7 @@ int main(void) {
   Matrix dhist[NHORIZON];
   Matrix xhist[NHORIZON];
   Matrix uhist[NHORIZON];
-  Matrix yhist[NHORIZON]; // dual variable: lambda
+  Matrix yhist[NHORIZON];  // dual variable: lambda
   Matrix A[NHORIZON];
   Matrix B[NHORIZON];
 
@@ -79,7 +80,7 @@ int main(void) {
   double *Bp = B_data;
 
   for (int k = 0; k < NHORIZON; ++k) {
-    // Pointer to each block, then next 
+    // Pointer to each block, then next
     A[k] = slap_MatrixFromArray(NSTATES, NSTATES, Ap);
     Ap += NSTATES * NSTATES;
     // printf("\nA=\n"); slap_PrintMatrix(A[k]);
@@ -104,28 +105,27 @@ int main(void) {
   }
   // End of initializing memory and variables
 
-  // Temporary matrix for underlying calculation 
+  // Temporary matrix for underlying calculation
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
 
   // Could work for delta_x and delta_u as well
-  // tiny_Riccati_LTV(NHORIZON - 1, A, B, Q, R, q, r, 
+  // tiny_Riccati_LTV(NHORIZON - 1, A, B, Q, R, q, r,
   //                  Khist, dhist, Phist, phist, S);
 
-  tiny_LQR_LTV(NHORIZON - 1, A, B, Q, R, q, r, 
-                   Khist, dhist, Phist, phist, S);
+  tiny_LQR_LTV(NHORIZON - 1, A, B, Q, R, q, r, Khist, dhist, Phist, phist, S);
   // Initial condition
   slap_MatrixCopy(xhist[0], x0);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // Control input: u = uf - d - K*(x - xf) 
-    slap_MatrixAddition(uhist[k], uf, dhist[k], -1);    // u[k] = uf + d[k]
-    slap_MatMulAdd(uhist[k], Khist[k], xhist[k], -1, 1);   // u[k] -= K[k] * x[k]
-    slap_MatMulAdd(uhist[k], Khist[k], xf, 1, 1);   // u[k] += K[k] * xf
+    // Control input: u = uf - d - K*(x - xf)
+    slap_MatrixAddition(uhist[k], uf, dhist[k], -1);      // u[k] = uf + d[k]
+    slap_MatMulAdd(uhist[k], Khist[k], xhist[k], -1, 1);  // u[k] -= K[k] * x[k]
+    slap_MatMulAdd(uhist[k], Khist[k], xf, 1, 1);         // u[k] += K[k] * xf
     // Next state: x = A*x + B*u
     slap_MatMulAdd(xhist[k + 1], A[k], xhist[k], 1, 0);  // x[k+1] = A * x[k]
     slap_MatMulAdd(xhist[k + 1], B[k], uhist[k], 1, 1);  // x[k+1] += B * u[k]
-  }  
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  }
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     printf("x[%d] = ", k);
     slap_PrintMatrix(slap_Transpose(xhist[k]));
     printf("u[%d] = ", k);

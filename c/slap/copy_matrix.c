@@ -13,7 +13,8 @@ enum slap_ErrorCode slap_MatrixCopy(Matrix dest, const Matrix src) {
                     "MatrixCopy: invalid destination matrix");
   SLAP_ASSERT_VALID(src, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
                     "MatrixCopy: invalid source matrix");
-  SLAP_ASSERT_SAME_SIZE(dest, src, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, "MatrixCopy");
+  SLAP_ASSERT_SAME_SIZE(dest, src, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
+                        "MatrixCopy");
   int n = slap_NumRows(src);
   int m = slap_NumCols(src);
   for (int j = 0; j < m; ++j) {
@@ -32,8 +33,10 @@ enum slap_ErrorCode slap_MatrixCopyTranspose(Matrix dest, const Matrix src) {
       (slap_NumCols(dest) != slap_NumRows(src))) {
     char msg[120];
     sprintf(msg,
-            "Matrix sizes are not transposes of each other. Got (%d,%d) and (%d,%d).\n",
-            slap_NumRows(src), slap_NumCols(src), slap_NumRows(dest), slap_NumCols(dest));
+            "Matrix sizes are not transposes of each other. Got (%d,%d) and "
+            "(%d,%d).\n",
+            slap_NumRows(src), slap_NumCols(src), slap_NumRows(dest),
+            slap_NumCols(dest));
     return SLAP_THROW_ERROR(SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, msg);
   }
 
@@ -51,7 +54,8 @@ enum slap_ErrorCode slap_MatrixCopyFromArray(Matrix mat, const double* data) {
   SLAP_ASSERT_VALID(mat, SLAP_INVALID_MATRIX, "CopyFromArray: invalid matrix");
   SLAP_ASSERT(data != NULL, SLAP_BAD_POINTER, SLAP_BAD_POINTER,
               "CopyFromArray: Can't copy from raw array, pointer is NULL");
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     mat.data[it.index] = data[it.k];
   }
   return SLAP_NO_ERROR;

@@ -32,18 +32,21 @@ enum slap_ErrorCode slap_QR(Matrix A, Matrix betas, Matrix temp);
  *
  * **Header File:** `slap/qr.h`
  * @param[out] A A square matrix with the same number of rows as R.
- * @param[in] R A square or skinny matrix containing the results from a QR decomposition.
+ * @param[in] R A square or skinny matrix containing the results from a QR
+ * decomposition.
  * @param[in] betas A vector of scaling factors needed to recover the Q matrix.
- * @param Q_work A temporary matrix of the same size as Q for intermediate calculations
+ * @param Q_work A temporary matrix of the same size as Q for intermediate
+ * calculations
  */
 enum slap_ErrorCode slap_ComputeQ(Matrix Q, const Matrix R, const Matrix betas,
                                   Matrix Q_work);
 
 /**
- * @brief Calculates \f$Q^T b\f$ where $Q$ is the orthogonal matrix from a QR decomposition
+ * @brief Calculates \f$Q^T b\f$ where $Q$ is the orthogonal matrix from a QR
+ * decomposition
  *
- * This method is useful for solving linear systems with the QR decomposition, where the
- * right side needs to be multiplied by \f$Q^T\f$.
+ * This method is useful for solving linear systems with the QR decomposition,
+ * where the right side needs to be multiplied by \f$Q^T\f$.
  *
  * The result is stored in b.
  *
@@ -62,18 +65,20 @@ enum slap_ErrorCode slap_Qtb(const Matrix R, const Matrix betas, Matrix b);
  * Solves \f$ \text{minimize} || A x - b || \f$, where \f$A\f$ has more
  * rows (\f$m\f$) than columns (\f$n\f$).
  *
- * Both `A` and `b` are over-written by this method. `A` is overwritten with the it's QR
- * decomposition, and the first \f$n\f$ rows of `b` contain the solution.
+ * Both `A` and `b` are over-written by this method. `A` is overwritten with the
+ * it's QR decomposition, and the first \f$n\f$ rows of `b` contain the
+ * solution.
  *
  * See also: slap_QR(), slap_Qtb()
  *
  * **Header File:** `slap/qr.h`
  * @param[in,out] A A "skinny" matrix
  * @param[in,out] b
- * @param[out] betas A vector of scaling factors to recover Q. Must have the same number of
- *                   rows as `A`.
+ * @param[out] betas A vector of scaling factors to recover Q. Must have the
+ * same number of rows as `A`.
  * @param temp A temporary vector used to compute the QR decomposition of `A`.
  *             Must have the same number of rows as `A`.
  * @return
  */
-enum slap_ErrorCode slap_LeastSquares(Matrix A, Matrix b, Matrix betas, Matrix temp);
+enum slap_ErrorCode slap_LeastSquares(Matrix A, Matrix b, Matrix betas,
+                                      Matrix temp);

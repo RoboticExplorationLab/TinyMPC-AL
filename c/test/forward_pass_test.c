@@ -4,18 +4,19 @@
 #include <string.h>
 
 #include "augmented_lagrangian_lqr.h"
+#include "data/forward_pass_data.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "data/forward_pass_data.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 3
 
-double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
-double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
-double f_data[NSTATES] = {0,0,0,0};
+double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+                                    0.1, 0, 1, 0, 0, 0.1, 0, 1};
+double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+double f_data[NSTATES] = {0, 0, 0, 0};
 // double x0_data[NSTATES] = {5,7,2,-1.4};
 
 void ForwardPassTest() {
@@ -34,9 +35,9 @@ void ForwardPassTest() {
 
   Matrix X[NHORIZON];
   Matrix Xsln[NHORIZON];
-  Matrix U[NHORIZON-1];
-  Matrix K[NHORIZON-1];
-  Matrix d[NHORIZON-1];
+  Matrix U[NHORIZON - 1];
+  Matrix K[NHORIZON - 1];
+  Matrix d[NHORIZON - 1];
 
   double* xptr = x_data;
   double* xsol_ptr = xsol_data;
@@ -49,15 +50,15 @@ void ForwardPassTest() {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, uptr);
       uptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS*NSTATES;
+      Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, xptr);
-    xptr += NSTATES;    
+    xptr += NSTATES;
     Xsln[i] = slap_MatrixFromArray(NSTATES, 1, xsol_ptr);
-    xsol_ptr += NSTATES;    
-  }  
+    xsol_ptr += NSTATES;
+  }
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -65,36 +66,36 @@ void ForwardPassTest() {
   prob.x0 = X[0];  // check if possible
   prob.K = K;
   prob.d = d;
-  
+
   uptr = u_data;
   xsol_ptr = xsol_data;
-  xptr = x_data;  
+  xptr = x_data;
   Kptr = K_data;
   dptr = d_data;
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       TEST(U[i].rows == NINPUTS);
-      TEST(U[i].cols == 1);  
+      TEST(U[i].cols == 1);
       TEST(SumOfSquaredError(U[i].data, uptr, NINPUTS) < tol);
       uptr += NINPUTS;
       TEST(prob.K[i].rows == NINPUTS);
-      TEST(prob.K[i].cols == NSTATES);  
-      TEST(SumOfSquaredError(prob.K[i].data, Kptr, NINPUTS*NSTATES) < tol);
-      Kptr += NINPUTS*NSTATES;
+      TEST(prob.K[i].cols == NSTATES);
+      TEST(SumOfSquaredError(prob.K[i].data, Kptr, NINPUTS * NSTATES) < tol);
+      Kptr += NINPUTS * NSTATES;
       TEST(prob.d[i].rows == NINPUTS);
-      TEST(prob.d[i].cols == 1);  
+      TEST(prob.d[i].cols == 1);
       TEST(SumOfSquaredError(prob.d[i].data, dptr, NINPUTS) < tol);
-      dptr += NINPUTS;    
+      dptr += NINPUTS;
     }
     TEST(X[i].rows == NSTATES);
-    TEST(X[i].cols == 1);  
+    TEST(X[i].cols == 1);
     TEST(SumOfSquaredError(X[i].data, xptr, NSTATES) < tol);
     xptr += NSTATES;
     TEST(Xsln[i].rows == NSTATES);
-    TEST(Xsln[i].cols == 1);  
+    TEST(Xsln[i].cols == 1);
     TEST(SumOfSquaredError(Xsln[i].data, xsol_ptr, NSTATES) < tol);
     xsol_ptr += NSTATES;
-  }  
+  }
 
   // Include discrete dynamics test
   tiny_ForwardPassLti(X, U, prob, model);

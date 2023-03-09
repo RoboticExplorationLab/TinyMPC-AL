@@ -7,10 +7,10 @@
 
 #include <math.h>
 
-#include "printing.h"
-#include "unary_ops.h"
-#include "strided_matrix.h"
 #include "cholesky.h"
+#include "printing.h"
+#include "strided_matrix.h"
+#include "unary_ops.h"
 
 #define ZERO_TOL 1e-10
 
@@ -23,7 +23,8 @@
  * Also calculates the scaling \f$beta = \frac{2}{v^T v}\f$
  *
  * @param R Partially computed QR decomposition of a matrix A
- * @param v Destination vector for the reflection. Should have same number of rows as R.
+ * @param v Destination vector for the reflection. Should have same number of
+ * rows as R.
  * @param k The index of the column of R on which to calculate the reflection.
  * @return The scaling factor \f$beta\f$
  */
@@ -76,8 +77,8 @@ void Qmuly(Matrix Q_bar, Matrix Q, Matrix R, double alpha, int k) {
   // Top left corner: Stays the same
   // Bottom left corner: Stays the same
 
-//  printf("Qmuly with k = %d\n", k);
-//  printf("  Looping columns %d to %d\n", k, m - 1);
+  //  printf("Qmuly with k = %d\n", k);
+  //  printf("  Looping columns %d to %d\n", k, m - 1);
   for (int j = k; j < m; ++j) {
     double v_j = 1;
     if (j > k) {
@@ -86,7 +87,7 @@ void Qmuly(Matrix Q_bar, Matrix Q, Matrix R, double alpha, int k) {
     double Qiv;
 
     // Top right corner: Q12 - alpha * Q12 * v * v'
-//    printf("    Looping rows %d to %d\n", 0, k - 1);
+    //    printf("    Looping rows %d to %d\n", 0, k - 1);
     for (int i = 0; i < k; ++i) {
       Qiv = 0;
 
@@ -102,7 +103,7 @@ void Qmuly(Matrix Q_bar, Matrix Q, Matrix R, double alpha, int k) {
       // Calculate the output
       double *Qij = slap_GetElement(Q_bar, i, j);
       *Qij -= alpha * Qiv * v_j;
-//      printf("    Qv[%d] = %5.3f, v[%d] = %5.3f\n", i, Qiv, j, v_j);
+      //      printf("    Qv[%d] = %5.3f, v[%d] = %5.3f\n", i, Qiv, j, v_j);
     }
 
     // Bottom right corner: Q22 - alpha * A22 * v * v'
@@ -142,7 +143,7 @@ enum slap_ErrorCode slap_QR(Matrix A, Matrix betas, Matrix temp) {
     // A = (I - beta * v * v') * A
 
     // 1. Calculate temp = v'A
-    for (int j = k; j < n; ++j) {    // loop over columns
+    for (int j = k; j < n; ++j) {  // loop over columns
       temp.data[j] = 0;
       for (int i = k; i < m; ++i) {  // loop over rows
         temp.data[j] += *slap_GetElement(A, i, j) * v.data[i];
@@ -197,7 +198,7 @@ enum slap_ErrorCode slap_Qtb(const Matrix R, const Matrix betas, Matrix b) {
     // alpha = beta[k] * v[k]'b[k]
     double alpha = b.data[k];
     for (int i = k + 1; i < m; ++i) {
-        alpha += *slap_GetElement(R, i, k) * b.data[i];
+      alpha += *slap_GetElement(R, i, k) * b.data[i];
     }
     alpha *= betas.data[k];
 
@@ -209,7 +210,8 @@ enum slap_ErrorCode slap_Qtb(const Matrix R, const Matrix betas, Matrix b) {
   }
   return SLAP_NO_ERROR;
 }
-enum slap_ErrorCode slap_LeastSquares(Matrix A, Matrix b, Matrix betas, Matrix temp) {
+enum slap_ErrorCode slap_LeastSquares(Matrix A, Matrix b, Matrix betas,
+                                      Matrix temp) {
   // Perform QR on A
   slap_QR(A, betas, temp);
 

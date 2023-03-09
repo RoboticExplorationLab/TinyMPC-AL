@@ -28,7 +28,8 @@ enum slap_ErrorCode slap_SetConst(Matrix mat, double val);
  * @brief Scale a matrix by a constant factor
  *
  * **Header File:** `"slap/unary_ops.h"`
- * @param mat Fully initialized matrix of non-zero size. Values will be modified.
+ * @param mat Fully initialized matrix of non-zero size. Values will be
+ * modified.
  * @param alpha scalar by which to multiply the matrix
  */
 enum slap_ErrorCode slap_ScaleByConst(Matrix mat, double alpha);
@@ -45,8 +46,8 @@ enum slap_ErrorCode slap_SetIdentity(Matrix mat, double val);
 /**
  * @brief Set the first n elements of a matrix diagonal from an array
  *
- * If @a len is greater than the minimum dimension, only the minimum dimension will be set.
- * Doesn't touch any of the off-diagonal elements.
+ * If @a len is greater than the minimum dimension, only the minimum dimension
+ * will be set. Doesn't touch any of the off-diagonal elements.
  *
  * **Header File:** `"slap/unary_ops.h"`
  * @param mat Matrix (nrows >= ncols)

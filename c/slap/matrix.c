@@ -13,7 +13,8 @@ void slap_Linear2Cart(Matrix mat, int k, int* row, int* col) {
 
 Matrix slap_Flatten(const Matrix mat) {
   SLAP_ASSERT_VALID(mat, slap_NullMatrix(), "Flatten: invalid matrix");
-  SLAP_ASSERT_DENSE(mat, slap_NullMatrix(), "Flatten: input matrix must be dense");
+  SLAP_ASSERT_DENSE(mat, slap_NullMatrix(),
+                    "Flatten: input matrix must be dense");
   int size = slap_NumElements(mat);
   Matrix vec = {
       .rows = size,
@@ -40,7 +41,8 @@ Matrix slap_Transpose(Matrix mat) {
 
 Matrix slap_Reshape(Matrix mat, int rows, int cols) {
   SLAP_ASSERT_VALID(mat, slap_NullMatrix(), "Reshape: invalid matrix");
-  SLAP_ASSERT_DENSE(mat, slap_NullMatrix(), "Reshape: input matrix must be dense");
+  SLAP_ASSERT_DENSE(mat, slap_NullMatrix(),
+                    "Reshape: input matrix must be dense");
   SLAP_ASSERT(rows >= 0, SLAP_INVALID_DIMENSION, slap_NullMatrix(),
               "Reshape: number of rows must be positive, got %d", rows);
   SLAP_ASSERT(cols >= 0, SLAP_INVALID_DIMENSION, slap_NullMatrix(),

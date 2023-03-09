@@ -4,39 +4,40 @@
 #include <string.h>
 
 #include "augmented_lagrangian_lqr.h"
-#include "util.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "util.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 51
-//U, X, Psln
+// U, X, Psln
 void InputConstrainedLqrLtiTest() {
   // double tol = 1e-4;
-  double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
-  double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
+  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+                                      0.1, 0, 1, 0, 0, 0.1, 0, 1};
+  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5,7,2,-1.4};
+  double x0_data[NSTATES] = {5, 7, 2, -1.4};
   double xg_data[NSTATES] = {0};
-  double Xref_data[NSTATES*NHORIZON] = {0};
-  double Uref_data[NINPUTS*(NHORIZON-1)] = {0};
-  double X_data[NSTATES*NHORIZON] = {0};
-  double U_data[NINPUTS*(NHORIZON-1)] = {0};
-  double K_data[NINPUTS*NSTATES*(NHORIZON-1)] = {0};
-  double d_data[NINPUTS*(NHORIZON-1)] = {0};
-  double P_data[NSTATES*NSTATES*(NHORIZON)] = {0};
-  double p_data[NSTATES*NHORIZON] = {0};
-  double Q_data[NSTATES*NSTATES] = {0};
-  double R_data[NINPUTS*NINPUTS] = {0};
-  double Qf_data[NSTATES*NSTATES] = {0};
+  double Xref_data[NSTATES * NHORIZON] = {0};
+  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  double X_data[NSTATES * NHORIZON] = {0};
+  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  double p_data[NSTATES * NHORIZON] = {0};
+  double Q_data[NSTATES * NSTATES] = {0};
+  double R_data[NINPUTS * NINPUTS] = {0};
+  double Qf_data[NSTATES * NSTATES] = {0};
   double umin_data[NINPUTS] = {-20, -20};
   double umax_data[NINPUTS] = {20, 20};
-  double xmin_data[NSTATES] = {-2,-2,-2,-2};
-  double xmax_data[NSTATES] = {6,8,3,2};
-  double input_dual_data[2*NINPUTS*(NHORIZON-1)] = {0};
-  double state_dual_data[2*NSTATES*(NHORIZON)] = {0};
+  double xmin_data[NSTATES] = {-2, -2, -2, -2};
+  double xmax_data[NSTATES] = {6, 8, 3, 2};
+  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
   double goal_dual_data[NSTATES] = {0};
   tiny_LinearDiscreteModel model;
   tiny_InitLinearDiscreteModel(&model);
@@ -54,14 +55,14 @@ void InputConstrainedLqrLtiTest() {
   Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
-  Matrix U[NHORIZON-1];
+  Matrix U[NHORIZON - 1];
   Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON-1];
-  Matrix K[NHORIZON-1];
-  Matrix d[NHORIZON-1];
+  Matrix Uref[NHORIZON - 1];
+  Matrix K[NHORIZON - 1];
+  Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix input_duals[NHORIZON-1];
+  Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
   double* Xptr = X_data;
@@ -83,45 +84,45 @@ void InputConstrainedLqrLtiTest() {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS*NSTATES;
+      Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2*NINPUTS, 1, udual_ptr);
-      udual_ptr += 2*NINPUTS;
+      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
+      udual_ptr += 2 * NINPUTS;
       slap_SetConst(input_duals[i], 0.01);
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;    
+    Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
     slap_MatrixCopy(Xref[i], xg);
-    Xref_ptr += NSTATES;   
+    Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES*NSTATES;
+    Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2*NSTATES, 1, xdual_ptr);
-    xdual_ptr += 2*NSTATES;
-  }  
+    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
+    xdual_ptr += 2 * NSTATES;
+  }
   slap_MatrixCopy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2*NINPUTS;
-  prob.ncstr_states = 2*NSTATES;
+  prob.ncstr_inputs = 2 * NINPUTS;
+  prob.ncstr_states = 2 * NSTATES;
   prob.ncstr_goal = NSTATES;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e-1);  
+  slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 100*1e-1);
+  slap_SetIdentity(prob.Qf, 100 * 1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.x_max = slap_MatrixFromArray(NSTATES, 1, xmax_data);
   prob.x_min = slap_MatrixFromArray(NSTATES, 1, xmin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
-  prob.x0 = model.x0;  
+  prob.x0 = model.x0;
   prob.K = K;
   prob.d = d;
   prob.P = P;
@@ -132,7 +133,7 @@ void InputConstrainedLqrLtiTest() {
 
   solver.max_primal_iters = 16;
   tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // tiny_Print(X[k]);
     TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
     for (int i = 0; i < NSTATES; ++i) {
@@ -140,8 +141,9 @@ void InputConstrainedLqrLtiTest() {
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
     }
   }
-  tiny_Print(X[NHORIZON-1]);
-  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < solver.cstr_tol);
+  tiny_Print(X[NHORIZON - 1]);
+  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
+       solver.cstr_tol);
 }
 
 int main() {

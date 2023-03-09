@@ -14,18 +14,20 @@
 
 double x_data[NSTATES] = {1.1, 1.2, 1.3, -4.3};
 double u_data[NSTATES] = {-2.1, 1.1};
-double x_ref_data[NSTATES*NHORIZON] = {1.1,1.2,1.3,-4.2, 1.2,1.3,1.3,-4.3};
-double u_ref_data[NINPUTS*NHORIZON] = {-2.1, 1.4, -2.2, 1.5};
-double Q_data[NSTATES*NSTATES] = {0};  // NOLINT
-double R_data[NINPUTS*NINPUTS] = {0};         // NOLINT
-double q_data[NSTATES] = {0};    // NOLINT
-double r_data[NINPUTS] = {0};        // NOLINT
-double Qf_data[NSTATES*NSTATES] = {0};
+double x_ref_data[NSTATES * NHORIZON] = {1.1, 1.2, 1.3, -4.2,
+                                         1.2, 1.3, 1.3, -4.3};
+double u_ref_data[NINPUTS * NHORIZON] = {-2.1, 1.4, -2.2, 1.5};
+double Q_data[NSTATES * NSTATES] = {0};  // NOLINT
+double R_data[NINPUTS * NINPUTS] = {0};  // NOLINT
+double q_data[NSTATES] = {0};            // NOLINT
+double r_data[NINPUTS] = {0};            // NOLINT
+double Qf_data[NSTATES * NSTATES] = {0};
 double ans_stage[2] = {0.04549999999999994, 0.1314999999999999};
 double ans_term = 0.0049999999999999975;
 double ans_gradx[NSTATES] = {0.0, 0.0, 0.0, -0.009999999999999966};
 double ans_gradu[NINPUTS] = {0.0, -0.2999999999999998};
-double ans_gradxf[NSTATES] = {-0.04999999999999993, -0.050000000000000044, 0.0, 0.0};
+double ans_gradxf[NSTATES] = {-0.04999999999999993, -0.050000000000000044, 0.0,
+                              0.0};
 
 void AddCostTest() {
   const double tol = 1e-8;
@@ -33,13 +35,13 @@ void AddCostTest() {
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
   double* uptr = u_ref_data;
-  double* xptr = x_ref_data;  
+  double* xptr = x_ref_data;
   for (int i = 0; i < NHORIZON; ++i) {
     U_ref[i] = slap_MatrixFromArray(NINPUTS, 1, uptr);
     uptr += NINPUTS;
     X_ref[i] = slap_MatrixFromArray(NSTATES, 1, xptr);
-    xptr += NSTATES;    
-  }  
+    xptr += NSTATES;
+  }
   Matrix x = slap_MatrixFromArray(NSTATES, 1, x_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
 
@@ -65,7 +67,7 @@ void AddCostTest() {
   for (int k = 0; k < 2; ++k) {
     tiny_AddStageCost(&cost, prob, x, u, k);
     TESTAPPROX(cost, ans_stage[k], tol);
-  }  
+  }
   cost = 0;
   tiny_AddTerminalCost(&cost, prob, x);
   TESTAPPROX(cost, ans_term, tol);
@@ -76,19 +78,19 @@ void ExpandCostTest() {
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
   double* uptr = u_ref_data;
-  double* xptr = x_ref_data;  
+  double* xptr = x_ref_data;
   for (int i = 0; i < NHORIZON; ++i) {
     U_ref[i] = slap_MatrixFromArray(NINPUTS, 1, uptr);
     uptr += NINPUTS;
     X_ref[i] = slap_MatrixFromArray(NSTATES, 1, xptr);
-    xptr += NSTATES;    
-  }  
+    xptr += NSTATES;
+  }
   Matrix x = slap_MatrixFromArray(NSTATES, 1, x_data);
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  
+
   prob.nstates = NSTATES;
   prob.ninputs = NINPUTS;
   prob.nhorizon = NHORIZON;
@@ -105,22 +107,22 @@ void ExpandCostTest() {
   prob.X_ref = X_ref;
   prob.U_ref = U_ref;
 
-  double hessx_data[NSTATES*NSTATES];
+  double hessx_data[NSTATES * NSTATES];
   double gradx_data[NSTATES];
-  double hessu_data[NSTATES*NSTATES];
+  double hessu_data[NSTATES * NSTATES];
   double gradu_data[NSTATES];
   Matrix hessx = slap_MatrixFromArray(NSTATES, NSTATES, hessx_data);
-  Matrix gradx = slap_MatrixFromArray(NSTATES, 1, gradx_data);  
+  Matrix gradx = slap_MatrixFromArray(NSTATES, 1, gradx_data);
   Matrix hessu = slap_MatrixFromArray(NINPUTS, NINPUTS, hessu_data);
-  Matrix gradu = slap_MatrixFromArray(NINPUTS, 1, gradu_data);  
+  Matrix gradu = slap_MatrixFromArray(NINPUTS, 1, gradu_data);
   tiny_ExpandStageCost(&hessx, &gradx, &hessu, &gradu, prob, x, u, 0);
-  TEST(SumOfSquaredError(hessx.data, Q_data, NSTATES*NSTATES)<tol);
-  TEST(SumOfSquaredError(hessu.data, R_data, NSTATES)<tol);
-  TEST(SumOfSquaredError(gradx.data, ans_gradx, NINPUTS*NINPUTS)<tol);
-  TEST(SumOfSquaredError(gradu.data, ans_gradu, NINPUTS)<tol);
+  TEST(SumOfSquaredError(hessx.data, Q_data, NSTATES * NSTATES) < tol);
+  TEST(SumOfSquaredError(hessu.data, R_data, NSTATES) < tol);
+  TEST(SumOfSquaredError(gradx.data, ans_gradx, NINPUTS * NINPUTS) < tol);
+  TEST(SumOfSquaredError(gradu.data, ans_gradu, NINPUTS) < tol);
   tiny_ExpandTerminalCost(&hessx, &gradx, prob, x);
-  TEST(SumOfSquaredError(hessx.data, Qf_data, NSTATES*NSTATES)<tol);
-  TEST(SumOfSquaredError(gradx.data, ans_gradxf, NSTATES)<tol);  
+  TEST(SumOfSquaredError(hessx.data, Qf_data, NSTATES * NSTATES) < tol);
+  TEST(SumOfSquaredError(gradx.data, ans_gradxf, NSTATES) < tol);
 }
 
 int main() {

@@ -10,7 +10,8 @@
 
 enum slap_ErrorCode slap_SetConst(Matrix mat, double val) {
   SLAP_ASSERT_VALID(mat, SLAP_INVALID_MATRIX, "SetConst: invalid matrix");
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     mat.data[it.index] = val;
   }
   return SLAP_NO_ERROR;
@@ -18,7 +19,8 @@ enum slap_ErrorCode slap_SetConst(Matrix mat, double val) {
 
 enum slap_ErrorCode slap_ScaleByConst(Matrix mat, double alpha) {
   SLAP_ASSERT_VALID(mat, SLAP_INVALID_MATRIX, "ScaleByConst: invalid matrix");
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     mat.data[it.index] *= alpha;
   }
   return 0;

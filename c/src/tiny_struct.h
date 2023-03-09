@@ -2,10 +2,18 @@
 
 #include "slap/slap.h"
 
-#define kNullMat ((Matrix) {0, 0, 0, 0, NULL, slap_DENSE,})
+#define kNullMat  \
+  ((Matrix){      \
+      0,          \
+      0,          \
+      0,          \
+      0,          \
+      NULL,       \
+      slap_DENSE, \
+  })
 
 typedef struct {
-  int nstates;  
+  int nstates;
   int ninputs;
   double dt;
   Matrix A;
@@ -17,9 +25,9 @@ typedef struct {
 void tiny_InitLinearDiscreteModel(tiny_LinearDiscreteModel* model);
 
 typedef struct {
-  Matrix x;  ///< state vector
-  Matrix u;  ///< control input vector
-  double t;  ///< time
+  Matrix x;   ///< state vector
+  Matrix u;   ///< control input vector
+  double t;   ///< time
   double dt;  ///< time step
 } tiny_KnotPoint;
 
@@ -41,7 +49,7 @@ typedef struct {
 void tiny_InitSolver(tiny_Solver* solver);
 
 typedef struct tiny_ProblemData {
-  int nstates;  
+  int nstates;
   int ninputs;
   int nhorizon;
   int ncstr_states;

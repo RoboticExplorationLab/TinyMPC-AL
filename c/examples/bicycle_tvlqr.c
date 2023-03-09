@@ -135,9 +135,11 @@ int main(void) {
     slap_MatrixAddition(u_hist[k], u_ref[k], d_hist[0],
                         -1);  // u[k] = un[k] - d[k]
     // slap_PrintMatrix(slap_Transpose(u_hist[k]));
-    slap_MatMulAdd(u_hist[k], K_hist[0], x_hist[k], -1, 1);  // u[k] -= K[k] * x[k]
+    slap_MatMulAdd(u_hist[k], K_hist[0], x_hist[k], -1,
+                   1);  // u[k] -= K[k] * x[k]
     // slap_PrintMatrix(slap_Transpose(u_hist[k]));
-    slap_MatMulAdd(u_hist[k], K_hist[0], x_ref[k], 1, 1);  // u[k] += K[k] * xn[k]
+    slap_MatMulAdd(u_hist[k], K_hist[0], x_ref[k], 1,
+                   1);  // u[k] += K[k] * xn[k]
     // printf("u[%d] = ", k);
     // slap_PrintMatrix(slap_Transpose(u_hist[k]));
 
@@ -146,7 +148,8 @@ int main(void) {
     tiny_Dynamics_RK4_Raw(x_hist[k + 1].data, x_hist[k].data, u_hist[k].data);
 
     // Tracking errors (show different metrics)
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(x_ref[k], x_hist[k]));
+    printf("ex[%d] = %.4f\n", k,
+           slap_MatrixNormedDifference(x_ref[k], x_hist[k]));
     // printf("x[%d] = ", k);
     // slap_PrintMatrix(slap_Transpose(u_hist[k]));
   }

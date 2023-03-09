@@ -14,8 +14,8 @@
  * C = \beta C + \alpha A B
  * \f]
  *
- * The two input matrices can be aliased, but neither can be aliased with the output, doing
- * so will result in undefined behavior.
+ * The two input matrices can be aliased, but neither can be aliased with the
+ * output, doing so will result in undefined behavior.
  *
  * # Examples
  * Normal matrix multiplication:
@@ -47,7 +47,8 @@
  * @param[in] alpha Scaling factor on output
  * @param[in] beta Scaling factor on input
  */
-enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha, double beta);
+enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha,
+                                   double beta);
 
 /**
  * @brief Simple in-place matrix multiplication
@@ -63,8 +64,9 @@ enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha, d
  * (including transpose state, strides, etc.) so should be used
  * with care.
  *
- * It's provided mainly to give the lowest possible cost for matrix multiplication,
- * by directly indexing into the underlying data without checking for transposes or striding.
+ * It's provided mainly to give the lowest possible cost for matrix
+ * multiplication, by directly indexing into the underlying data without
+ * checking for transposes or striding.
  *
  * See also: slap_MatMulAdd(), slap_MatMulAtB()
  *
@@ -83,8 +85,8 @@ enum slap_ErrorCode slap_MatMulAB(Matrix C, Matrix A, Matrix B);
  * C = A^T B
  * \f]
  *
- * Similar to slap_MatMulAB(), this method ignores all metadata information. See that
- * method for more details.
+ * Similar to slap_MatMulAB(), this method ignores all metadata information. See
+ * that method for more details.
  *
  *
  * See also: slap_MatMulAdd(), slap_MatMulAB()

@@ -118,9 +118,9 @@ int main(void) {
   int test = 100 - 61;
   tiny_Riccati_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, Q, R, q, r, Khist,
                     dhist, Phist, phist, xref, uref, S);
-  tiny_RiccatiForwardPass_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, x0, xref,
-                               uref, Khist, dhist, Phist, phist, xhist, uhist,
-                               NULL);
+  tiny_RiccatiForwardPass_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, x0,
+                               xref, uref, Khist, dhist, Phist, phist, xhist,
+                               uhist, NULL);
   for (int k = 0; k < NHORIZON - test; k += 1) {
     // Tracking errors (show different metrics)
     printf("ex[%d] = %.4f\n", k,

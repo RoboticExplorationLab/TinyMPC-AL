@@ -1,7 +1,4 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Test all inequality-related functions and tiny_RiccatiConvergence
 
 #include "augmented_lagrangian_lqr.h"
 #include "simpletest/simpletest.h"
@@ -96,11 +93,27 @@ void ActiveIneqMaskTest() {
   TEST(SumOfSquaredError(ineq.data, ans1, NINPUTS*2) < tol);
   TEST(SumOfSquaredError(mask.data, ans2, NINPUTS*2*NINPUTS*2) < tol);
 }
-
+void RiccatiConvergenceTest() {
+  tiny_ProblemData prob = kDefaultProblemData;
+  prob.nhorizon = 3;
+  prob.ninputs = 2;
+  double d_data[4] = {1.2, -0.3,  -2.1, 3.1};
+  double ans = 3.744329045369811;
+  Matrix d[2];
+  double* dptr = d_data;
+  for (int k = 0; k < prob.nhorizon-1; ++k) {
+    d[k] = slap_MatrixFromArray(prob.ninputs, 1, dptr);
+    dptr += prob.ninputs;
+  }
+  prob.d = d;
+  double norm_d_max = tiny_RiccatiConvergence(prob);
+  TESTAPPROX(norm_d_max, ans, 1e-6);
+}
 int main() {
   IneqInputsTest();
   IneqInputsJacobianTest();
   ActiveIneqMaskTest();
+  RiccatiConvergenceTest();
   PrintTestResult();
   return TestResult();
 }

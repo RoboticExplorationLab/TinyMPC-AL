@@ -18,12 +18,13 @@ const tiny_KnotPoint kDefaultKnotPoint = {
 };
 
 const tiny_Solver kDefaultSolver = {
-  .regu = 0.0,
+  .regu = 1e-8,
   .regu_min = 1e-8,
   .regu_max = 1e2,
+  .penalty = 1,
   .penalty_max = 1e8,
   .penalty_mul = 10,
-  .max_primal_iters = 10,
+  .max_primal_iters = 50,
   .max_search_iters = 5,
 };
 
@@ -190,10 +191,15 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
   // NOTE: Assumes m <= n
   Matrix Quu_temp = slap_Reshape(prob->P[N-1], m, m);
   Matrix ineq = slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_inputs, 1);
-  Matrix mask = slap_CreateSubMatrix(*ineq_temp, 0, prob->ncstr_inputs, 
+  Matrix ineq_temp2 = slap_CreateSubMatrix(*ineq_temp, 0, 1, 
+                                            prob->ncstr_inputs, 1);    
+  Matrix mask = slap_CreateSubMatrix(*ineq_temp, 0, 2, 
                                     prob->ncstr_inputs, prob->ncstr_inputs);
-  Matrix ineq_jac = slap_CreateSubMatrix(*ineq_temp, 0, 2*prob->ncstr_inputs, 
+  Matrix ineq_jac = slap_CreateSubMatrix(*ineq_temp, 0, prob->ncstr_inputs+2, 
                                         prob->ncstr_inputs, prob->ninputs);
+  Matrix ineq_jac2 = slap_CreateSubMatrix(*ineq_temp, 0, prob->ncstr_inputs+2+prob->ninputs, 
+                                          prob->ncstr_inputs, prob->ninputs);
+
   for (int k = N - 2; k >= 0; --k) {
     // Stage cost expansion
     tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, *prob, X[k], U[k], k);
@@ -215,10 +221,18 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.regu, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Gux, slap_Transpose(model.B), prob->P[k], 1, 0);       // Gux = B'P*A
-
     // Control constraints
     tiny_IneqInputs(&ineq, *prob, U[k]);  // ineq size = 2*NINPUTS
     tiny_ActiveIneqMask(&mask, prob->input_duals[k], ineq);
+    slap_ScaleByConst(mask, solver.penalty);  // mask = ρ*mask
+    tiny_IneqInputsJacobian(&ineq_jac, *prob, U[k]);
+    // Gu  += ∇hu'*(μ[k] + (mask * huv))
+    slap_MatrixCopy(ineq_temp2, prob->input_duals[k]);
+    slap_MatMulAdd(ineq_temp2, mask, ineq, 1, 1);
+    slap_MatMulAdd(Gu, slap_Transpose(ineq_jac), ineq_temp2, 1, 1);  
+    // Guu += ∇hu'*mask*∇hu
+    slap_MatMulAdd(ineq_jac2, mask, ineq_jac, 1, 0);
+    slap_MatMulAdd(Guu, slap_Transpose(ineq_jac), ineq_jac2, 1, 1); 
 
     // Calculate Gains
     slap_MatrixCopy(Quu_temp, Guu);
@@ -227,7 +241,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_MatrixCopy(prob->d[k], Gu); 
     slap_CholeskySolve(Quu_temp, prob->d[k]);  // d = Guu\Gu
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Guu\Gux
-
+    
     // Cost-to-Go Hessian: P = Gxx + K'Guu*K - K'Gux - Gux'K
     slap_MatrixCopy(prob->P[k], Gxx);                              // P = Gxx
     slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);    // Gxu = K'Guu
@@ -240,10 +254,84 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_MatMulAdd(prob->p[k], Gxu, prob->d[k], 1, 1);                   // p += K'Guu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Gu, -1, 1);    // p -= K'Gu
     slap_MatMulAdd(prob->p[k], slap_Transpose(Gux), prob->d[k], -1, 1);   // p -= Gux'd
+    // slap_PrintMatrix(prob->p[k]);
+    // slap_PrintMatrix(prob->P[k]);
   }
   tiny_ExpandTerminalCost(&(prob->P[N-1]), &(prob->p[N-1]), *prob, X[N-1]);  // Replace P[N] since we used it for Quu_temp (need improving later)
   return SLAP_NO_ERROR;
 }  
+
+enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
+    const tiny_LinearDiscreteModel model, const int verbose) {
+  int N = prob->nhorizon;
+  int n = prob->nstates;
+  int m = prob->ninputs;
+  for (int k = 0; k < N - 1; ++k) {
+    tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
+  }
+  double G_temp_data[(n + m) * (n + m + 1)];
+  Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
+
+  double ineq_temp_data[prob->ncstr_states*(prob->ncstr_states+prob->ncstr_states+2)];
+  Matrix ineq_temp = slap_MatrixFromArray(prob->ncstr_states, 
+      prob->ncstr_states+2*prob->nstates+2, ineq_temp_data);
+  Matrix ineq = slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_inputs, 1);
+  Matrix ineq_temp2 = slap_CreateSubMatrix(ineq_temp, 0, 1, 
+                                      prob->ncstr_inputs, 1);    
+  Matrix mask = slap_CreateSubMatrix(ineq_temp, 0, 2, 
+                              prob->ncstr_inputs, prob->ncstr_inputs);
+
+  double norm_d_max = 0.0;
+  double cstr_violation = 0.0;
+  for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
+    tiny_ConstrainedBackwardPassLti(prob, model, *solver, X, U, &G_temp, &ineq_temp);
+    tiny_ForwardPassLti(X, U, *prob, model);
+    
+    norm_d_max = tiny_RiccatiConvergence(*prob);
+
+    if (verbose == 1) {
+      printf("outer loop\n");
+      printf("iter     J           ΔJ        |d|         α        reg         ρ\n");
+      printf("---------------------------------------------------------------------\n");
+      printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
+              iter, 0.0, 0.0, norm_d_max, 1.0, solver->regu, solver->penalty);    
+    }
+
+    printf("update duals and penalty\n");
+
+    if (norm_d_max < 1e-1) {
+      cstr_violation = 0.0;
+      double norm_huv_inf = 0.0;   
+      for (int k = 0; k < N-1; ++k) {
+        // Control constraints
+        tiny_IneqInputs(&ineq, *prob, U[k]);  // ineq size = 2*NINPUTS
+        tiny_ActiveIneqMask(&mask, prob->input_duals[k], ineq);
+        slap_ScaleByConst(mask, solver->penalty);  // mask = ρ*mask  
+        // Update duals  
+        slap_MatrixCopy(ineq_temp2, prob->input_duals[k]);
+        slap_MatMulAdd(ineq_temp2, mask, ineq, 1, 1);  
+        slap_ArgMax(ineq, &norm_huv_inf);
+        norm_huv_inf = norm_huv_inf > 0.0 ? norm_huv_inf : 0.0;
+        norm_huv_inf = norm_huv_inf*2;
+        for (int i = 0; i < prob->ncstr_inputs; ++i) {
+          if (ineq_temp2.data[i] > 0) {
+            prob->input_duals[k].data[i] = ineq_temp2.data[i];
+          }
+          else prob->input_duals[k].data[i] = 0.0;        
+        }
+        cstr_violation = cstr_violation < norm_huv_inf ? norm_huv_inf : cstr_violation;
+      }
+      printf("convio: %.4f \n", cstr_violation);
+      if (cstr_violation < 1e-4) {
+        printf("\nSUCCESS!\n");
+        return SLAP_NO_ERROR;
+      }
+      solver->penalty = solver->penalty * solver->penalty_mul;
+    }
+  }
+  return SLAP_NO_ERROR; 
+}
 
 // Roll out the closed-loop dynamics with K and d from backward pass, 
 // calculate new X, U in place
@@ -270,31 +358,15 @@ enum slap_ErrorCode tiny_ForwardPassLti(
   return SLAP_NO_ERROR; 
 }
 
-enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    Matrix* X, Matrix* U, tiny_ProblemData* prob, 
-    const tiny_LinearDiscreteModel model,
-    const tiny_Solver solver, const int verbose) {
-  int N = prob->nhorizon;
-  int n = prob->nstates;
-  int m = prob->ninputs;
-  for (int k = 0; k < N - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
-  }
-  double G_temp_data[(n + m) * (n + m + 1)];
-  Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
-  for (int iter = 0; iter < solver.max_primal_iters; ++iter) {
-    tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
-    tiny_ForwardPassLti(X, U, *prob, model);
-    if (verbose == 1) {
-      printf("Outer loop");
-      // printf("iter     J           ΔJ        |d|         α        reg         ρ\n");
-      // printf("---------------------------------------------------------------------\n");
-      // printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
-      //         iter, J, ΔJ, dmax, α, reg, ρ)    
+double tiny_RiccatiConvergence(tiny_ProblemData prob) {
+  double norm_d_max = 0.0;
+  for (int k = 0; k < prob.nhorizon-1; ++k) {
+    double norm_d = slap_NormTwo(prob.d[k]);
+    if (norm_d > norm_d_max) {
+      norm_d_max = norm_d;
     }
-    
   }
-  return SLAP_NO_ERROR; 
+  return norm_d_max;
 }
 
 // [u-p.u_max;-u + p.u_min]

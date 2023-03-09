@@ -29,6 +29,7 @@ typedef struct {
   double regu;
   double regu_min;
   double regu_max;
+  double penalty;
   double penalty_max;
   double penalty_mul;
   int max_primal_iters;
@@ -98,9 +99,10 @@ enum slap_ErrorCode tiny_ForwardPassLti(
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model);
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    Matrix* X, Matrix* U, tiny_ProblemData* prob, 
-    const tiny_LinearDiscreteModel model,
-    const tiny_Solver solver, const int verbose); 
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
+    const tiny_LinearDiscreteModel model, const int verbose); 
+
+double tiny_RiccatiConvergence(tiny_ProblemData prob);
 
 void tiny_IneqInputs(
   Matrix* ineq, const tiny_ProblemData prob, const Matrix u);

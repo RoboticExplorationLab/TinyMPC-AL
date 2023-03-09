@@ -101,8 +101,8 @@ void tiny_ExpandTerminalCost(
   slap_MatMulAdd(*grad_el_x, prob.Qf, dx, 1, 0); 
 }
 
-// Riccati recursion and augmented Lagrange
-enum slap_ErrorCode tiny_BackwardPass(
+// Riccati recursion for LTI without constraints
+enum slap_ErrorCode tiny_BackwardPassLti(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
     const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp) {
   // Copy terminal cost-to-go
@@ -170,11 +170,10 @@ enum slap_ErrorCode tiny_BackwardPass(
 
 // Roll out the closed-loop dynamics with K and d from backward pass, 
 // calculate new X, U in place
-enum slap_ErrorCode tiny_ForwardPass(
+enum slap_ErrorCode tiny_ForwardPassLti(
     Matrix* X, Matrix* U,
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model) {
   int N = prob.nhorizon;
-  double alpha = 1.0;
   double u_data[prob.ninputs];
   double x_data[prob.nstates];
   Matrix Un = slap_MatrixFromArray(prob.ninputs, 1, u_data);
@@ -207,8 +206,8 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
   double G_temp_data[(n + m) * (n + m + 1)];
   Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
   for (int iter = 0; iter < solver.max_primal_iters; ++iter) {
-    tiny_BackwardPass(prob, model, solver, X, U, G_temp);
-    tiny_ForwardPass(X, U, prob, model);
+    tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
+    tiny_ForwardPassLti(X, U, prob, model);
     if (verbose == 1) {
       printf("Outer loop");
       // printf("iter     J           ΔJ        |d|         α        reg         ρ\n");

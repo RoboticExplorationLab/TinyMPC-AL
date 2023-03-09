@@ -70,7 +70,6 @@ void AddCostTest() {
 
 void ExpandCostTest() {
   const double tol = 1e-8;
-  double cost = 0;
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
   double* uptr = u_ref_data;

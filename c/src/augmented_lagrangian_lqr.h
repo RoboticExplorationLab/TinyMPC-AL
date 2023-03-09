@@ -84,11 +84,11 @@ void tiny_ExpandTerminalCost(
     Matrix* hes_el_xx, Matrix* grad_el_x, 
     const tiny_ProblemData prob, const Matrix x);
 
-enum slap_ErrorCode tiny_BackwardPass(
+enum slap_ErrorCode tiny_BackwardPassLti(
     tiny_ProblemData prob, const tiny_LinearDiscreteModel model, 
     const tiny_Solver solver, const Matrix* X, const Matrix* U,  Matrix G_temp);
 
-enum slap_ErrorCode tiny_ForwardPass(
+enum slap_ErrorCode tiny_ForwardPassLti(
     Matrix* X, Matrix* U,
     const tiny_ProblemData prob, const tiny_LinearDiscreteModel model);
 

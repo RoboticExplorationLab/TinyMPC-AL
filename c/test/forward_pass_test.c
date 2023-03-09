@@ -95,7 +95,7 @@ void ForwardPassTest() {
   }  
 
   // Include discrete dynamics test
-  tiny_ForwardPass(X, U, prob, model);
+  tiny_ForwardPassLti(X, U, prob, model);
   for (int i = 0; i < NHORIZON; ++i) {
     TEST(SumOfSquaredError(X[i].data, Xsln[i].data, NSTATES) < tol);
   }

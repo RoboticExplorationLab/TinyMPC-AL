@@ -10,6 +10,7 @@
         "back_pass_data.h": "c",
         "array": "c",
         "string": "c",
-        "ranges": "c"
+        "ranges": "c",
+        "lqr_lti_track_data.h": "c"
     }
 }

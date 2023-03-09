@@ -33,7 +33,6 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
   double udual_data[NINPUTS*(NHORIZON-1)] = {0};
-  const double tol = 1e-8;
 
   tiny_LinearDiscreteModel model = kDefaultLinearDiscreteModel;
   tiny_ProblemData prob = kDefaultProblemData;
@@ -83,7 +82,7 @@ void LqrLtiTest() {
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;    
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    // slap_MatrixCopy(Xref[i], xg);
+    slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;   
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES*NSTATES;
@@ -116,13 +115,18 @@ void LqrLtiTest() {
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
-  // !!Can use separate functions instead, but lacking initial rollout.
-  // double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  // Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
-  //                                     G_temp_data);
-  // tiny_BackwardPass(prob, model, solver, X, U, G_temp);
-  // tiny_ForwardPass(X, U, prob, model);
-  tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
+  // Initial rollout
+  for (int k = 0; k < NHORIZON - 1; ++k) {
+    tiny_DiscreteDynamics(&(X[k+1]), X[k], U[k], model);
+  }
+
+  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
+                                      G_temp_data);
+  tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
+  tiny_ForwardPassLti(X, U, prob, model);
+  
+  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON; ++k) {
     tiny_Print(X[k]);
   }

@@ -18,7 +18,6 @@ void BackPassTest() {
   double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
   double f_data[NSTATES] = {0};
   double x0_data[NSTATES] = {5,7,2,-1.4};
-  double xg_data[NSTATES] = {0};
   double Xref_data[NSTATES*NHORIZON] = {0};
   double Uref_data[NINPUTS*(NHORIZON-1)] = {0};
   // double X_data[NSTATES*NHORIZON] = {0};
@@ -116,7 +115,7 @@ void BackPassTest() {
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1, 
                                       G_temp_data);
-  tiny_BackwardPass(prob, model, solver, X, U, G_temp);
+  tiny_BackwardPassLti(prob, model, solver, X, U, G_temp);
   TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON-1)*NINPUTS) < tol);
 }
 

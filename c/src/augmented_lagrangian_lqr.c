@@ -26,6 +26,8 @@ const tiny_Solver kDefaultSolver = {
   .penalty_mul = 10,
   .max_primal_iters = 50,
   .max_search_iters = 5,
+  .riccati_tol = 1e-1,
+  .cstr_tol = 1e-4,
 };
 
 const tiny_ProblemData kDefaultProblemData = {
@@ -300,7 +302,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
 
     printf("update duals and penalty\n");
 
-    if (norm_d_max < 1e-1) {
+    if (norm_d_max < solver->riccati_tol) {
       cstr_violation = 0.0;
       double norm_huv_inf = 0.0;   
       for (int k = 0; k < N-1; ++k) {
@@ -323,7 +325,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
         cstr_violation = cstr_violation < norm_huv_inf ? norm_huv_inf : cstr_violation;
       }
       printf("convio: %.4f \n", cstr_violation);
-      if (cstr_violation < 1e-4) {
+      if (cstr_violation < solver->cstr_tol) {
         printf("\nSUCCESS!\n");
         return SLAP_NO_ERROR;
       }

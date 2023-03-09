@@ -13,7 +13,7 @@
 #define NINPUTS 2
 #define NHORIZON 51
 //U, X, Psln
-void LqrLtiTest() {
+void InputConstrainedLqrLtiTest() {
   double A_data[NSTATES*NSTATES] = {1,0,0,0, 0,1,0,0, 0.1,0,1,0, 0,0.1,0,1};
   double B_data[NSTATES*NINPUTS] = {0.005,0,0.1,0, 0,0.005,0,0.1};
   double f_data[NSTATES] = {0};
@@ -117,15 +117,14 @@ void LqrLtiTest() {
   solver.max_primal_iters = 15;
   tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
   for (int k = 0; k < NHORIZON-1; ++k) {
-    tiny_Print(U[k]);
+    tiny_Print(X[k]);
     TEST(slap_NormInf(U[k]) < (2+0.001));
   }
-  // tiny_Print(prob.d[0]);
-  // TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < 1e-1);
+  TEST(SumOfSquaredError(X[NHORIZON-1].data, xg_data, NSTATES) < 1e0);
 }
 
 int main() {
-  LqrLtiTest();
+  InputConstrainedLqrLtiTest();
   PrintTestResult();
   return TestResult();
 }

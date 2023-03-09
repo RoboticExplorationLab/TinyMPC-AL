@@ -34,6 +34,8 @@ typedef struct {
   double penalty_mul;
   int max_primal_iters;
   int max_search_iters;
+  double riccati_tol;
+  double cstr_tol;
 } tiny_Solver;
 
 extern const tiny_Solver kDefaultSolver;

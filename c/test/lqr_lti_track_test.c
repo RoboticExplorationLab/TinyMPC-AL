@@ -1,9 +1,9 @@
-#include "augmented_lagrangian_lqr.h"
+#include "constrained_ilqr.h"
 #include "data/lqr_lti_track_data.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "util.h"
+#include "tiny_utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2

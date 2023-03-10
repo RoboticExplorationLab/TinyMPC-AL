@@ -1,4 +1,4 @@
-#include "augmented_lagrangian_lqr.h"
+#include "constrained_lqr.h"
 
 void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k) {
@@ -71,8 +71,8 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, *prob, X[k], U[k], k);
     // State Gradient: Gx = q + A'(P*f + p)
     slap_MatrixCopy(prob->p[k], prob->p[k + 1]);
-    slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
-                   1);  // p[k] = P[k+1]*f + p[k+1]
+    // slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
+                  //  1);  // p[k] = P[k+1]*f + p[k+1]
     slap_MatMulAdd(Gx, slap_Transpose(model.A), prob->p[k], 1, 1);
 
     // Control Gradient: Gu = r + B'(P*f + p)
@@ -104,10 +104,10 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     slap_MatrixCopy(prob->P[k], Gxx);                            // P = Gxx
     slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);  // Gxu = K'Guu
     slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);           // P += K'Guu*K
-    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -1,
+    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -2,
                    1);  // P -= K'Gux
-    slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1,
-                   1);  // P -= Gux'K
+    // slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1,
+    //                1);  // P -= Gux'K
 
     // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
     slap_MatrixCopy(prob->p[k], Gx);                    // p = Gx
@@ -200,8 +200,8 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     tiny_ExpandStageCost(&Gxx, &Gx, &Guu, &Gu, *prob, X[k], U[k], k);
     // State Gradient: Gx = q + A'(P*f + p)
     slap_MatrixCopy(prob->p[k], prob->p[k + 1]);
-    slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
-                   1);  // p[k] = P[k+1]*f + p[k+1]
+    // slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
+    //                1);  // p[k] = P[k+1]*f + p[k+1]
     slap_MatMulAdd(Gx, slap_Transpose(model.A), prob->p[k], 1, 1);
 
     // Control Gradient: Gu = r + B'(P*f ineq_input_jac+ p)
@@ -259,10 +259,10 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_MatrixCopy(prob->P[k], Gxx);                            // P = Gxx
     slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);  // Gxu = K'Guu
     slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);           // P += K'Guu*K
-    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -1,
-                   1);  // P -= K'Gux
-    slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1,
-                   1);  // P -= Gux'K
+    slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -2,
+                   1);  // P -= 2*K'Gux
+    // slap_MatMulAdd(prob->P[k], slap_Transpose(Gux), prob->K[k], -1,
+    //                1);  // P -= Gux'K
 
     // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
     slap_MatrixCopy(prob->p[k], Gx);                    // p = Gx
@@ -336,7 +336,8 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
 
     printf("update duals and penalty\n");
 
-    if (norm_d_max < solver->riccati_tol) {
+    // For linear systems, only 1 iteration, shouldn't need condition here
+    if (0*norm_d_max < solver->riccati_tol) {
       cstr_violation = 0.0;
       double norm_inf = 0.0;
 

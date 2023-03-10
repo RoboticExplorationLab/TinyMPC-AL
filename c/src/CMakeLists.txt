@@ -1,14 +1,17 @@
 add_library(tinympc
-  riccati.h
-  riccati.c
+  constrained_ilqr.h
+  constrained_ilqr.c
 
-  util.h
+  tiny_utils.h
 
   tiny_struct.h
   tiny_struct.c
 
-  augmented_lagrangian_lqr.h
-  augmented_lagrangian_lqr.c
+  bicycle.h
+  bicycle.c
+
+  planar_quadrotor.h
+  planar_quadrotor.c
   )
 
 target_link_libraries(tinympc

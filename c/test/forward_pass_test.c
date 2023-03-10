@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "augmented_lagrangian_lqr.h"
+#include "constrained_ilqr.h"
 #include "data/forward_pass_data.h"
 #include "simpletest/simpletest.h"
 #include "slap/slap.h"

@@ -5,7 +5,7 @@
 
 #include "constrained_ilqr.h"
 #include "data/forward_pass_data.h"
-#include "simpletest/simpletest.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 

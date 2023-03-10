@@ -1,7 +1,7 @@
 // Test all inequality-related functions and tiny_RiccatiConvergence
 
 #include "constrained_ilqr.h"
-#include "simpletest/simpletest.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 

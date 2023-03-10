@@ -1,28 +1,29 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Task: Test AL-LQR on double integrator with input/state box constraints and goal
+// constraint.
+// Scenerio: drive from initial state to goal state.
 
 #include "constrained_ilqr.h"
-#include "data/back_pass_data.h"
-#include "simpletest/simpletest.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 3
+#define NHORIZON 51
 // U, X, Psln
-void BackPassTest() {
+void InputConstrainedLqrLtiTest() {
+  // double tol = 1e-4;
   double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
   double x0_data[NSTATES] = {5, 7, 2, -1.4};
+  double xg_data[NSTATES] = {0};
   double Xref_data[NSTATES * NHORIZON] = {0};
   double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
-  // double X_data[NSTATES*NHORIZON] = {0};
-  // double U_data[NINPUTS*(NHORIZON-1)] = {0};
+  double X_data[NSTATES * NHORIZON] = {0};
+  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
@@ -30,10 +31,13 @@ void BackPassTest() {
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
-  const double tol = 1e-8;
-
+  double umin_data[NINPUTS] = {-6, -6};
+  double umax_data[NINPUTS] = {6, 6};
+  double xmin_data[NSTATES] = {-2, -2, -2, -2};
+  double xmax_data[NSTATES] = {6, 8, 3, 2};
+  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
+  double goal_dual_data[NSTATES] = {0};
   tiny_LinearDiscreteModel model;
   tiny_InitLinearDiscreteModel(&model);
   tiny_ProblemData prob;
@@ -47,6 +51,7 @@ void BackPassTest() {
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -56,6 +61,8 @@ void BackPassTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
+  Matrix input_duals[NHORIZON - 1];
+  Matrix state_duals[NHORIZON];
 
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
@@ -65,10 +72,13 @@ void BackPassTest() {
   double* dptr = d_data;
   double* Pptr = P_data;
   double* pptr = p_data;
+  double* udual_ptr = input_dual_data;
+  double* xdual_ptr = state_dual_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+      slap_SetConst(U[i], 0.01);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
@@ -76,21 +86,28 @@ void BackPassTest() {
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
+      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
+      udual_ptr += 2 * NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
+    slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
+    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
+    xdual_ptr += 2 * NSTATES;
   }
-
+  slap_MatrixCopy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
+  prob.ncstr_inputs = 2 * NINPUTS;
+  prob.ncstr_states = 2 * NSTATES;
+  prob.ncstr_goal = NSTATES;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
@@ -99,6 +116,8 @@ void BackPassTest() {
   slap_SetIdentity(prob.Qf, 100 * 1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
+  prob.x_max = slap_MatrixFromArray(NSTATES, 1, xmax_data);
+  prob.x_min = slap_MatrixFromArray(NSTATES, 1, xmin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -106,19 +125,27 @@ void BackPassTest() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
+  prob.input_duals = input_duals;
+  prob.state_duals = state_duals;
+  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.regu = 1e-8;
-  solver.penalty_mul = 10;
-
-  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       G_temp_data);
-  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
-  TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);
+  solver.max_primal_iters = 16;
+  tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
+  for (int k = 0; k < NHORIZON - 1; ++k) {
+    // tiny_Print(X[k]);
+    TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
+      TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
+    }
+  }
+  tiny_Print(X[NHORIZON - 1]);
+  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
+       solver.cstr_tol);
 }
 
 int main() {
-  BackPassTest();
+  InputConstrainedLqrLtiTest();
   PrintTestResult();
   return TestResult();
 }

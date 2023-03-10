@@ -1,27 +1,27 @@
-// Task: Test AL-TVLQR on bicycle model with input/state box constraints and goal
-// constraint.
-// Scenerio: Track a trajectory.
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "constrained_ilqr.h"
-#include "simpletest/simpletest.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tiny_utils.h"
-#include "data/al_lqr_ltv_data.h"
 
-#define H 0.1
-#define NSTATES 5
+#define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 101
-
-void InputConstrainedLqrLtiTest() {
-  double A_data[NSTATES * NSTATES] = {0};  // time-varying model
-  double B_data[NSTATES * NINPUTS] = {0};  // time-varying model
+#define NHORIZON 51
+// U, X, Psln
+void LqrLtiTest() {
+  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+                                      0.1, 0, 1, 0, 0, 0.1, 0, 1};
+  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {1, 0, 0, 0, 0};
-  // double xg_data[NSTATES] = {0};
-  // double Xref_data[NSTATES * NHORIZON] = {0};  // provided
-  // double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};  // provided
+  double x0_data[NSTATES] = {5, 7, 2, -1.4};
+  double xg_data[NSTATES] = {0};
+  double Xref_data[NSTATES * NHORIZON] = {0};
+  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
   double X_data[NSTATES * NHORIZON] = {0};
   double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
@@ -31,13 +31,9 @@ void InputConstrainedLqrLtiTest() {
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -0.5};
-  double umax_data[NINPUTS] = {2, 0.5};
-  double xmin_data[NSTATES] = {-1e8, -1e8, -1e8, -4, -0.7};
-  double xmax_data[NSTATES] = {1e8, 1e8, 1e8, 4, 0.7};
-  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
+  double umin_data[NINPUTS] = {-2, -2};
+  double umax_data[NINPUTS] = {2, 2};
+
   tiny_LinearDiscreteModel model;
   tiny_InitLinearDiscreteModel(&model);
   tiny_ProblemData prob;
@@ -51,7 +47,7 @@ void InputConstrainedLqrLtiTest() {
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  // Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -61,8 +57,6 @@ void InputConstrainedLqrLtiTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix input_duals[NHORIZON - 1];
-  Matrix state_duals[NHORIZON];
 
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
@@ -72,13 +66,10 @@ void InputConstrainedLqrLtiTest() {
   double* dptr = d_data;
   double* Pptr = P_data;
   double* pptr = p_data;
-  double* udual_ptr = input_dual_data;
-  double* xdual_ptr = state_dual_data;
-
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      slap_SetConst(U[i], 0.01);
+      // slap_SetConst(U[i], 0.01);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
@@ -86,28 +77,22 @@ void InputConstrainedLqrLtiTest() {
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
-      udual_ptr += 2 * NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    // slap_MatrixCopy(Xref[i], xg);
+    slap_MatrixCopy(Xref[i], xg);
     Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
-    xdual_ptr += 2 * NSTATES;
   }
   slap_MatrixCopy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_goal = NSTATES;
+  prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
@@ -116,8 +101,6 @@ void InputConstrainedLqrLtiTest() {
   slap_SetIdentity(prob.Qf, 100 * 1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
-  prob.x_max = slap_MatrixFromArray(NSTATES, 1, xmax_data);
-  prob.x_min = slap_MatrixFromArray(NSTATES, 1, xmin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -125,27 +108,31 @@ void InputConstrainedLqrLtiTest() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
-  prob.input_duals = input_duals;
-  prob.state_duals = state_duals;
-  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_primal_iters = 16;
-  tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
+  solver.regu = 1e-8;
+  solver.penalty_mul = 10;
+  solver.max_primal_iters = 1;
+
+  // Initial rollout
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(X[k]);
-    TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
-    for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
-    }
+    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
   }
-  tiny_Print(X[NHORIZON - 1]);
-  // TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
-  //      solver.cstr_tol);
+
+  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
+                                       G_temp_data);
+  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
+  tiny_ForwardPassLti(X, U, prob, model);
+
+  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
+  for (int k = 0; k < NHORIZON; ++k) {
+    tiny_Print(X[k]);
+  }
+  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 
 int main() {
-  InputConstrainedLqrLtiTest();
+  LqrLtiTest();
   PrintTestResult();
   return TestResult();
 }

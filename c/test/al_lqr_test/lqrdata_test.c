@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constrained_ilqr.h"
-#include "simpletest/simpletest.h"
+#include "constrained_lqr.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 

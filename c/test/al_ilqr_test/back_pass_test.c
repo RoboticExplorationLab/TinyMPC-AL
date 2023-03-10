@@ -1,22 +1,28 @@
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "constrained_ilqr.h"
-#include "data/lqr_lti_track_data.h"
-#include "simpletest/simpletest.h"
+#include "data/back_pass_data.h"
+#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 51
+#define NHORIZON 3
 // U, X, Psln
-void LqrLtiTest() {
+void BackPassTest() {
   double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {6, 6, 3, -1.5};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  double x0_data[NSTATES] = {5, 7, 2, -1.4};
+  double Xref_data[NSTATES * NHORIZON] = {0};
+  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double X_data[NSTATES*NHORIZON] = {0};
+  // double U_data[NINPUTS*(NHORIZON-1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
@@ -26,6 +32,7 @@ void LqrLtiTest() {
   double Qf_data[NSTATES * NSTATES] = {0};
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
+  const double tol = 1e-8;
 
   tiny_LinearDiscreteModel model;
   tiny_InitLinearDiscreteModel(&model);
@@ -58,10 +65,10 @@ void LqrLtiTest() {
   double* dptr = d_data;
   double* Pptr = P_data;
   double* pptr = p_data;
+
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      // slap_SetConst(U[i], 0.01);
       Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
@@ -79,7 +86,7 @@ void LqrLtiTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
-  slap_MatrixCopy(X[0], model.x0);
+
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
@@ -102,29 +109,16 @@ void LqrLtiTest() {
 
   solver.regu = 1e-8;
   solver.penalty_mul = 10;
-  solver.max_primal_iters = 1;
-
-  // Initial rollout
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
-  }
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
   tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
-  tiny_ForwardPassLti(X, U, prob, model);
-  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
-  }
-  for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 1e-1);
-  }
+  TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);
 }
 
 int main() {
-  LqrLtiTest();
+  BackPassTest();
   PrintTestResult();
   return TestResult();
 }

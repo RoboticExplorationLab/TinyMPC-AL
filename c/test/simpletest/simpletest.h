@@ -31,7 +31,7 @@
  *
  * ## Example
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
- * #include "simpletest.h"
+ * #include "simpletest.h""
  *
  * void MyTestFunction() {
  *   TEST(2 == 1 + 1);

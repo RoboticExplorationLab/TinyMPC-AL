@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constrained_ilqr.h"
+#include "constrained_lqr.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
@@ -24,10 +24,9 @@ double r_data[NINPUTS] = {0};            // NOLINT
 double Qf_data[NSTATES * NSTATES] = {0};
 double ans_stage[2] = {0.04549999999999994, 0.1314999999999999};
 double ans_term = 0.0049999999999999975;
-double ans_gradx[NSTATES] = {0.0, 0.0, 0.0, -0.009999999999999966};
-double ans_gradu[NINPUTS] = {0.0, -0.2999999999999998};
-double ans_gradxf[NSTATES] = {-0.04999999999999993, -0.050000000000000044, 0.0,
-                              0.0};
+double ans_gradx[NSTATES] = {-0.11, -0.12, -0.13,  0.42};
+double ans_gradu[NINPUTS] = {0.21, -0.14};
+double ans_gradxf[NSTATES] = {-0.6, -0.65, -0.65,  2.15};
 
 void AddCostTest() {
   const double tol = 1e-8;
@@ -85,8 +84,6 @@ void ExpandCostTest() {
     X_ref[i] = slap_MatrixFromArray(NSTATES, 1, xptr);
     xptr += NSTATES;
   }
-  Matrix x = slap_MatrixFromArray(NSTATES, 1, x_data);
-  Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
@@ -97,7 +94,7 @@ void ExpandCostTest() {
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 0.1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1);
+  slap_SetIdentity(prob.R, 0.1);
   prob.q = slap_MatrixFromArray(NSTATES, 1, q_data);
   slap_SetConst(prob.q, 1);
   prob.r = slap_MatrixFromArray(NINPUTS, 1, r_data);
@@ -115,12 +112,12 @@ void ExpandCostTest() {
   Matrix gradx = slap_MatrixFromArray(NSTATES, 1, gradx_data);
   Matrix hessu = slap_MatrixFromArray(NINPUTS, NINPUTS, hessu_data);
   Matrix gradu = slap_MatrixFromArray(NINPUTS, 1, gradu_data);
-  tiny_ExpandStageCost(&hessx, &gradx, &hessu, &gradu, prob, x, u, 0);
+  tiny_ExpandStageCost(&hessx, &gradx, &hessu, &gradu, prob, 0);
   TEST(SumOfSquaredError(hessx.data, Q_data, NSTATES * NSTATES) < tol);
   TEST(SumOfSquaredError(hessu.data, R_data, NSTATES) < tol);
   TEST(SumOfSquaredError(gradx.data, ans_gradx, NINPUTS * NINPUTS) < tol);
   TEST(SumOfSquaredError(gradu.data, ans_gradu, NINPUTS) < tol);
-  tiny_ExpandTerminalCost(&hessx, &gradx, prob, x);
+  tiny_ExpandTerminalCost(&hessx, &gradx, prob);
   TEST(SumOfSquaredError(hessx.data, Qf_data, NSTATES * NSTATES) < tol);
   TEST(SumOfSquaredError(gradx.data, ans_gradxf, NSTATES) < tol);
 }

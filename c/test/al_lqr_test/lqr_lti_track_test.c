@@ -1,4 +1,7 @@
-#include "constrained_ilqr.h"
+// Test tracking LQR 
+// Scenerio: Drive double integrator to track reference.
+
+#include "constrained_lqr.h"
 #include "data/lqr_lti_track_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -85,11 +88,11 @@ void LqrLtiTest() {
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1e-1);
+  slap_SetIdentity(prob.Q, 10e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 100 * 1e-1);
+  slap_SetIdentity(prob.Qf, 1000 * 1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.X_ref = Xref;
@@ -104,17 +107,12 @@ void LqrLtiTest() {
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
-  // Initial rollout
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
-  }
-
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
-  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
+  tiny_BackwardPassLti(&prob, solver, model, G_temp);
   tiny_ForwardPassLti(X, U, prob, model);
-  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
+  // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON - 1; ++k) {
     printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
   }

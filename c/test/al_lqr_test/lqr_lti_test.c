@@ -1,9 +1,7 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Test LQR 
+// Scenerio: Drive double integrator to arbitrary goal state.
 
-#include "constrained_ilqr.h"
+#include "constrained_lqr.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
@@ -19,7 +17,7 @@ void LqrLtiTest() {
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
   double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double xg_data[NSTATES] = {0};
+  double xg_data[NSTATES] = {2, 5, 3, -1};
   double Xref_data[NSTATES * NHORIZON] = {0};
   double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
   double X_data[NSTATES * NHORIZON] = {0};
@@ -98,7 +96,7 @@ void LqrLtiTest() {
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 100 * 1e-1);
+  slap_SetIdentity(prob.Qf, 1000 * 1e-1);
   prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
   prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.X_ref = Xref;
@@ -113,21 +111,17 @@ void LqrLtiTest() {
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
-  // Initial rollout
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
-  }
-
-  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       G_temp_data);
-  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
+  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
+                                       Q_temp_data);
+  tiny_BackwardPassLti(&prob, solver, model, Q_temp);
   tiny_ForwardPassLti(X, U, prob, model);
 
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON; ++k) {
-    tiny_Print(X[k]);
+  for (int k = 0; k < NHORIZON-1; ++k) {
+    tiny_Print(U[k]);
   }
+  tiny_Print(X[NHORIZON-1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 

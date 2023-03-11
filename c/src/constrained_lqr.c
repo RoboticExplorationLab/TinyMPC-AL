@@ -38,7 +38,6 @@ void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
                                          const tiny_Solver solver,
                                          const tiny_LinearDiscreteModel model,
-                                         const Matrix* X, const Matrix* U,
                                          Matrix Q_temp) {
   int N = prob->nhorizon;
   int n = prob->nstates;

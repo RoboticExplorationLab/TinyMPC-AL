@@ -45,7 +45,7 @@ void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
 
 // Riccati recursion for LTI without constraints
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_LinearDiscreteModel model,
+                                         const tiny_LtiModel model,
                                          const tiny_Solver solver,
                                          const Matrix* X, const Matrix* U,
                                          Matrix G_temp) {
@@ -125,7 +125,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
 
 // Riccati recursion for LTI with constraints
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
-    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model,
+    tiny_ProblemData* prob, const tiny_LtiModel model,
     const tiny_Solver solver, const Matrix* X, const Matrix* U, Matrix* G_temp,
     Matrix* ineq_temp) {
   // Copy terminal cost-to-go
@@ -281,12 +281,12 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
-    const tiny_LinearDiscreteModel model, const int verbose) {
+    const tiny_LtiModel model, const int verbose) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
   for (int k = 0; k < N - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
+    tiny_LtiDynamics(&(X[k + 1]), X[k], U[k], model);
   }
   double G_temp_data[(n + m) * (n + m + 1)];
   Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
@@ -400,7 +400,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
 // calculate new X, U in place
 enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
                                         const tiny_ProblemData prob,
-                                        const tiny_LinearDiscreteModel model) {
+                                        const tiny_LtiModel model) {
   int N = prob.nhorizon;
   double u_data[prob.ninputs];
   double x_data[prob.nstates];
@@ -416,7 +416,7 @@ enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
     slap_MatrixCopy(U[k], Un);
     // Next state: x = A*x + B*u + f
     slap_MatrixCopy(Xn, X[k + 1]);
-    tiny_DiscreteDynamics(&X[k + 1], X[k], U[k], model);
+    tiny_LtiDynamics(&X[k + 1], X[k], U[k], model);
   }
   return SLAP_NO_ERROR;
 }
@@ -492,8 +492,8 @@ void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual) {
   }
 }
 
-void tiny_DiscreteDynamics(Matrix* xn, const Matrix x, const Matrix u,
-                           const tiny_LinearDiscreteModel model) {
+void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
+                           const tiny_LtiModel model) {
   slap_MatMulAdd(*xn, model.A, x, 1, 0);      // x[k+1] = A * x[k]
   slap_MatMulAdd(*xn, model.B, u, 1, 1);      // x[k+1] += B * u[k]
   slap_MatrixAddition(*xn, *xn, model.f, 1);  // x[k+1] += f

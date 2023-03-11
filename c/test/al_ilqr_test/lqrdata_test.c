@@ -49,8 +49,8 @@ int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
   const double tol = 1e-8;
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   model.nstates = NSTATES;
   model.ninputs = NINPUTS;
   model.dt = dt;

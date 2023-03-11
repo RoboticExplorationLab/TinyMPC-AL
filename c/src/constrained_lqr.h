@@ -17,21 +17,36 @@ void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
 
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
                                          const tiny_Solver solver,
-                                         const tiny_LinearDiscreteModel model,
+                                         const tiny_LtiModel model,
                                          Matrix Q_temp);
 
-// enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
-//     tiny_ProblemData* prob, const tiny_Solver solver, 
-//     const tiny_LinearDiscreteModel model, const Matrix* X, const Matrix* U, 
-//     Matrix* Q_temp, Matrix* ineq_temp);
+enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
+    tiny_ProblemData* prob, const tiny_Solver solver, 
+    const tiny_LtiModel model, const Matrix* X, const Matrix* U, 
+    Matrix* Q_temp, Matrix* ineq_temp);
 
 enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
                                         const tiny_ProblemData prob,
-                                        const tiny_LinearDiscreteModel model);
+                                        const tiny_LtiModel model);
+    
+enum slap_ErrorCode tiny_MpcLti(
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
+    const tiny_LtiModel model, const int verbose);
 
-// enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-//     Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
-//     const tiny_LinearDiscreteModel model, const int verbose);
+enum slap_ErrorCode tiny_BackwardPassLtv(
+    tiny_ProblemData* prob, const tiny_Solver solver,
+    tiny_LtiModel* model, Matrix Q_temp,
+    void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix));
+
+enum slap_ErrorCode tiny_ForwardPassLtv(
+    Matrix* X, Matrix* U, tiny_LtiModel* model,
+    const tiny_ProblemData prob,
+    void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix));
+
+enum slap_ErrorCode tiny_MpcLtv(
+    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
+    tiny_LtiModel* model, const int verbose, 
+    void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix));
 
 double tiny_RiccatiConvergence(const tiny_ProblemData prob);
 
@@ -53,5 +68,5 @@ void tiny_ActiveIneqMask(Matrix* mask, const Matrix input_dual,
 
 void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual);
 
-void tiny_DiscreteDynamics(Matrix* xn, const Matrix x, const Matrix u,
-                           const tiny_LinearDiscreteModel model);
+void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
+                           const tiny_LtiModel model);

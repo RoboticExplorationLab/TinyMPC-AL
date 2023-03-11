@@ -17,7 +17,7 @@
 // Codes generated from julia/planar_quad_gen
 // Discrete dynamics of planar quadrotor
 //========================================
-void tiny_DiscreteDynamics_Raw(double* xn, const double* x, const double* u) {
+void tiny_NonlinearDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[0] = 0.16666666666666666 *
               (0.2 * (0.05 * (u[0] + u[1]) * sin(0.05 * x[5] + x[2]) + x[3]) +
                0.1 * (0.1 * (u[0] + u[1]) *
@@ -71,8 +71,8 @@ void tiny_DiscreteDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[5] = 0.8333333333333336 * (-1 * u[0] + u[1]) + x[5];
 }
 
-void tiny_DiscreteDynamics(Matrix* xn, const Matrix x, const Matrix u) {
-  tiny_DiscreteDynamics_Raw(xn->data, x.data, u.data);
+void tiny_NonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u) {
+  tiny_NonlinearDynamics_Raw(xn->data, x.data, u.data);
 }
 
 //========================================

@@ -5,6 +5,9 @@ add_library(tinympc
   constrained_lqr.h
   constrained_lqr.c
 
+  unconstrained_lqr.h
+  unconstrained_lqr.c
+
   tiny_utils.h
 
   tiny_struct.h

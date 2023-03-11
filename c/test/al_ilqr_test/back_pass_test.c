@@ -34,8 +34,8 @@ void BackPassTest() {
   double umax_data[NINPUTS] = {2, 2};
   const double tol = 1e-8;
 
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;

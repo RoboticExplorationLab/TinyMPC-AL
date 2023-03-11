@@ -2,7 +2,7 @@
 // constraint.
 // Scenerio: drive from initial state to goal state.
 
-#include "constrained_ilqr.h"
+#include "constrained_lqr.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
@@ -12,7 +12,7 @@
 #define NINPUTS 2
 #define NHORIZON 51
 // U, X, Psln
-void InputConstrainedLqrLtiTest() {
+void MpcLtiTest() {
   // double tol = 1e-4;
   double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
@@ -38,8 +38,8 @@ void InputConstrainedLqrLtiTest() {
   double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
   double goal_dual_data[NSTATES] = {0};
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;
@@ -129,8 +129,9 @@ void InputConstrainedLqrLtiTest() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_primal_iters = 16;
-  tiny_AugmentedLagrangianLqr(X, U, &prob, &solver, model, 1);
+  solver.max_primal_iters = 10;
+  tiny_MpcLti(X, U, &prob, &solver, model, 1);
+
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // tiny_Print(X[k]);
     TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
@@ -145,7 +146,7 @@ void InputConstrainedLqrLtiTest() {
 }
 
 int main() {
-  InputConstrainedLqrLtiTest();
+  MpcLtiTest();
   PrintTestResult();
   return TestResult();
 }

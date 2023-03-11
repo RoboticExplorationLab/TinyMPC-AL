@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constrained_ilqr.h"
+#include "unconstrained_lqr.h"
 #include "data/back_pass_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -34,8 +34,8 @@ void BackPassTest() {
   double umax_data[NINPUTS] = {2, 2};
   const double tol = 1e-8;
 
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;
@@ -113,7 +113,7 @@ void BackPassTest() {
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
-  tiny_BackwardPassLti(&prob, model, solver, X, U, G_temp);
+  tiny_BackwardPassLti(&prob, solver, model, G_temp);
   TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);
 }
 

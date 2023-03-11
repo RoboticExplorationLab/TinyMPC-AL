@@ -17,23 +17,23 @@ void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                              const tiny_ProblemData prob, const Matrix x);
 
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_LinearDiscreteModel model,
+                                         const tiny_LtiModel model,
                                          const tiny_Solver solver,
                                          const Matrix* X, const Matrix* U,
                                          Matrix G_temp);
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
-    tiny_ProblemData* prob, const tiny_LinearDiscreteModel model,
+    tiny_ProblemData* prob, const tiny_LtiModel model,
     const tiny_Solver solver, const Matrix* X, const Matrix* U, Matrix* G_temp,
     Matrix* ineq_temp);
 
 enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
                                         const tiny_ProblemData prob,
-                                        const tiny_LinearDiscreteModel model);
+                                        const tiny_LtiModel model);
 
 enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
-    const tiny_LinearDiscreteModel model, const int verbose);
+    const tiny_LtiModel model, const int verbose);
 
 double tiny_RiccatiConvergence(const tiny_ProblemData prob);
 
@@ -51,5 +51,5 @@ void tiny_ActiveIneqMask(Matrix* mask, const Matrix input_dual,
 
 void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual);
 
-void tiny_DiscreteDynamics(Matrix* xn, const Matrix x, const Matrix u,
-                           const tiny_LinearDiscreteModel model);
+void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
+                           const tiny_LtiModel model);

@@ -21,8 +21,8 @@ double f_data[NSTATES] = {0, 0, 0, 0};
 
 void ForwardPassTest() {
   const double tol = 1e-8;
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   model.dt = 0.1;

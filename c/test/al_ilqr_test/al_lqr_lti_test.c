@@ -38,8 +38,8 @@ void InputConstrainedLqrLtiTest() {
   double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
   double goal_dual_data[NSTATES] = {0};
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;

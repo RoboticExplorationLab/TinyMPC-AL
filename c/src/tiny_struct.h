@@ -20,9 +20,21 @@ typedef struct {
   Matrix B;
   Matrix f;
   Matrix x0;
-} tiny_LinearDiscreteModel;
+} tiny_LtiModel;
 
-void tiny_InitLinearDiscreteModel(tiny_LinearDiscreteModel* model);
+typedef struct {
+  int nstates;
+  int ninputs;
+  double dt;
+  Matrix* A;
+  Matrix* B;
+  Matrix* f;
+  Matrix x0;
+  void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
+} tiny_LtvModel;
+
+void tiny_InitLtiModel(tiny_LtiModel* model);
+void tiny_InitLtvModel(tiny_LtvModel* model);
 
 typedef struct {
   Matrix x;   ///< state vector

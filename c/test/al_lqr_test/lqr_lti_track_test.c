@@ -1,7 +1,7 @@
 // Test tracking LQR 
 // Scenerio: Drive double integrator to track reference.
 
-#include "constrained_lqr.h"
+#include "unconstrained_lqr.h"
 #include "data/lqr_lti_track_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -30,8 +30,8 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
 
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;

@@ -1,7 +1,7 @@
 // Test LQR 
 // Scenerio: Drive double integrator to arbitrary goal state.
 
-#include "constrained_lqr.h"
+#include "unconstrained_lqr.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
@@ -32,8 +32,8 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
 
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;

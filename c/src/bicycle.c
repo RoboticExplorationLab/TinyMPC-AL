@@ -14,7 +14,7 @@
 // Codes generated from julia/bicycle_tvlqr
 // Discrete dynamics of bicycle model with predefined model params
 //========================================
-void tiny_DiscreteDynamics_Raw(double* xn, const double* x, const double* u) {
+void tiny_NonlinearDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[0] =
       0.16666666666666666 *
           (0.1 * (0.1 * u[0] + x[3]) *
@@ -46,8 +46,8 @@ void tiny_DiscreteDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[4] = 0.1 * u[1] + x[4];
 }
 
-void tiny_DiscreteDynamics(Matrix* xn, const Matrix x, const Matrix u) {
-  tiny_DiscreteDynamics_Raw(xn->data, x.data, u.data);
+void tiny_NonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u) {
+  tiny_NonlinearDynamics_Raw(xn->data, x.data, u.data);
 }
 
 //========================================

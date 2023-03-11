@@ -1,7 +1,7 @@
 #include "tiny_struct.h"
 
-void tiny_InitLinearDiscreteModel(tiny_LinearDiscreteModel* model) {
-  *model = (tiny_LinearDiscreteModel){
+void tiny_InitLtiModel(tiny_LtiModel* model) {
+  *model = (tiny_LtiModel){
       .nstates = 0,
       .ninputs = 0,
       .dt = 0.0,
@@ -9,6 +9,19 @@ void tiny_InitLinearDiscreteModel(tiny_LinearDiscreteModel* model) {
       .B = kNullMat,
       .f = kNullMat,
       .x0 = kNullMat,
+  };
+}
+
+void tiny_InitLtvModel(tiny_LtvModel* model) {
+  *model = (tiny_LtvModel){
+      .nstates = 0,
+      .ninputs = 0,
+      .dt = 0.0,
+      .A = NULL,
+      .B = NULL,
+      .f = NULL,
+      .x0 = kNullMat,
+      .get_jacobians = NULL,
   };
 }
 

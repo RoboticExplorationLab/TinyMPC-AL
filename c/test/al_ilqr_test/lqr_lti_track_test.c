@@ -27,8 +27,8 @@ void LqrLtiTest() {
   double umin_data[NINPUTS] = {-2, -2};
   double umax_data[NINPUTS] = {2, 2};
 
-  tiny_LinearDiscreteModel model;
-  tiny_InitLinearDiscreteModel(&model);
+  tiny_LtiModel model;
+  tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   tiny_Solver solver;
@@ -106,7 +106,7 @@ void LqrLtiTest() {
 
   // Initial rollout
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_DiscreteDynamics(&(X[k + 1]), X[k], U[k], model);
+    tiny_LtiDynamics(&(X[k + 1]), X[k], U[k], model);
   }
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};

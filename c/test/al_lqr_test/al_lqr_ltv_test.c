@@ -42,7 +42,7 @@ Matrix Uref[NHORIZON - 1];
 Matrix Xnom[NHORIZON];
 Matrix Unom[NHORIZON - 1];
 Matrix K[NHORIZON - 1];
-Matrix d[NHORIZON - 1]; `
+Matrix d[NHORIZON - 1]; 
 Matrix P[NHORIZON];
 Matrix p[NHORIZON];
 Matrix A[NHORIZON-1];

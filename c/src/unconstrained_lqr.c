@@ -4,18 +4,18 @@
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
                                          const tiny_Solver solver,
                                          const tiny_LtiModel model,
-                                         Matrix Q_temp) {
+                                         Matrix* Q_temp) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
   tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
 
-  Matrix Qxx = slap_CreateSubMatrix(Q_temp, 0, 0, n, n);
-  Matrix Qxu = slap_CreateSubMatrix(Q_temp, 0, n, n, m);
-  Matrix Qux = slap_CreateSubMatrix(Q_temp, n, 0, m, n);
-  Matrix Quu = slap_CreateSubMatrix(Q_temp, n, n, m, m);
-  Matrix Qx = slap_CreateSubMatrix(Q_temp, 0, n + m, n, 1);
-  Matrix Qu = slap_CreateSubMatrix(Q_temp, n, n + m, m, 1);
+  Matrix Qxx = slap_CreateSubMatrix(*Q_temp, 0, 0, n, n);
+  Matrix Qxu = slap_CreateSubMatrix(*Q_temp, 0, n, n, m);
+  Matrix Qux = slap_CreateSubMatrix(*Q_temp, n, 0, m, n);
+  Matrix Quu = slap_CreateSubMatrix(*Q_temp, n, n, m, m);
+  Matrix Qx = slap_CreateSubMatrix(*Q_temp, 0, n + m, n, 1);
+  Matrix Qu = slap_CreateSubMatrix(*Q_temp, n, n + m, m, 1);
 
   // Hijack the first part of P[N] to use for Cholesky decomposition
   // NOTE: Assumes m <= n
@@ -78,19 +78,19 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
 
 enum slap_ErrorCode tiny_BackwardPassLtv(
     tiny_ProblemData* prob, const tiny_Solver solver,
-    const tiny_LtvModel model, Matrix Q_temp) {
+    const tiny_LtvModel model, Matrix* Q_temp) {
 
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
   tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
 
-  Matrix Qxx = slap_CreateSubMatrix(Q_temp, 0, 0, n, n);
-  Matrix Qxu = slap_CreateSubMatrix(Q_temp, 0, n, n, m);
-  Matrix Qux = slap_CreateSubMatrix(Q_temp, n, 0, m, n);
-  Matrix Quu = slap_CreateSubMatrix(Q_temp, n, n, m, m);
-  Matrix Qx = slap_CreateSubMatrix(Q_temp, 0, n + m, n, 1);
-  Matrix Qu = slap_CreateSubMatrix(Q_temp, n, n + m, m, 1);
+  Matrix Qxx = slap_CreateSubMatrix(*Q_temp, 0, 0, n, n);
+  Matrix Qxu = slap_CreateSubMatrix(*Q_temp, 0, n, n, m);
+  Matrix Qux = slap_CreateSubMatrix(*Q_temp, n, 0, m, n);
+  Matrix Quu = slap_CreateSubMatrix(*Q_temp, n, n, m, m);
+  Matrix Qx = slap_CreateSubMatrix(*Q_temp, 0, n + m, n, 1);
+  Matrix Qu = slap_CreateSubMatrix(*Q_temp, n, n + m, m, 1);
 
   // Hijack the first part of P[N] to use for Cholesky decomposition
   // NOTE: Assumes m <= n

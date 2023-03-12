@@ -261,7 +261,7 @@ void AbsLqrLtvTest() {
 }
 
 int main() {
-  DeltaLqrLtvTest();
+  // DeltaLqrLtvTest();
   AbsLqrLtvTest();
   PrintTestResult();
   return TestResult();

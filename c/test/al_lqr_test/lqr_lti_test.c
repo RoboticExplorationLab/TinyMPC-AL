@@ -115,7 +115,7 @@ void LqrLtiTest() {
   double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
-  tiny_BackwardPassLti(&prob, solver, model, Q_temp);
+  tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLti(X, U, prob, model);
 
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);

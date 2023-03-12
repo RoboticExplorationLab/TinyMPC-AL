@@ -41,8 +41,8 @@ enum slap_ErrorCode tiny_ForwardPassLtv(
     // Control input: u = - d - K*x
     slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
     slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * x[k]
-    slap_MatMulAdd(U[k], prob.K[k], prob.X_ref[k], 1, 1);
-    slap_MatrixAddition(U[k], prob.U_ref[k], U[k], 1);
+    // slap_MatMulAdd(U[k], prob.K[k], prob.X_ref[k], 1, 1);
+    // slap_MatrixAddition(U[k], prob.U_ref[k], U[k], 1);
     // Next state: x = A*x + B*u + f
     tiny_DynamicsLtv(&X[k + 1], X[k], U[k], model, k);
     // tiny_NonlinearDynamics(&X[k+1], X[k], U[k]);

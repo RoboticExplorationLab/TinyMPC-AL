@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constrained_lqr.h"
+#include "tiny_struct.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"

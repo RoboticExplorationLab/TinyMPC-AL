@@ -2,7 +2,7 @@
 // constraint.
 // Scenerio: drive from initial state to goal state.
 
-#include "constrained_lqr.h"
+#include "tiny_mpc_lti.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"

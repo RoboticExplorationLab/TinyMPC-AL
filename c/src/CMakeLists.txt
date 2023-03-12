@@ -2,11 +2,17 @@ add_library(tinympc
   # constrained_ilqr.h
   # constrained_ilqr.c
 
-  constrained_lqr.h
-  constrained_lqr.c
+  tiny_lqr_lti.h
+  tiny_lqr_lti.c
 
-  unconstrained_lqr.h
-  unconstrained_lqr.c
+  tiny_lqr_ltv.h
+  tiny_lqr_ltv.c
+
+  tiny_mpc_lti.h
+  tiny_mpc_lti.c
+
+  tiny_mpc_ltv.h
+  tiny_mpc_ltv.c
 
   tiny_utils.h
 
@@ -16,9 +22,15 @@ add_library(tinympc
   tiny_cost.h
   tiny_cost.c
 
-  tiny_dynamics.h
-  tiny_dynamics.c
-  
+  tiny_dynamics_lti.h
+  tiny_dynamics_lti.c
+
+  tiny_dynamics_ltv.h
+  tiny_dynamics_ltv.c
+
+  tiny_constraint.h
+  tiny_constraint.c
+
   bicycle_5d.h
   bicycle_5d.c
 

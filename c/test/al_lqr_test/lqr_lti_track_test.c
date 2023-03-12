@@ -1,7 +1,7 @@
 // Test tracking LQR 
 // Scenerio: Drive double integrator to track reference.
 
-#include "unconstrained_lqr.h"
+#include "tiny_lqr_lti.h"
 #include "data/lqr_lti_track_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"

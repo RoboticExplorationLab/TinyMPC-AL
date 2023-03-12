@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constrained_ilqr.h"
+#include "tiny_dynamics_lti.h"
 #include "data/forward_pass_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"

@@ -1,12 +1,6 @@
 #include "tiny_struct.h"
 #include "tiny_cost.h"
-#include "tiny_dynamics.h"
-
-// A and B are computed before LQR
-enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_Solver solver,
-                                         const tiny_LtiModel model,
-                                         Matrix* Q_temp);
+#include "tiny_dynamics_ltv.h"
 
 enum slap_ErrorCode tiny_BackwardPassLtv(
     tiny_ProblemData* prob, const tiny_Solver solver,

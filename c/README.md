@@ -1,8 +1,9 @@
 # README
 
-- AL-TVLQR is ready to use, check `test/al_lqr_test` for all tests, experiments
-and examples. It is able to handle input/state box constraints and goal
-constraint within stabilization or tracking problems for LTI and LTV systems.  
+- AL-TVLQR is ready to use. It is able to handle input/state box constraints and
+goal constraint within stabilization or tracking problems for LTI and LTV
+systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
+`examples` for MPC experiments.
 - AL-iLQR is under development. It is able to handle input/state box constraints
 and goal constraint within stabilization or tracking problems for nonlinear
 systems.

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "unconstrained_lqr.h"
+#include "tiny_lqr_lti.h"
 #include "data/back_pass_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -113,7 +113,7 @@ void BackPassTest() {
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
-  tiny_BackwardPassLti(&prob, solver, model, G_temp);
+  tiny_BackwardPassLti(&prob, solver, model, &G_temp);
   TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);
 }
 

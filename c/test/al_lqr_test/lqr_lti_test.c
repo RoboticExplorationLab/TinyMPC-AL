@@ -1,7 +1,7 @@
 // Test LQR 
 // Scenerio: Drive double integrator to arbitrary goal state.
 
-#include "unconstrained_lqr.h"
+#include "tiny_lqr_lti.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"

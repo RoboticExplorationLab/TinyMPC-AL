@@ -1,4 +1,11 @@
-# NOTES
+# README
+
+- AL-TVLQR is ready to use, check `test/al_lqr_test` for all tests, experiments
+and examples. It is able to handle input/state box constraints and goal
+constraint within stabilization or tracking problems for LTI and LTV systems.  
+- AL-iLQR is under development. It is able to handle input/state box constraints
+and goal constraint within stabilization or tracking problems for nonlinear
+systems.
 
 ## How to compile and run
 
@@ -9,7 +16,7 @@
 can build a particular target by `cmake --build build -t target_name`. Let's
 try `cmake --build build -t al_lqr_lti_test`.  
 
-3. To run `al_lqr_lti_test` executable, use `./build/test/al_lqr_lti_test` while
+3. To run `al_lqr_lti_test` executable, use `./build/test/al_lqr_test/al_lqr_lti_test` while
 still inside `TinyMPC/c` directory.  
 
 4. Iterate via 2 to develop your programs.  
@@ -25,6 +32,6 @@ because the later one ignores all metadata.
 
 ## Done
 
-- Augmented Lagrange LQR for LTI systems.
+- Augmented Lagrange LQR for LTV systems.
 - Test all units and integration.
-- Experiment with double integrator.
+- Experiment with double integrator, planar quadrotor and bicycle model.

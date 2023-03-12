@@ -1,5 +1,5 @@
-// Test TVLQR 
-// Scenerio: Drive bicycle to track references.
+// Test AL-TVLQR 
+// Scenerio: Drive bicycle to track references with constraints.
 
 #include "constrained_lqr.h"
 #include "simpletest.h"

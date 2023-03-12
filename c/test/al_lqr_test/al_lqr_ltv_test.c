@@ -1,6 +1,13 @@
 // Test AL-TVLQR 
 // Scenerio: Drive bicycle to track references with constraints.
 
+// === BETTER TURN OF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
+// IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
+// IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
+// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 91 (101 FAILS)
+// GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
+// TODO: Let user choose constraints, compile options with #IFDEF
+
 #include "tiny_mpc_ltv.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -13,11 +20,6 @@
 #define NSTATES 5
 #define NINPUTS 2
 #define NHORIZON 71
-// IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
-// IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 91 (101 FAILS)
-// GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
-// TODO: Let user choose constraints, compile options with #IFDEF
 
 double x0_data[NSTATES] = {1, -1, 0, 0, 0};
 double xg_data[NSTATES] = {0};
@@ -279,10 +281,10 @@ void AbsLqrLtvTest() {
   }   
 
   solver.max_primal_iters = 50;
-  tiny_MpcLtv(X, U, &prob, &solver, model, 1);
+  tiny_MpcLtv(X, U, &prob, &solver, model, 0);
 
   for (int k = 0; k < NHORIZON-1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(slap_Transpose(U[k]));
     // tiny_Print(model.B[k]);

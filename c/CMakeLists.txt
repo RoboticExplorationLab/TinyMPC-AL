@@ -17,19 +17,19 @@ endif ()
 ##############################
 
 # Compile options
-# TODO: Future options to optimize library for specific use
-# option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
-# if (SET_GOAL_CONSTRAINT)
-#   add_definitions(-DGOAL_CONSTRAINT)
-# endif()
-# option(SET_INPUTE_CONSTRAINT "Set input constraints" ON)
-# if (SET_INPUT_CONSTRAINT)
-#   add_definitions(-DINPUT_CONSTRAINT)
-# endif()
-# option(SET_STATE_CONSTRAINT "Set state constraints" ON)
-# if (SET_STATE_CONSTRAINT)
-#   add_definitions(-DSTATE_CONSTRAINT)
-# endif()
+# TODO: Future options to optimize library for specific use of constraints
+option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
+if (SET_GOAL_CONSTRAINT)
+  add_definitions(-DGOAL_CONSTRAINT)
+endif()
+option(SET_INPUT_CONSTRAINT "Set input constraints" ON)
+if (SET_INPUT_CONSTRAINT)
+  add_definitions(-DINPUT_CONSTRAINT)
+endif()
+option(SET_STATE_CONSTRAINT "Set state constraints" ON)
+if (SET_STATE_CONSTRAINT)
+  add_definitions(-DSTATE_CONSTRAINT)
+endif()
 
 add_compile_options(-Wall -Wextra -pedantic -Wno-error=unknown-pragmas)
 # add_compile_options(-O2 -mavx2 -mfma)

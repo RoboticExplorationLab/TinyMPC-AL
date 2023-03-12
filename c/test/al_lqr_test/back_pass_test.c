@@ -48,8 +48,6 @@ void BackPassTest() {
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON - 1];
   Matrix K[NHORIZON - 1];
@@ -57,9 +55,7 @@ void BackPassTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
 
-  double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
   double* Uref_ptr = Uref_data;
   double* Kptr = K_data;
   double* dptr = d_data;
@@ -68,8 +64,6 @@ void BackPassTest() {
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      Uptr += NINPUTS;
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
       Uref_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
@@ -77,8 +71,6 @@ void BackPassTest() {
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
     }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
     Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);

@@ -120,9 +120,9 @@ void LqrLtiTest() {
 
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON-1; ++k) {
-    tiny_Print(U[k]);
+    // tiny_Print(U[k]);
   }
-  tiny_Print(X[NHORIZON-1]);
+  // tiny_Print(X[NHORIZON-1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 

@@ -118,7 +118,7 @@ void LqrLtiTest() {
   tiny_ForwardPassLti(X, U, prob, model);
   // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
   }
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
     TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 1e-1);

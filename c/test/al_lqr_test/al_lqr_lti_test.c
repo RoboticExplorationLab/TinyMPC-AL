@@ -130,7 +130,7 @@ void MpcLtiTest() {
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_primal_iters = 10;
-  tiny_MpcLti(X, U, &prob, &solver, model, 1);
+  tiny_MpcLti(X, U, &prob, &solver, model, 0);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // tiny_Print(X[k]);
@@ -140,7 +140,7 @@ void MpcLtiTest() {
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
     }
   }
-  tiny_Print(X[NHORIZON - 1]);
+  // tiny_Print(X[NHORIZON - 1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
        solver.cstr_tol);
 }

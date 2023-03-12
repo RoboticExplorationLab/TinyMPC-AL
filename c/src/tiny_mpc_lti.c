@@ -193,13 +193,13 @@ enum slap_ErrorCode tiny_MpcLti(
 
   double cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
-    printf("backward pass\n");
+    if (verbose > 1) printf("backward pass\n");
     tiny_ConstrainedBackwardPassLti(prob, *solver, model, X, U, &Q_temp,
                                     &ineq_temp);
-    printf("forward pass\n");
+    if (verbose > 1) printf("forward pass\n");
     tiny_ForwardPassLti(X, U, *prob, model);
 
-    if (verbose == 1) {
+    if (verbose > 0) {
       printf(
           "iter     J           ΔJ         reg         ρ\n");
       printf(
@@ -208,7 +208,7 @@ enum slap_ErrorCode tiny_MpcLti(
               iter, 0.0,     0.0,  solver->regu, solver->penalty);
     }
 
-    printf("update duals and penalty\n");
+    if (verbose > 1) printf("update duals and penalty\n");
 
     // For linear systems, only 1 iteration
     cstr_violation = 0.0;
@@ -263,9 +263,9 @@ enum slap_ErrorCode tiny_MpcLti(
     slap_MatrixAddition(prob->goal_dual, prob->goal_dual, eq_goal,
                         -solver->penalty);
 
-    printf("convio: %.6f \n\n", cstr_violation);
+    if (verbose > 0) printf("convio: %.6f \n\n", cstr_violation);
     if (cstr_violation < solver->cstr_tol) {
-      printf("\nSUCCESS!\n");
+      if (verbose > 0) printf("\nSUCCESS!\n");
       return SLAP_NO_ERROR;
     }
     solver->penalty = solver->penalty * solver->penalty_mul;

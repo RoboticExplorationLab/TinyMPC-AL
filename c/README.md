@@ -1,9 +1,11 @@
 # README
 
+- This is a full library, embedded (optimized) version is under development.
 - AL-TVLQR is ready to use. It is able to handle input/state box constraints and
 goal constraint within stabilization or tracking problems for LTI and LTV
 systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
 `examples` for MPC experiments.
+- You can set constraints on/off in `CMakeLists.txt`, more under development.
 - AL-iLQR is under development. It is able to handle input/state box constraints
 and goal constraint within stabilization or tracking problems for nonlinear
 systems.
@@ -30,6 +32,8 @@ because the later one ignores all metadata.
 - Should use zero-initialization of array in global scope.  
 - Should pass by reference instead of return type  
 - Linear term q, qf, r come from reference trajectories, ie. q = -Q*xref
+- MPC for LTI systems can handel all provided types of constraints.
+- Tracking MPC for LTV systems may not handle all due to the strictness.
 
 ## Done
 

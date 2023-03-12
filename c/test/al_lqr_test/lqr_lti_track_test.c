@@ -114,7 +114,7 @@ void LqrLtiTest() {
     // tiny_Print(model.f);  // Check if reference is feasible
     // tiny_Print(slap_Transpose(Xref[i]));
   }   
-  tiny_BackwardPassLti(&prob, solver, model, G_temp);
+  tiny_BackwardPassLti(&prob, solver, model, &G_temp);
   tiny_ForwardPassLti(X, U, prob, model);
   // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON; ++k) {

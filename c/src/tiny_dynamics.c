@@ -46,7 +46,6 @@ enum slap_ErrorCode tiny_ForwardPassLtv(
     // Next state: x = A*x + B*u + f
     tiny_DynamicsLtv(&X[k + 1], X[k], U[k], model, k);
     // tiny_NonlinearDynamics(&X[k+1], X[k], U[k]);
-    //TODO: for delta_x or x?
   }
   return SLAP_NO_ERROR;
 }

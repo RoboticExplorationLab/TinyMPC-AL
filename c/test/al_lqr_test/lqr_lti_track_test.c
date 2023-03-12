@@ -17,7 +17,7 @@ void LqrLtiTest() {
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {6, 6, 3, -1.5};
+  double x0_data[NSTATES] = {2, 6, 3, -1.5};
   double X_data[NSTATES * NHORIZON] = {0};
   double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
@@ -27,8 +27,6 @@ void LqrLtiTest() {
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -93,8 +91,6 @@ void LqrLtiTest() {
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 1000 * 1e-1);
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -110,10 +106,18 @@ void LqrLtiTest() {
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
+
+  for (int i = 0; i < NHORIZON-1; ++i) {  
+    slap_MatrixCopy(model.f, Xref[i+1]);
+    slap_MatMulAdd(model.f, model.A, Xref[i], -1, 1);
+    slap_MatMulAdd(model.f, model.B, Uref[i], -1, 1);
+    // tiny_Print(model.f);  // Check if reference is feasible
+    // tiny_Print(slap_Transpose(Xref[i]));
+  }   
   tiny_BackwardPassLti(&prob, solver, model, G_temp);
   tiny_ForwardPassLti(X, U, prob, model);
   // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON - 1; ++k) {
+  for (int k = 0; k < NHORIZON; ++k) {
     printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
   }
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {

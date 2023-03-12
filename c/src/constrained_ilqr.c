@@ -286,7 +286,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
   int n = prob->nstates;
   int m = prob->ninputs;
   for (int k = 0; k < N - 1; ++k) {
-    tiny_LtiDynamics(&(X[k + 1]), X[k], U[k], model);
+    tiny_DynamicsLti(&(X[k + 1]), X[k], U[k], model);
   }
   double G_temp_data[(n + m) * (n + m + 1)];
   Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
@@ -416,7 +416,7 @@ enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
     slap_MatrixCopy(U[k], Un);
     // Next state: x = A*x + B*u + f
     slap_MatrixCopy(Xn, X[k + 1]);
-    tiny_LtiDynamics(&X[k + 1], X[k], U[k], model);
+    tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   }
   return SLAP_NO_ERROR;
 }
@@ -492,7 +492,7 @@ void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual) {
   }
 }
 
-void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
+void tiny_DynamicsLti(Matrix* xn, const Matrix x, const Matrix u,
                            const tiny_LtiModel model) {
   slap_MatMulAdd(*xn, model.A, x, 1, 0);      // x[k+1] = A * x[k]
   slap_MatMulAdd(*xn, model.B, u, 1, 1);      // x[k+1] += B * u[k]

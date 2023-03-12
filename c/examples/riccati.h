@@ -5,6 +5,7 @@
 #pragma once
 
 #include "slap/slap.h"
+// #include "bicycle.h"
 
 /**
  * @brief Solve a Linear Time-Invariant LQR problem using Riccati recursion,
@@ -104,9 +105,9 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTVf(
 // // You don't need to solve general case, ust provide Q, R and do normal
 // Riccati.
 // // pointer to function
-// enum slap_ErrorCode tiny_LQR_LTVf(
-//         int N, Matrix A, Matrix B,
-//         void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix),
-//         const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
-//         Matrix* K, Matrix* d, Matrix* P, Matrix* p,
-//         const Matrix* Un, const Matrix* Xn, Matrix S_temp);
+enum slap_ErrorCode tiny_LQR_LTVf(
+        int N, Matrix A, Matrix B,
+        void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix),
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p,
+        const Matrix* Un, const Matrix* Xn, Matrix S_temp);

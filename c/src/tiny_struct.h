@@ -89,3 +89,5 @@ typedef struct tiny_ProblemData {
   Matrix* state_duals;
   Matrix goal_dual;
 } tiny_ProblemData;
+
+void tiny_InitProblemData(tiny_ProblemData* prob);

@@ -17,7 +17,7 @@
 // Codes generated from julia/planar_quad_gen
 // Discrete dynamics of planar quadrotor
 //========================================
-void tiny_NonlinearDynamics_Raw(double* xn, const double* x, const double* u) {
+void tiny_PQuadNonlinearDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[0] = 0.16666666666666666 *
               (0.2 * (0.05 * (u[0] + u[1]) * sin(0.05 * x[5] + x[2]) + x[3]) +
                0.1 * (0.1 * (u[0] + u[1]) *
@@ -71,15 +71,15 @@ void tiny_NonlinearDynamics_Raw(double* xn, const double* x, const double* u) {
   xn[5] = 0.8333333333333336 * (-1 * u[0] + u[1]) + x[5];
 }
 
-void tiny_NonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u) {
-  tiny_NonlinearDynamics_Raw(xn->data, x.data, u.data);
+void tiny_PQuadNonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u) {
+  tiny_PQuadNonlinearDynamics_Raw(xn->data, x.data, u.data);
 }
 
 //========================================
 // Codes generated from julia/planar_quad_gen
 // Jacobians of discrete dynamics of planar quadrotor
 //========================================
-void tiny_GetJacobianA_Raw(double* A, const double* x, const double* u) {
+void tiny_PQuadGetJacobianA_Raw(double* A, const double* x, const double* u) {
   A[0] = 1;
   A[1] = 0;
   A[2] = 0;
@@ -166,7 +166,7 @@ void tiny_GetJacobianA_Raw(double* A, const double* x, const double* u) {
   A[35] = 1;
 }
 
-void tiny_GetJacobianB_Raw(double* B, const double* x, const double* u) {
+void tiny_PQuadGetJacobianB_Raw(double* B, const double* x, const double* u) {
   B[0] =
       0.16666666666666666 *
       (0.01 * sin(0.05 * x[5] + x[2]) + 0.01 * sin(x[2]) +
@@ -260,7 +260,7 @@ void tiny_GetJacobianB_Raw(double* B, const double* x, const double* u) {
   B[11] = 0.8333333333333336;
 }
 
-void tiny_GetJacobians(Matrix* A, Matrix* B, const Matrix x, const Matrix u) {
-  tiny_GetJacobianA_Raw(A->data, x.data, u.data);
-  tiny_GetJacobianB_Raw(B->data, x.data, u.data);
+void tiny_PQuadGetJacobians(Matrix* A, Matrix* B, const Matrix x, const Matrix u) {
+  tiny_PQuadGetJacobianA_Raw(A->data, x.data, u.data);
+  tiny_PQuadGetJacobianB_Raw(B->data, x.data, u.data);
 }

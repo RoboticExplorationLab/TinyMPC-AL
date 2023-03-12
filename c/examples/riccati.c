@@ -302,9 +302,9 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTVf(
       slap_MatMulAdd(u[k], K[k], x[k], -1, 1);       // u[k] -= K[k] * x[k]
       slap_MatMulAdd(u[k], K[k], xref[k], 1, 1);     // u[k] += K[k] * xf
       // Next state: x = A*x + B*u + f
-      tiny_Dynamics_RK4_Raw(x[k + 1].data, x[k].data, u[k].data);
-      // slap_MatMulAdd(x[k + 1], A, x[k], 1, 0);  // x[k+1] = A * x[k]
-      // slap_MatMulAdd(x[k + 1], B, u[k], 1, 1);  // x[k+1] += B * u[k]
+      // tiny_Dynamics_RK4_Raw(x[k + 1].data, x[k].data, u[k].data);
+      slap_MatMulAdd(x[k + 1], A, x[k], 1, 0);  // x[k+1] = A * x[k]
+      slap_MatMulAdd(x[k + 1], B, u[k], 1, 1);  // x[k+1] += B * u[k]
     }
 
     // Calculate dual variables
@@ -406,50 +406,50 @@ enum slap_ErrorCode tiny_RiccatiForwardPass_LTVf(
 //   return SLAP_NO_ERROR;
 // }
 
-// enum slap_ErrorCode tiny_LQR_LTVf(
-//         int N, Matrix A, Matrix B,
-//         void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix),
-//         const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
-//         Matrix* K, Matrix* d, Matrix* P, Matrix* p,
-//         const Matrix* Un, const Matrix* Xn, Matrix S_temp)
-// {
-//   // Copy terminal cost-to-go
-//   int k = N;
-//   slap_MatrixCopy(P[N], Q);
-//   slap_MatrixCopy(p[N], q);
+enum slap_ErrorCode tiny_LQR_LTVf(
+        int N, Matrix A, Matrix B,
+        void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix),
+        const Matrix Q, const Matrix R, const Matrix q, const Matrix r,
+        Matrix* K, Matrix* d, Matrix* P, Matrix* p,
+        const Matrix* Un, const Matrix* Xn, Matrix S_temp)
+{
+  // Copy terminal cost-to-go
+  int k = N;
+  slap_MatrixCopy(P[N], Q);
+  slap_MatrixCopy(p[N], q);
 
-//   int n = slap_NumCols(A);
-//   int m = slap_NumCols(B);
+  int n = slap_NumCols(A);
+  int m = slap_NumCols(B);
 
-//   // Create a new local matrix variable
-//   Matrix temp_nn = slap_CreateSubMatrix(S_temp, 0, 0, n, n);
-//   Matrix temp_nm = slap_CreateSubMatrix(S_temp, 0, n, n, m);
-//   Matrix temp_mn = slap_CreateSubMatrix(S_temp, n, 0, m, n);
-//   Matrix temp_mm = slap_CreateSubMatrix(S_temp, n, n, m, m);
-//   Matrix temp_nn2 = slap_Reshape(P[N], n, n);  //hijack P[N]
-//   // Matrix temp_nn2 = slap_NewMatrix(n, n);
-//   for (--k; k >= 0; --k)
-//   {
-//     (*get_jacobians)(A, B, Xn[k], Un[k]);
-//     // K = (R + B' * P * B) \ (B' * P * A)
-//     slap_MatMulAdd(temp_nm, P[k+1], B, 1, 0);  //temp_nm = P * B
-//     slap_MatrixCopy(temp_mm, R);
-//     slap_MatMulAdd(temp_mm, slap_Transpose(B), temp_nm, 1, 1); //R + B' * P *
-//     B slap_MatMulAdd(temp_nn, P[k+1], A, 1, 0);  //temp_nn = P * A
-//     slap_MatMulAdd(K[k], slap_Transpose(B), temp_nn, 1, 0); //B' * P * A
-//     slap_Cholesky(temp_mm);
-//     slap_CholeskySolve(temp_mm, K[k]);
+  // Create a new local matrix variable
+  Matrix temp_nn = slap_CreateSubMatrix(S_temp, 0, 0, n, n);
+  Matrix temp_nm = slap_CreateSubMatrix(S_temp, 0, n, n, m);
+  Matrix temp_mn = slap_CreateSubMatrix(S_temp, n, 0, m, n);
+  Matrix temp_mm = slap_CreateSubMatrix(S_temp, n, n, m, m);
+  Matrix temp_nn2 = slap_Reshape(P[N], n, n);  //hijack P[N]
+  // Matrix temp_nn2 = slap_NewMatrix(n, n);
+  for (--k; k >= 0; --k)
+  {
+    (*get_jacobians)(A, B, Xn[k], Un[k]);
+    // K = (R + B' * P * B) \ (B' * P * A)
+    slap_MatMulAdd(temp_nm, P[k+1], B, 1, 0);  //temp_nm = P * B
+    slap_MatrixCopy(temp_mm, R);
+    slap_MatMulAdd(temp_mm, slap_Transpose(B), temp_nm, 1, 1); //R + B' * P *
+    slap_MatMulAdd(temp_nn, P[k+1], A, 1, 0);  //temp_nn = P * A
+    slap_MatMulAdd(K[k], slap_Transpose(B), temp_nn, 1, 0); //B' * P * A
+    slap_Cholesky(temp_mm);
+    slap_CholeskySolve(temp_mm, K[k]);
 
-//     // P = Q + A' * P * (A - B * K)
-//     slap_MatrixCopy(temp_nn, A);
-//     slap_MatMulAdd(temp_nn, B, K[k], -1, 1);  //A - B * K
-//     if (k == N-1) //not affect using P[N] data
-//       slap_MatMulAdd(temp_nn2, Q, temp_nn, 1, 0);  //P * (A - B * K)
-//     else
-//       slap_MatMulAdd(temp_nn2, P[k+1], temp_nn, 1, 0);  //P * (A - B * K)
-//     slap_MatrixCopy(P[k], Q);
-//     slap_MatMulAdd(P[k], slap_Transpose(A), temp_nn2, 1, 1);
-//   }
-//   // slap_FreeMatrix(temp_nn2);
-//   return SLAP_NO_ERROR;
-// }
+    // P = Q + A' * P * (A - B * K)
+    slap_MatrixCopy(temp_nn, A);
+    slap_MatMulAdd(temp_nn, B, K[k], -1, 1);  //A - B * K
+    if (k == N-1) //not affect using P[N] data
+      slap_MatMulAdd(temp_nn2, Q, temp_nn, 1, 0);  //P * (A - B * K)
+    else
+      slap_MatMulAdd(temp_nn2, P[k+1], temp_nn, 1, 0);  //P * (A - B * K)
+    slap_MatrixCopy(P[k], Q);
+    slap_MatMulAdd(P[k], slap_Transpose(A), temp_nn2, 1, 1);
+  }
+  // slap_FreeMatrix(temp_nn2);
+  return SLAP_NO_ERROR;
+}

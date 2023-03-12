@@ -32,6 +32,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 # Build source files
 add_subdirectory(slap)
-# add_subdirectory(examples)
+add_subdirectory(examples)
 add_subdirectory(src)
 add_subdirectory(test)

@@ -51,5 +51,5 @@ void tiny_ActiveIneqMask(Matrix* mask, const Matrix input_dual,
 
 void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual);
 
-void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
+void tiny_DynamicsLti(Matrix* xn, const Matrix x, const Matrix u,
                            const tiny_LtiModel model);

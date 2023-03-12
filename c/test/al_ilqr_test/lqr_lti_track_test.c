@@ -106,7 +106,7 @@ void LqrLtiTest() {
 
   // Initial rollout
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_LtiDynamics(&(X[k + 1]), X[k], U[k], model);
+    tiny_DynamicsLti(&(X[k + 1]), X[k], U[k], model);
   }
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};

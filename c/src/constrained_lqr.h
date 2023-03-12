@@ -1,47 +1,15 @@
 #include "tiny_struct.h"
-
-void tiny_InitProblemData(tiny_ProblemData* prob);
-
-void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
-                       const Matrix x, const Matrix u, const int k);
-
-void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
-                          const Matrix x);
-
-void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                          Matrix* hes_el_uu, Matrix* grad_el_u,
-                          const tiny_ProblemData prob, const int k);
-
-void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                             const tiny_ProblemData prob);
-
-enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_Solver solver,
-                                         const tiny_LtiModel model,
-                                         Matrix Q_temp);
+#include "tiny_cost.h"
+#include "tiny_dynamics.h"
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     tiny_ProblemData* prob, const tiny_Solver solver, 
     const tiny_LtiModel model, const Matrix* X, const Matrix* U, 
     Matrix* Q_temp, Matrix* ineq_temp);
-
-enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
-                                        const tiny_ProblemData prob,
-                                        const tiny_LtiModel model);
     
 enum slap_ErrorCode tiny_MpcLti(
     Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
     const tiny_LtiModel model, const int verbose);
-
-enum slap_ErrorCode tiny_BackwardPassLtv(
-    tiny_ProblemData* prob, const tiny_Solver solver,
-    tiny_LtiModel* model, Matrix Q_temp,
-    void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix));
-
-enum slap_ErrorCode tiny_ForwardPassLtv(
-    Matrix* X, Matrix* U, tiny_LtiModel* model,
-    const tiny_ProblemData prob,
-    void (*get_jacobians)(Matrix, Matrix, const Matrix, const Matrix));
 
 enum slap_ErrorCode tiny_MpcLtv(
     Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
@@ -67,6 +35,3 @@ void tiny_ActiveIneqMask(Matrix* mask, const Matrix input_dual,
                          const Matrix ineq);
 
 void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual);
-
-void tiny_LtiDynamics(Matrix* xn, const Matrix x, const Matrix u,
-                           const tiny_LtiModel model);

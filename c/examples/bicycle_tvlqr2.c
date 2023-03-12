@@ -115,7 +115,7 @@ int main(void) {
   Matrix S = slap_NewMatrixZeros(NSTATES + NINPUTS, NSTATES + NINPUTS + 1);
   slap_MatrixCopy(xhist[0], x0);
   printf("\n*** START SOLVING ***\n");
-  int test = 100 - 61;
+  int test = 100 - 50;
   tiny_Riccati_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, Q, R, q, r, Khist,
                     dhist, Phist, phist, xref, uref, S);
   tiny_RiccatiForwardPass_LTVf(NHORIZON - test, A, B, tiny_GetJacobians, x0,

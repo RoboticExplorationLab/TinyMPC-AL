@@ -22,3 +22,12 @@ enum slap_ErrorCode tiny_ForwardPassLtv(
   }
   return SLAP_NO_ERROR;
 }
+
+void tiny_UpdateHorizonJacobians(tiny_LtvModel* model, tiny_ProblemData prob) {
+    for (int i = 0; i < prob.nhorizon-1; ++i) {  
+    model->get_jacobians(&(model->A[i]), &(model->B[i]), prob.X_ref[i], prob.U_ref[i]);
+    tiny_Bicycle5dNonlinearDynamics(&(model->f[i]), prob.X_ref[i], prob.U_ref[i]);
+    slap_MatMulAdd(model->f[i], model->A[i], prob.X_ref[i], -1, 1);
+    slap_MatMulAdd(model->f[i], model->B[i], prob.U_ref[i], -1, 1);
+  }   
+}

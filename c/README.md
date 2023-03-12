@@ -5,7 +5,7 @@
 goal constraint within stabilization or tracking problems for LTI and LTV
 systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
 `examples` for MPC experiments.
-- You can set constraints on/off in `CMakeLists.txt`, more under development.
+- You can set constraints on/off in `CMakeLists.txt`, more are under development.
 - AL-iLQR is under development. It is able to handle input/state box constraints
 and goal constraint within stabilization or tracking problems for nonlinear
 systems.

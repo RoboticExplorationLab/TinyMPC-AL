@@ -1,5 +1,12 @@
-// Test MPC
+// MPC
 // Scenerio: Drive bicycle to track references with constraints.
+
+// === BETTER TURN OF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
+// IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
+// IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
+// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 91 (101 FAILS)
+// GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
+// TODO: Let user choose constraints, compile options with #IFDEF
 
 #include "tiny_mpc_ltv.h"
 #include "simpletest.h"
@@ -11,48 +18,16 @@
 #define H 0.1
 #define NSTATES 5
 #define NINPUTS 2
-#define NHORIZON 71
-// IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
-// IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 91 (101 FAILS)
-// GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
-// TODO: Let user choose constraints, compile options with #IFDEF
+#define NHORIZON 5
+#define NSIM 101
 
-double x0_data[NSTATES] = {1, -1, 0, 0, 0};
-double xg_data[NSTATES] = {0};
-double ug_data[NINPUTS] = {0};
-double Q_data[NSTATES * NSTATES] = {0};
-double R_data[NINPUTS * NINPUTS] = {0};
-double Qf_data[NSTATES * NSTATES] = {0};
-double umin_data[NINPUTS] = {-2.1, -1.1};
-double umax_data[NINPUTS] = {2.1, 1.1};
-double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
-double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
-
-// double umin_data[NINPUTS] = {-5, -2};
-// double umax_data[NINPUTS] = {5, 2};
-// double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-// double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
-
-Matrix X[NHORIZON];
-Matrix U[NHORIZON - 1];
-Matrix Xref[NHORIZON];
-Matrix Uref[NHORIZON - 1];
-Matrix Xnom[NHORIZON];
-Matrix Unom[NHORIZON - 1];
-Matrix K[NHORIZON - 1];
-Matrix d[NHORIZON - 1]; 
-Matrix P[NHORIZON];
-Matrix p[NHORIZON];
-Matrix A[NHORIZON-1];
-Matrix B[NHORIZON-1];
-Matrix f[NHORIZON-1];
-Matrix input_duals[NHORIZON - 1];
-Matrix state_duals[NHORIZON];
-
-void AbsLqrLtvTest() {
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+void MpcTest() {
+  double x0_data[NSTATES] = {1, -1, 0, 0, 0};
+  // double xg_data[NSTATES] = {0};
+  // double ug_data[NINPUTS] = {0};
+  double Xhrz_data[NSTATES * NHORIZON] = {0};
+  double X_data[NSTATES * NSIM] = {0};
+  double Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
@@ -62,7 +37,34 @@ void AbsLqrLtvTest() {
   double f_data[NSTATES * (NHORIZON-1)] = {0};
   double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
+  double goal_dual_data[NSTATES] = {0};  
+  double Q_data[NSTATES * NSTATES] = {0};
+  double R_data[NINPUTS * NINPUTS] = {0};
+  double Qf_data[NSTATES * NSTATES] = {0};
+  double umin_data[NINPUTS] = {-2.1, -1.1};
+  double umax_data[NINPUTS] = {2.1, 1.1};
+  double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
+  double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
+
+  // double umin_data[NINPUTS] = {-5, -2};
+  // double umax_data[NINPUTS] = {5, 2};
+  // double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
+  // double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
+  
+  Matrix X[NSIM];
+  Matrix Xref[NSIM];
+  Matrix Uref[NSIM - 1];
+  Matrix Xhrz[NHORIZON];
+  Matrix Uhrz[NHORIZON - 1];
+  Matrix K[NHORIZON - 1];
+  Matrix d[NHORIZON - 1]; 
+  Matrix P[NHORIZON];
+  Matrix p[NHORIZON];
+  Matrix A[NHORIZON-1];
+  Matrix B[NHORIZON-1];
+  Matrix f[NHORIZON-1];
+  Matrix input_duals[NHORIZON - 1];
+  Matrix state_duals[NHORIZON];
 
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
@@ -71,9 +73,10 @@ void AbsLqrLtvTest() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
+  double* Xhrz_ptr = Xhrz_data;
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
+  double* Uhrz_ptr = Uhrz_data;
   double* Uref_ptr = Uref_data;
   double* Kptr = K_data;
   double* dptr = d_data;
@@ -85,6 +88,17 @@ void AbsLqrLtvTest() {
   double* udual_ptr = input_dual_data;
   double* xdual_ptr = state_dual_data;
 
+  for (int i = 0; i < NSIM; ++i) {
+    if (i < NSIM - 1) {
+      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
+      Uref_ptr += NINPUTS;
+    }
+    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+    Xptr += NSTATES;
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
+    Xref_ptr += NSTATES;
+    // tiny_Print(Xref[i]);
+  }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
@@ -93,11 +107,9 @@ void AbsLqrLtvTest() {
       Bptr += NSTATES*NINPUTS;
       f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
       // slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
-      Uref_ptr += NINPUTS;
+      Uhrz_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
@@ -105,10 +117,8 @@ void AbsLqrLtvTest() {
       input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
       udual_ptr += 2 * NINPUTS;
     }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    Xref_ptr += NSTATES;
+    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
+    Xhrz_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
@@ -153,45 +163,61 @@ void AbsLqrLtvTest() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
+  solver.max_primal_iters = 10; // Often takes less than 5
 
   // Absolute formulation
-  // Compute and store A, B offline
-  for (int i = 0; i < NHORIZON-1; ++i) {  
-    model.get_jacobians(&(model.A[i]), &(model.B[i]), prob.X_ref[i], prob.U_ref[i]);
-    tiny_Bicycle5dNonlinearDynamics(&(model.f[i]), Xref[i], Uref[i]);
-    slap_MatMulAdd(model.f[i], model.A[i], Xref[i], -1, 1);
-    slap_MatMulAdd(model.f[i], model.B[i], Uref[i], -1, 1);
-    // printf("%f\n",slap_NormTwoSquared(model.f[i]));
-  }   
+  // At each time step (end earlier as horizon exceeds the end)
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+    printf("\n=> k = %d\n", k);
 
-  solver.max_primal_iters = 50;
-  tiny_MpcLtv(X, U, &prob, &solver, model, 1);
+    // === 1. Setup and solve MPC ===
 
-  for (int k = 0; k < NHORIZON-1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
-    // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
-    // tiny_Print(slap_Transpose(U[k]));
-    // tiny_Print(model.B[k]);
+    slap_MatrixCopy(Xhrz[0], X[k]);
+    // Update A, B within horizon 
+    tiny_UpdateHorizonJacobians(&model, prob);
+    // Update reference
+    prob.X_ref = &Xref[k];  
+    prob.U_ref = &Uref[k];
+
+    // Solve optimization problem using Augmented Lagrange TVLQR
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
+
+    // Want to print out solution?
+    for (int i = 0; i < NHORIZON; ++i) {
+      // printf("ex[%d] = %.4f\n", i, slap_MatrixNormedDifference(Xhrz[i], Xref[k+i]));
+      // tiny_Print(slap_Transpose(X[k]));
+    }
+
+    // === 2. Simulate dynamics using the first control solution ===
+
+    tiny_Bicycle5dNonlinearDynamics(&X[k+1], X[k], Uhrz[0]);
+
+    // Test control constraints here (as we didn't save U)
+    TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
   }
+
+  for (int k = 0; k < NSIM-NHORIZON-1; ++k) {
+    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // tiny_Print(slap_Transpose(X[k]));
+  }
+
   // ========== Test ==========
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(X[k]);
-    TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+  // Test state constraints
+  for (int k = 0; k < NSIM-NHORIZON-1; ++k) {
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
     }
   }
-  for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-
+  // Test tracking performance
+  for (int k = NSIM-NHORIZON-5; k < NSIM-NHORIZON; ++k) {
     TEST(slap_MatrixNormedDifference(X[k], Xref[k]) < 0.2);
   }
   // --------------------------
 }
 
 int main() {
-  // DeltaLqrLtvTest();
-  AbsLqrLtvTest();
+  MpcTest();
   PrintTestResult();
   return TestResult();
 }

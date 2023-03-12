@@ -287,6 +287,7 @@ enum slap_ErrorCode tiny_MpcLtv(
     if (verbose > 0) printf("convio: %.6f \n\n", cstr_violation);
     if (cstr_violation < solver->cstr_tol) {
       if (verbose > 0) printf("\nSUCCESS!\n");
+      solver->penalty = 1;  // reset penalty for next MPC
       return SLAP_NO_ERROR;
     }
     solver->penalty = solver->penalty * solver->penalty_mul;

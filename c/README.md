@@ -1,6 +1,9 @@
 # README
 
 - This is a full library, embedded (optimized) version is under development.
+However, it aims at highly modular integration. You can just use part of the
+sources at your need. Currently, assertation is not present. Users should be
+responsible for this during development.
 - AL-TVLQR is ready to use. It is able to handle input/state box constraints and
 goal constraint within stabilization or tracking problems for LTI and LTV
 systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
@@ -17,9 +20,9 @@ systems.
 
 2. To build the entire project, use `cmake --build build`. Alternatively, you
 can build a particular target by `cmake --build build -t target_name`. Let's
-try `cmake --build build -t al_lqr_lti_test`.  
+try `cmake --build build -t bicycle_example`.  
 
-3. To run `al_lqr_lti_test` executable, use `./build/test/al_lqr_test/al_lqr_lti_test` while
+3. To run `bicycle_example` executable, use `./build/examples/bicycle_example` while
 still inside `TinyMPC/c` directory.  
 
 4. Iterate via 2 to develop your programs.  
@@ -37,6 +40,6 @@ because the later one ignores all metadata.
 
 ## Done
 
-- Augmented Lagrange LQR for LTV systems.
-- Test all units and integration.
-- Experiment with double integrator, planar quadrotor and bicycle model.
+- Augmented Lagrangian LQR/TVLQR.
+- Successful unit and integration testing.
+- Experiments on double integrator, planar quadrotor and bicycle model.

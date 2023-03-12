@@ -1,10 +1,10 @@
 // MPC
 // Scenerio: Drive bicycle to track references with constraints.
 
-// === BETTER TURN OF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
+// === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
 // IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
 // IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 91 (101 FAILS)
+// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 71 (MORE MAY FAIL)
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
@@ -166,7 +166,7 @@ void MpcTest() {
   solver.max_primal_iters = 10; // Often takes less than 5
 
   // Absolute formulation
-  // At each time step (end earlier as horizon exceeds the end)
+  // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
 
@@ -179,7 +179,7 @@ void MpcTest() {
     prob.X_ref = &Xref[k];  
     prob.U_ref = &Uref[k];
 
-    // Solve optimization problem using Augmented Lagrange TVLQR
+    // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
 
     // Want to print out solution?
@@ -187,13 +187,14 @@ void MpcTest() {
       // printf("ex[%d] = %.4f\n", i, slap_MatrixNormedDifference(Xhrz[i], Xref[k+i]));
       // tiny_Print(slap_Transpose(X[k]));
     }
+    // Test control constraints here (since we didn't save U)
+    TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
 
     // === 2. Simulate dynamics using the first control solution ===
 
+    // Clamping control would not effect since our solution is feasible
+    tiny_ClampMatrix(&Uhrz[0], prob.u_min, prob.u_max);  
     tiny_Bicycle5dNonlinearDynamics(&X[k+1], X[k], Uhrz[0]);
-
-    // Test control constraints here (as we didn't save U)
-    TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
   }
 
   for (int k = 0; k < NSIM-NHORIZON-1; ++k) {

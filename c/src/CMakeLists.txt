@@ -15,6 +15,7 @@ add_library(tinympc
   tiny_mpc_ltv.c
 
   tiny_utils.h
+  tiny_utils.c
 
   tiny_struct.h
   tiny_struct.c

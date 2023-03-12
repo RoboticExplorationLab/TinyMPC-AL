@@ -26,17 +26,34 @@ add_compile_options(-march=native -mfma)
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
   add_compile_options(-Wjump-misses-init -Wlogical-op)
-endif ()                    
+endif ()
+
+
 # Make all includes relative to src/ directory
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/lib)
 
-# Build source files
-add_subdirectory(slap)
+
+# # Build source files
+# add_subdirectory(slap)
+
+
+##############################
+# External Repositories
+##############################
+add_subdirectory(lib)
+
 
 ##############################
 # Examples
 ##############################
+
+# slap getting started example
 add_executable(getting_started examples/getting_started.c)
 target_link_libraries(getting_started PRIVATE slap::slap)
 
-add_subdirectory(examples/riccati)
+# using cJSON example
+add_executable(using_cjson examples/json_example.c)
+target_link_libraries(using_cjson PRIVATE cjson)
+
+# add_subdirectory(examples/riccati)

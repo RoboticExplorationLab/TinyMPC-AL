@@ -59,7 +59,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   slap_MatMulAdd(prob->P[N - 1], slap_Transpose(Qxx), Qxx, solver.penalty,
                  1);  // P[N]  += ρ*H'H
 #endif
-#ifdef INPUT_CONSTRAINT
+#ifdef STATE_CONSTRAINT
   //========= State constraints at end ==========
   tiny_IneqStates(&ineq_state, *prob, X[N - 1]);  // ineq_state size = 2*NINPUTS
   tiny_ActiveIneqMask(&mask_state, prob->state_duals[N - 1], ineq_state);

@@ -9,3 +9,4 @@ enum slap_ErrorCode slap_CheckMatrix(Matrix mat) {
   }
   return err;
 }
+

@@ -4,7 +4,7 @@
 // === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
 // IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
 // IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 71 (MORE MAY FAIL)
+// DON"T WORRY ABOUT GRADIENT VANISHING/EXPLOSION SINCE SMALL MPC HORIZON
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
@@ -108,7 +108,7 @@ void MpcTest() {
       f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
-      // slap_SetConst(U[i], 0.01);
+      slap_MatrixCopy(Uhrz[i], Uref[i]); // Initialize U
       Uhrz_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS * NSTATES;
@@ -118,6 +118,7 @@ void MpcTest() {
       udual_ptr += 2 * NINPUTS;
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
+    slap_MatrixCopy(Xhrz[i], Xref[i]); // Initialize U
     Xhrz_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
@@ -131,6 +132,7 @@ void MpcTest() {
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
   model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from Bicycle
+  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
   model.A = A;
   model.B = B;
   model.f = f;
@@ -143,7 +145,7 @@ void MpcTest() {
   prob.ncstr_states = 2 * NSTATES;
   prob.ncstr_goal = NSTATES;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
+  slap_SetIdentity(prob.Q, 100e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
@@ -166,10 +168,11 @@ void MpcTest() {
   solver.max_primal_iters = 10; // Often takes less than 5
 
   // Absolute formulation
+  // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
-
+    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===
 
     slap_MatrixCopy(Xhrz[0], X[k]);
@@ -179,14 +182,9 @@ void MpcTest() {
     prob.X_ref = &Xref[k];  
     prob.U_ref = &Uref[k];
 
-    // Solve optimization problem using Augmented Lagrangian TVLQR
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
+    // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark this
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
 
-    // Want to print out solution?
-    for (int i = 0; i < NHORIZON; ++i) {
-      // printf("ex[%d] = %.4f\n", i, slap_MatrixNormedDifference(Xhrz[i], Xref[k+i]));
-      // tiny_Print(slap_Transpose(X[k]));
-    }
     // Test control constraints here (since we didn't save U)
     TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
 
@@ -195,11 +193,6 @@ void MpcTest() {
     // Clamping control would not effect since our solution is feasible
     tiny_ClampMatrix(&Uhrz[0], prob.u_min, prob.u_max);  
     tiny_Bicycle5dNonlinearDynamics(&X[k+1], X[k], Uhrz[0]);
-  }
-
-  for (int k = 0; k < NSIM-NHORIZON-1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
-    // tiny_Print(slap_Transpose(X[k]));
   }
 
   // ========== Test ==========
@@ -212,7 +205,7 @@ void MpcTest() {
   }
   // Test tracking performance
   for (int k = NSIM-NHORIZON-5; k < NSIM-NHORIZON; ++k) {
-    TEST(slap_MatrixNormedDifference(X[k], Xref[k]) < 0.2);
+    TEST(slap_MatrixNormedDifference(X[k], Xref[k]) < 0.1);
   }
   // --------------------------
 }

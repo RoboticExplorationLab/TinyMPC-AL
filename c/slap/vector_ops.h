@@ -13,8 +13,8 @@
 
 #pragma once
 
-#include "iterator.h"
 #include "matrix.h"
+#include "iterator.h"
 
 /**
  * @brief Find the maximum value in the matrix
@@ -51,7 +51,7 @@ double slap_Max(Matrix mat);
  * **Header File:** `slap/vector_ops.h`
  * @param mat A valid Matrix
  * @return The minimum value, or NaN if there was an error
- */
+*/
 double slap_Min(Matrix mat);
 
 /**

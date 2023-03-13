@@ -15,29 +15,26 @@
 #include "matrix.h"
 
 /**
- * @brief A struct for conveniently and efficiently iterating over strided
- * matrices
+ * @brief A struct for conveniently and efficiently iterating over strided matrices
  *
  * This iterator provides the user to access the elements via either the linear
  * or cartesian indices.
  *
- * Note that this will always iterate linearly over the underlying memory, so is
- * invariant to whether or not the matrix is transposed.
+ * Note that this will always iterate linearly over the underlying memory, so is invariant
+ * to whether or not the matrix is transposed.
  *
- * Note that if the matrix data is dense (there are no gaps in the memory), it
- * is most efficient to iterate directly over the elements of the underlying
- * array.
+ * Note that if the matrix data is dense (there are no gaps in the memory), it is
+ * most efficient to iterate directly over the elements of the underlying array.
  *
  * # Example
- * for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
- * slap_Step(&it)) { double value = mat.data[it.index];    // Use `index` to
- * directly index the array int linear_index = it.k;              // `k` is the
- * linear index into the array slap_SetElement(mat, it.i, it.j);     // `i` and
- * `j` are the cartesian indices
+ * for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+ *  double value = mat.data[it.index];    // Use `index` to directly index the array
+ *  int linear_index = it.k;              // `k` is the linear index into the array
+ *  slap_SetElement(mat, it.i, it.j);     // `i` and `j` are the cartesian indices
  * }
  */
 typedef struct MatrixIterator {
-  uint32_t len;  // TODO (brian): safeguard against integer overflow
+  uint32_t len;    // TODO (brian): safeguard against integer overflow
   uint16_t rows;
   uint16_t dx;     // index delta for movement in x
   uint16_t dy;     // index delta for movement in y

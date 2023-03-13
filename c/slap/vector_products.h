@@ -10,8 +10,8 @@
 /**
  * @brief Calculate the inner (dot) product of two vectors
  *
- * If the vectors are of unequal length, the inner product is taken up to the
- * shortest length.
+ * If the vectors are of unequal length, the inner product is taken up to the shortest
+ * length.
  *
  * **Header File:** `vector_products.h`
  * @param x A vector of length n
@@ -37,8 +37,8 @@ double slap_QuadraticForm(Matrix y, Matrix Q, Matrix x);
  * Calculates x * y'
  *
  * @param[out] C An n x m matrix holding the result of the outer product.
- *               If either dimension is larger than the corresponding vector,
- * the rest will be untouched.
+ *               If either dimension is larger than the corresponding vector, the rest will
+ *               be untouched.
  *
  * **Header File:** `vector_products.h`
  * @param[in]  x An n-dimensional vector
@@ -50,8 +50,8 @@ enum slap_ErrorCode slap_OuterProduct(Matrix C, Matrix x, Matrix y);
 /**
  * @brief take the 3D cross product of 2 vectors
  *
- * The vectors must all have at least length 3. If the the length is greater
- * than three, only the first 3 elements are used.
+ * The vectors must all have at least length 3. If the the length is greater than three,
+ * only the first 3 elements are used.
  *
  * **Header File:** `vector_products.h`
  * @param[out] z cross product vector

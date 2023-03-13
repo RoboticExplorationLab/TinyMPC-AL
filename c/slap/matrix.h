@@ -18,7 +18,7 @@
 
 enum slap_MatrixType {
   slap_DENSE,
-  //  slap_TRANSPOSED,
+//  slap_TRANSPOSED,
   slap_TRIANGULAR_UPPER,
   slap_TRIANGULAR_LOWER,
   //  slap_DIAGONAL
@@ -30,16 +30,15 @@ enum slap_MatrixType {
  *
  * Simple wrapper around an arbitrary pointer to the underlying data.
  * The data is assumed to be stored in a contiguous block of memory.
- * The data is interpreted column-wise, such that `data[1]` is element `[1,0]`
- * of the matrix.
+ * The data is interpreted column-wise, such that `data[1]` is element `[1,0]` of the
+ * matrix.
  */
 typedef struct Matrix {
-  uint16_t rows;  //!< number of rows
-  uint16_t cols;  //!< number of columns
-  uint16_t sy;    //!< column stride (distance between adjacent elements in the
-                  //!< same row)
-  bool is_transposed;            //!< is transposed
-  double* data;                  //!< pointer to the start of the data
+  uint16_t rows;      //!< number of rows
+  uint16_t cols;      //!< number of columns
+  uint16_t sy;        //!< column stride (distance between adjacent elements in the same row)
+  bool is_transposed; //!< is transposed
+  double* data;       //!< pointer to the start of the data
   enum slap_MatrixType mattype;  //!< type of matrix
 } Matrix;
 
@@ -51,8 +50,8 @@ typedef struct Matrix {
  * @brief Wraps existing data in a Matrix class
  * @headerfile matrix.h
  *
- * This is the most common way to "create" a matrix. Typical usage will look
- * something like this:
+ * This is the most common way to "create" a matrix. Typical usage will look something like
+ * this:
  *
  * ```c
  * // Stack-allocated memory
@@ -74,11 +73,32 @@ typedef struct Matrix {
 Matrix slap_MatrixFromArray(int rows, int cols, double* data);
 
 /**
+ * @brief Allocate a matrix from a memory buffer, advancing the buffer
+ *
+ * Useful for allocating a matrix from a pre-allocated buffer, especially when multiple
+ * arrays are allocated from the same chunk of heap-allocated memory.
+ *
+ * # Example
+ * ```c
+ * void *buf = malloc(12 * sizeof(double));
+ * void *buf_next = buf;
+ * Matrix A = slap_MatrixFromBuffer(2, 3, &buf_start);
+ * Matrix B = slap_MatrixFromBuffer(3, 2, &buf_start);
+ * ```
+ *
+ * @param rows Number of rows in the new matrix
+ * @param cols Number of columns in the new matrix
+ * @param buf The start of the memory buffer where the data for the array should "taken"
+ *            from. It is shifted forward by the number of bytes used by the matrix.
+ * @return Matrix of the given size, with data pointing to the start of @p buf
+ */
+Matrix slap_MatrixFromBuffer(int rows, int cols, void **buf);
+
+/**
  * @brief Create a "Null" matrix
  *
- * Useful for default initialization of the matrix where the data it wraps
- * hasn't been specified or allocated yet. Can check if a matrix is in this
- * state using slap_IsNull().
+ * Useful for default initialization of the matrix where the data it wraps hasn't been
+ * specified or allocated yet. Can check if a matrix is in this state using slap_IsNull().
  *
  * # Example
  * ```c
@@ -122,8 +142,8 @@ static inline void slap_SetNull(Matrix* mat) {
  *
  * Matrices are transposed by setting a flag that flips the indexing operations.
  * You can have two `Matrix` instances that point to the same data, where one is
- * transposed and the other is not. You can use this method to check whether a
- * matrix is transposed.
+ * transposed and the other is not. You can use this method to check whether a matrix
+ * is transposed.
  *
  * See also: slap_Transpose()
  *
@@ -137,9 +157,7 @@ static inline bool slap_IsTransposed(Matrix mat) { return mat.is_transposed; }
  * @param[in] mat Any Matrix
  * @return true if the matrix is empty
  */
-static inline bool slap_IsEmpty(Matrix mat) {
-  return mat.rows <= 0 || mat.cols <= 0;
-}
+static inline bool slap_IsEmpty(Matrix mat) { return mat.rows <= 0 || mat.cols <= 0; }
 
 /**
  * @brief Check if both dimensions are the same
@@ -163,13 +181,15 @@ static inline bool slap_IsDense(Matrix mat) { return mat.sy == mat.rows; }
 /**
  * @brief Check if a matrix is valid
  *
- * Check if the matrix contains data: if matrix is not empty and pointer isn't
- * null.
+ * Check if the matrix contains data: if matrix is not empty and pointer isn't null.
  *
  * @param[in] mat
  * @return true if matrix is valid
  */
-static inline bool slap_IsValid(Matrix mat) { return (mat.data != NULL); }
+static inline bool slap_IsValid(Matrix mat) {
+  return (mat.data != NULL);
+}
+
 
 /**
  * @brief Check if matrix is a "Null" instance of a matrix (i.e. uninitialized)
@@ -194,20 +214,18 @@ static inline bool slap_IsNull(Matrix mat) {
  * @brief Return the raw pointer stored by the matrix
  * @param mat Any matrix
  */
-static inline double* slap_GetData(Matrix mat) { return mat.data; }
+static inline double *slap_GetData(Matrix mat) { return mat.data; }
 
 /**
  * @brief Return the type of the matrix
  *
  * The type is mostly used internally, and changes how the data is interpreted.
- * It is used by methods to specify things like whether a matrix is upper or
- * lower triangular.
+ * It is used by methods to specify things like whether a matrix is upper or lower
+ * triangular.
  *
  * @param mat Any matrix
  */
-static inline enum slap_MatrixType slap_GetType(Matrix mat) {
-  return mat.mattype;
-}
+static inline enum slap_MatrixType slap_GetType(Matrix mat) { return mat.mattype; }
 
 //*********************************************//
 // Dimensions
@@ -228,8 +246,7 @@ static inline uint16_t slap_MinDim(Matrix mat) {
  * @return Number of rows
  */
 static inline int slap_NumRows(Matrix mat) {
-  // NOTE: No need to worry about unsigned->signed conversion here since signed
-  // precision
+  // NOTE: No need to worry about unsigned->signed conversion here since signed precision
   //       is much higher (all values are representable by an `int`)
   return slap_IsTransposed(mat) ? (int)mat.cols : (int)mat.rows;
 }
@@ -249,16 +266,14 @@ static inline int slap_NumCols(Matrix mat) {
  * @param mat Any matrix
  * @return Number of elements in the matrix
  */
-static inline int slap_NumElements(const Matrix mat) {
-  return mat.rows * mat.cols;
-}
+static inline int slap_NumElements(const Matrix mat) { return mat.rows * mat.cols; }
 
 /**
  * @brief Get the column-stride stride of the matrix
  *
  * This is the distance in memory between adjacent elements of the same row.
- * For a "Dense" slap matrix where all elements are contiguous in memory, the
- * stride is equal to the number of rows.
+ * For a "Dense" slap matrix where all elements are contiguous in memory, the stride is
+ * equal to the number of rows.
  *
  * See also: slap_IsDense()
  *
@@ -274,8 +289,7 @@ static inline int slap_Stride(const Matrix mat) { return mat.sy; }
  * @brief Get the linear index for a given row and column in the matrix
  * @headerfile slap.h
  *
- * Converts a cartesian index of row and column into a linear index for
- accessing
+ * Converts a cartesian index of row and column into a linear index for accessing
  * an element of the underlying data.
  *
  * Supports both strided and dense matrices.
@@ -296,11 +310,10 @@ static inline int slap_Cart2Index(const Matrix mat, int row, int col) {
 /**
  * @brief Converts a linear index to a Cartesian index
  *
- * This is moderately expensive, since it relies on modulus and division
- * operations.
+ * This is moderately expensive, since it relies on modulus and division operations.
  *
- * Passing null pointers to @a row and @a col results in undefined behavior,
- * since this method does not check that these are valid.
+ * Passing null pointers to @a row and @a col results in undefined behavior, since this
+ * method does not check that these are valid.
  *
  * @param[in] mat Any matrix
  * @param[in] k Linear index, from 0 to slap_NumElements()
@@ -312,13 +325,11 @@ void slap_Linear2Cart(Matrix mat, int k, int* row, int* col);
 /**
  * @brief Converts a linear index to the index into the underlying array
  *
- * If the matrix is Dense (stored contiguously in memory, see slap_IsDense()),
- * the output is the same as the input. This method is most helpful for strided
- * matrices.
+ * If the matrix is Dense (stored contiguously in memory, see slap_IsDense()), the
+ * output is the same as the input. This method is most helpful for strided matrices.
  *
- * Note that for strided arrays, this method is fairly expensive since it
- * converts the linear index into a Cartesian index, and then to the array
- * index.
+ * Note that for strided arrays, this method is fairly expensive since it converts
+ * the linear index into a Cartesian index, and then to the array index.
  *
  * @param mat A dense or strided matrix
  * @param k The linear index, ranging from 0 to slap_NumElements()
@@ -352,8 +363,8 @@ static inline bool slap_CheckInbounds(Matrix mat, int row, int col) {
 /**
  * @brief Get a pointer to matrix element given row, column indices
  *
- * Note that this method does NOT perform any bounds checking so can be used
- * unsafely! Passing an index that is out of bounds is undefined behavior.
+ * Note that this method does NOT perform any bounds checking so can be used unsafely!
+ * Passing an index that is out of bounds is undefined behavior.
  *
  * # Example
  * The following gets a pointer to the 1st element in the 2nd column, and then
@@ -398,8 +409,7 @@ static inline double* slap_GetElement(Matrix mat, int row, int col) {
  * @param col Column index
  * @return A pointer to the element of the matrix. NULL for invalid input.
  */
-static inline const double* slap_GetElementConst(const Matrix mat, int row,
-                                                 int col) {
+static inline const double* slap_GetElementConst(const Matrix mat, int row, int col) {
   return mat.data + slap_Cart2Index(mat, row, col);
 }
 
@@ -433,8 +443,8 @@ static inline void slap_SetElement(Matrix mat, int row, int col, double val) {
 /**
  * @brief Flatten a 2D matrix to a column vector
  *
- * Changes the row and column data so that the matrix is now a column vector.
- * The underlying data is unchanged.
+ * Changes the row and column data so that the matrix is now a column vector. The
+ * underlying data is unchanged.
  *
  * See also: slap_Reshape()
  *

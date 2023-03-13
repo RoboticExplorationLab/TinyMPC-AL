@@ -57,8 +57,7 @@ Matrix slap_NewMatrixZeros(int rows, int cols);
  * Note this does NOT attempt to free the matrix object itself, only the data
  * it wraps.
  *
- * Should only be used in conjunction with slap_NewMatrix() or
- * slap_NewMatrixZeros().
+ * Should only be used in conjunction with slap_NewMatrix() or slap_NewMatrixZeros().
  *
  * **Header File:** `"slap/new_matrix.h"`
  */

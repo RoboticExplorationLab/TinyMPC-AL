@@ -30,8 +30,7 @@ const char* slap_ErrorString(enum slap_ErrorCode error_code) {
       msg = "Operation only valid for dense matrices";
       break;
     case SLAP_CHOLESKY_FAIL:
-      msg =
-          "Cholesky factorization failed. Matrix likely not positive definite";
+      msg = "Cholesky factorization failed. Matrix likely not positive definite";
       break;
     case SLAP_INVALID_MATRIX:
       msg = "Invalid matrix. Check for NULL data pointer and a stride of 0";

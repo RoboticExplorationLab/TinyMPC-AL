@@ -18,8 +18,7 @@ double slap_MatrixNormedDifference(const Matrix A, const Matrix B) {
   }
   return sqrt(diff);
 }
-enum slap_ErrorCode slap_MatrixAddition(Matrix C, Matrix A, Matrix B,
-                                        double alpha) {
+enum slap_ErrorCode slap_MatrixAddition(Matrix C, Matrix A, Matrix B, double alpha) {
   SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX, "MatAdd: C matrix invalid");
   SLAP_ASSERT_VALID(A, SLAP_INVALID_MATRIX, "MatAdd: A matrix invalid");
   SLAP_ASSERT_VALID(B, SLAP_INVALID_MATRIX, "MatAdd: B matrix invalid");

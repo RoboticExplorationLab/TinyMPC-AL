@@ -31,6 +31,7 @@ typedef struct {
   Matrix* f;
   Matrix x0;
   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
+  void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
 } tiny_LtvModel;
 
 void tiny_InitLtiModel(tiny_LtiModel* model);

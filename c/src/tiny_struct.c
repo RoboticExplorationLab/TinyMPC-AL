@@ -22,6 +22,7 @@ void tiny_InitLtvModel(tiny_LtvModel* model) {
       .f = NULL,
       .x0 = kNullMat,
       .get_jacobians = NULL,
+      .get_nonlinear_dynamics = NULL,
   };
 }
 

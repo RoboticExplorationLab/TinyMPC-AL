@@ -39,11 +39,11 @@ const char* slap_ErrorString(enum slap_ErrorCode error_code);
 // TODO (brian): Add compile option to turn this on/off
 #include <stdio.h>
 #define SLAP_COLOR_RED "\x1b[31m"
-#define SLAP_THROW_ERROR(error_code, message)                              \
-  ((fprintf(stderr, SLAP_COLOR_RED "slap Error %d: %s\n", (int)error_code, \
-            slap_ErrorString(error_code)),                                 \
-    fprintf(stderr, SLAP_COLOR_RED "              %s (%s:%d)\n", message,  \
-            __FILE__, __LINE__)),                                          \
+#define SLAP_THROW_ERROR(error_code, message)                                       \
+  ((fprintf(stderr, SLAP_COLOR_RED "slap Error %d: %s\n", (int)error_code,          \
+            slap_ErrorString(error_code)),                                          \
+    fprintf(stderr, SLAP_COLOR_RED "              %s (%s:%d)\n", message, __FILE__, \
+            __LINE__)),                                                             \
    error_code)
 
 #define SLAP_ASSERT(condition, error_code, return_value, ...) \
@@ -52,22 +52,17 @@ const char* slap_ErrorString(enum slap_ErrorCode error_code);
     return return_value;                                      \
   }
 
-#define SLAP_ASSERT_OK(error_code)                                     \
-  SLAP_ASSERT((error_code) == SLAP_NO_ERROR, error_code, EXIT_FAILURE, \
-              "Got Bad Return Code");
+#define SLAP_ASSERT_OK(error_code) \
+  SLAP_ASSERT((error_code) == SLAP_NO_ERROR, error_code, EXIT_FAILURE, "Got Bad Return Code");
 
 #define SLAP_ASSERT_VALID(mat, return_value, ...) \
   SLAP_ASSERT(slap_IsValid(mat), SLAP_INVALID_MATRIX, return_value, __VA_ARGS__)
 
-#define SLAP_ASSERT_DENSE(mat, return_value, ...)                     \
-  SLAP_ASSERT(slap_IsDense(mat), SLAP_MATRIX_NOT_DENSE, return_value, \
-              __VA_ARGS__)
+#define SLAP_ASSERT_DENSE(mat, return_value, ...) \
+  SLAP_ASSERT(slap_IsDense(mat), SLAP_MATRIX_NOT_DENSE, return_value, __VA_ARGS__)
 
-#define SLAP_ASSERT_SAME_SIZE(A, B, return_value, method_name)             \
-  SLAP_ASSERT(                                                             \
-      slap_NumRows(A) == slap_NumRows(B) &&                                \
-          slap_NumCols(A) == slap_NumCols(B),                              \
-      SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, (return_value),                 \
-      "%s: matrices must be the same size. Got sizes (%d,%d) and (%d,%d)", \
-      method_name, slap_NumRows(A), slap_NumCols(A), slap_NumRows(B),      \
-      slap_NumCols(B))
+#define SLAP_ASSERT_SAME_SIZE(A, B, return_value, method_name)                          \
+  SLAP_ASSERT(slap_NumRows(A) == slap_NumRows(B) && slap_NumCols(A) == slap_NumCols(B), \
+              SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, (return_value),                      \
+              "%s: matrices must be the same size. Got sizes (%d,%d) and (%d,%d)",      \
+              method_name, slap_NumRows(A), slap_NumCols(A), slap_NumRows(B), slap_NumCols(B))

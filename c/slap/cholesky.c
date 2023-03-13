@@ -34,15 +34,12 @@ enum slap_ErrorCode slap_Cholesky(Matrix A) {
 }
 
 enum slap_ErrorCode slap_TriSolve(Matrix L, Matrix b) {
-  SLAP_ASSERT_VALID(L, SLAP_INVALID_MATRIX,
-                    "LowerTriBackSub: L matrix invalid");
-  SLAP_ASSERT_VALID(b, SLAP_INVALID_MATRIX,
-                    "LowerTriBackSub: b matrix invalid");
-  SLAP_ASSERT(slap_NumCols(L) == slap_NumRows(b),
+  SLAP_ASSERT_VALID(L, SLAP_INVALID_MATRIX, "LowerTriBackSub: L matrix invalid");
+  SLAP_ASSERT_VALID(b, SLAP_INVALID_MATRIX, "LowerTriBackSub: b matrix invalid");
+  SLAP_ASSERT(slap_NumCols(L) == slap_NumRows(b), SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "LowerTriBackSub: L has %d columns but b has %d rows",
-              slap_NumCols(L), slap_NumRows(b));
+              "LowerTriBackSub: L has %d columns but b has %d rows", slap_NumCols(L),
+              slap_NumRows(b));
   int n = b.rows;
   int m = b.cols;
   bool tL = L.mattype == slap_TRIANGULAR_UPPER || slap_IsTransposed(L);

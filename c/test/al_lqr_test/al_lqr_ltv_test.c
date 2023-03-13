@@ -1,10 +1,10 @@
 // Test AL-TVLQR 
 // Scenerio: Drive bicycle to track references with constraints.
 
-// === BETTER TURN OF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
+// === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
 // IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
 // IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 71 (101 FAILS)
+// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 71 (MORE MAY FAIL)
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
@@ -122,6 +122,7 @@ void AbsLqrLtvTest() {
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
   model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from Bicycle
+  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
   model.A = A;
   model.B = B;
   model.f = f;

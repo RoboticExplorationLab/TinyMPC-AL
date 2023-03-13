@@ -46,5 +46,4 @@ double slap_MatrixNormedDifference(Matrix A, Matrix B);
  * @param[in] B Input matrix
  * @param alpha Scaling on B
  */
-enum slap_ErrorCode slap_MatrixAddition(Matrix C, Matrix A, Matrix B,
-                                        double alpha);
+enum slap_ErrorCode slap_MatrixAddition(Matrix C, Matrix A, Matrix B, double alpha);

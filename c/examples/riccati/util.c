@@ -13,6 +13,7 @@ int tiny_ReadData(const char* filename, double* des, const int size,
   FILE* input;
   int i;
 
+  // Check if file can be opened
   input = fopen(filename, "r");
   if (!input) {
     if (verbose == true)
@@ -20,6 +21,7 @@ int tiny_ReadData(const char* filename, double* des, const int size,
     return EXIT_FAILURE;
   }
 
+  // Read data
   for (i = 0; i < size; ++i) {
     if (fscanf(input, "%lf ", &(des[i])) != 1) {
       if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);

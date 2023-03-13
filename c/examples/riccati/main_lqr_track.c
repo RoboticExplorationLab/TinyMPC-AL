@@ -39,6 +39,11 @@ int main(void) {
   tiny_ReadData(file_xn, xn_data, size_xn, false);
   tiny_ReadData(file_un, un_data, size_un, false);
 
+  printf("xn_data size: %f: \n", size_xn);
+  for (int i=0; i<size_xn; i++) {
+    printf("xn_data[%d]: \n", i, xn_data[i]);
+  }
+
   // Create matrix from array data
   Matrix Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   Matrix R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);

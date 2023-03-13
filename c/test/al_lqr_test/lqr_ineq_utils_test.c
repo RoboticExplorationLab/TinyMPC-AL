@@ -1,9 +1,9 @@
 // Test all inequality-related functions and tiny_RiccatiConvergence
 
-#include "tiny_constraint.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_constraint.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -41,9 +41,8 @@ void IneqInputsOffsetTest() {
   const double tol = 1e-8;
   double u_max_data[NINPUTS] = {1, 1};
   double u_min_data[NINPUTS] = {-1, -1};
-  double ans[NINPUTS * 2] = {
-      u_max_data[0], u_max_data[1],
-      -u_min_data[0], -u_min_data[1]};
+  double ans[NINPUTS * 2] = {u_max_data[0], u_max_data[1], -u_min_data[0],
+                             -u_min_data[1]};
   double ineq_data[NINPUTS * 2];
 
   tiny_ProblemData prob;

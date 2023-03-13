@@ -2,7 +2,7 @@
 
 - This is a full library, embedded (optimized) version is under development.
 However, it aims at highly modular integration. You can just use part of the
-sources at your need. Currently, assertation is not present. Users should be
+sources at your need. Currently, assertion is not present. Users should be
 responsible for this during development.
 - AL-TVLQR is ready to use. It is able to handle input/state box constraints and
 goal constraint within stabilization or tracking problems for LTI and LTV

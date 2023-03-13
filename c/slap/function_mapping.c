@@ -9,7 +9,8 @@
 
 enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double)) {
   SLAP_ASSERT_VALID(mat, SLAP_INVALID_MATRIX, "Map: invalid matrix");
-  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     double* value = mat.data + it.index;
     *value = function(*value);
   }
@@ -18,17 +19,24 @@ enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double)) {
 enum slap_ErrorCode slap_BinaryMap(Matrix C, Matrix A, Matrix B,
                                    double (*function)(double, double)) {
   // Check for valid matrices
-  SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX, "BinaryMap: invalid output C matrix");
-  SLAP_ASSERT_VALID(A, SLAP_INVALID_MATRIX, "BinaryMap: invalid input A matrix");
-  SLAP_ASSERT_VALID(B, SLAP_INVALID_MATRIX, "BinaryMap: invalid input B matrix");
+  SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX,
+                    "BinaryMap: invalid output C matrix");
+  SLAP_ASSERT_VALID(A, SLAP_INVALID_MATRIX,
+                    "BinaryMap: invalid input A matrix");
+  SLAP_ASSERT_VALID(B, SLAP_INVALID_MATRIX,
+                    "BinaryMap: invalid input B matrix");
 
   // Check that matrices have the same size
-  SLAP_ASSERT_SAME_SIZE(C,A, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, "slap_BinaryMap");
-  SLAP_ASSERT_SAME_SIZE(A,B, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS, "slap_BinaryMap");
+  SLAP_ASSERT_SAME_SIZE(C, A, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
+                        "slap_BinaryMap");
+  SLAP_ASSERT_SAME_SIZE(A, B, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
+                        "slap_BinaryMap");
 
-  for (MatrixIterator it = slap_Iterator(C); !slap_IsFinished(&it); slap_Step(&it)) {
-    // NOTE: use Cartesian indexing on A,B because they might have different strides
-    double *Ck = C.data + it.index;
+  for (MatrixIterator it = slap_Iterator(C); !slap_IsFinished(&it);
+       slap_Step(&it)) {
+    // NOTE: use Cartesian indexing on A,B because they might have different
+    // strides
+    double* Ck = C.data + it.index;
     double Ak = *slap_GetElement(A, it.i, it.j);
     double Bk = *slap_GetElement(B, it.i, it.j);
     *Ck = function(Ak, Bk);

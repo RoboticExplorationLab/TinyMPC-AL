@@ -1,12 +1,12 @@
-// Test LQR 
+// Test LQR
 // Scenerio: Drive double integrator to arbitrary goal state.
 
-#include "tiny_lqr_lti.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_utils.h"
+#include "tiny_lqr_lti.h"
 #include "tiny_struct.h"
+#include "tiny_utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -119,7 +119,7 @@ void LqrLtiTest() {
   tiny_ForwardPassLti(X, U, prob, model);
 
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // tiny_Print(U[k]);
   }
   // tiny_Print(X[NHORIZON-1]);

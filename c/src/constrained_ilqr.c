@@ -72,7 +72,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     // State Gradient: Gx = q + A'(P*f + p)
     slap_MatrixCopy(prob->p[k], prob->p[k + 1]);
     // slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
-                  //  1);  // p[k] = P[k+1]*f + p[k+1]
+    //  1);  // p[k] = P[k+1]*f + p[k+1]
     slap_MatMulAdd(Gx, slap_Transpose(model.A), prob->p[k], 1, 1);
 
     // Control Gradient: Gu = r + B'(P*f + p)
@@ -125,9 +125,8 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
 
 // Riccati recursion for LTI with constraints
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
-    tiny_ProblemData* prob, const tiny_LtiModel model,
-    const tiny_Solver solver, const Matrix* X, const Matrix* U, Matrix* G_temp,
-    Matrix* ineq_temp) {
+    tiny_ProblemData* prob, const tiny_LtiModel model, const tiny_Solver solver,
+    const Matrix* X, const Matrix* U, Matrix* G_temp, Matrix* ineq_temp) {
   // Copy terminal cost-to-go
   int N = prob->nhorizon;
   tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob,
@@ -279,9 +278,11 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
   return SLAP_NO_ERROR;
 }
 
-enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
-    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
-    const tiny_LtiModel model, const int verbose) {
+enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
+                                                tiny_ProblemData* prob,
+                                                tiny_Solver* solver,
+                                                const tiny_LtiModel model,
+                                                const int verbose) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
@@ -337,7 +338,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(
     printf("update duals and penalty\n");
 
     // For linear systems, only 1 iteration, shouldn't need condition here
-    if (0*norm_d_max < solver->riccati_tol) {
+    if (0 * norm_d_max < solver->riccati_tol) {
       cstr_violation = 0.0;
       double norm_inf = 0.0;
 
@@ -493,7 +494,7 @@ void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual) {
 }
 
 void tiny_DynamicsLti(Matrix* xn, const Matrix x, const Matrix u,
-                           const tiny_LtiModel model) {
+                      const tiny_LtiModel model) {
   slap_MatMulAdd(*xn, model.A, x, 1, 0);      // x[k+1] = A * x[k]
   slap_MatMulAdd(*xn, model.B, u, 1, 1);      // x[k+1] += B * u[k]
   slap_MatrixAddition(*xn, *xn, model.f, 1);  // x[k+1] += f

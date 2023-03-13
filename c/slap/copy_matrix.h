@@ -14,7 +14,6 @@
 
 #include "matrix.h"
 
-
 /**
  * @brief Copy a matrix to another matrix
  *
@@ -36,14 +35,15 @@ enum slap_ErrorCode slap_MatrixCopyTranspose(Matrix dest, Matrix src);
 /**
  * @brief Copy the data from an array into the matrix
  *
- * The data is always copied into the same order as the underlying memory layout, so
- * this method ignores whether the matrix is transposed or not.
+ * The data is always copied into the same order as the underlying memory
+ * layout, so this method ignores whether the matrix is transposed or not.
  *
- * The source array must be at least as long as the destination Matrix, otherwise this
- * function will result in undefined behavior.
+ * The source array must be at least as long as the destination Matrix,
+ * otherwise this function will result in undefined behavior.
  *
  * @param mat  A valid matrix
- * @param data Data to be copied into the array. Must have length of at least mat.rows * * mat.cols.
+ * @param data Data to be copied into the array. Must have length of at least
+ * mat.rows * * mat.cols.
  * @return slap error code
  */
 enum slap_ErrorCode slap_MatrixCopyFromArray(Matrix mat, const double* data);

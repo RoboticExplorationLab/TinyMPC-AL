@@ -1,13 +1,13 @@
-// Test LQR 
+// Test LQR
 // Scenerio: Drive planar quadrotor to arbitrary goal state.
 
-#include "tiny_lqr_ltv.h"
-#include "tiny_lqr_lti.h"
+#include "planar_quadrotor.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_lqr_lti.h"
+#include "tiny_lqr_ltv.h"
 #include "tiny_utils.h"
-#include "planar_quadrotor.h"
 
 #define H 0.1
 #define NSTATES 6
@@ -16,8 +16,8 @@
 // GRADIENT EXPLOSION/VANISHING WHEN NHORIZON > 60 => LS FORMULATION
 
 double x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
-double ug_data[NINPUTS] = {0};  // initial state
-double xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};        // goal state
+double ug_data[NINPUTS] = {0};                         // initial state
+double xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
 double xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};
 double uhover_data[NINPUTS] = {4.905, 4.905};
 double Q_data[NSTATES * NSTATES] = {0};
@@ -25,9 +25,9 @@ double R_data[NINPUTS * NINPUTS] = {0};
 double Qf_data[NSTATES * NSTATES] = {0};
 
 void DeltaLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON-1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON-1)] = {0};
-  double f_data[NSTATES * (NHORIZON-1)] = {0};
+  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  double f_data[NSTATES * (NHORIZON - 1)] = {0};
   double X_data[NSTATES * NHORIZON] = {0};
   double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
@@ -49,9 +49,9 @@ void DeltaLqrLtvTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix A[NHORIZON-1];
-  Matrix B[NHORIZON-1];
-  Matrix f[NHORIZON-1];
+  Matrix A[NHORIZON - 1];
+  Matrix B[NHORIZON - 1];
+  Matrix f[NHORIZON - 1];
 
   double* Xptr = X_data;
   // double* Xref_ptr = Xref_data;
@@ -71,10 +71,10 @@ void DeltaLqrLtvTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES*NSTATES;
+      Aptr += NSTATES * NSTATES;
       B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES*NINPUTS;
-      f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
+      Bptr += NSTATES * NINPUTS;
+      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
       // slap_SetConst(U[i], 0.01);
@@ -127,12 +127,12 @@ void DeltaLqrLtvTest() {
                                        Q_temp_data);
 
   // Compute and store A, B offline
-  for (int i = 0; i < NHORIZON-1; ++i) {  
+  for (int i = 0; i < NHORIZON - 1; ++i) {
     model.get_jacobians(&(model.A[i]), &(model.B[i]), xhover, uhover);
     tiny_PQuadNonlinearDynamics(&(model.f[i]), xhover, uhover);
     slap_MatrixAddition(model.f[i], model.f[i], xhover, -1);  // = 0
     // tiny_Print(f[i]);
-  }   
+  }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLtv(X, U, prob, model);
@@ -144,7 +144,7 @@ void DeltaLqrLtvTest() {
   //   tiny_DynamicsLtv(&X[k + 1], X[k], U[k], model, k);
   //   // tiny_PQuadNonlinearDynamics(&X[k+1], X[k], U[k]);
   // }
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
@@ -155,9 +155,9 @@ void DeltaLqrLtvTest() {
 }
 
 void AbsLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON-1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON-1)] = {0};
-  double f_data[NSTATES * (NHORIZON-1)] = {0};
+  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  double f_data[NSTATES * (NHORIZON - 1)] = {0};
   double X_data[NSTATES * NHORIZON] = {0};
   double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
@@ -179,9 +179,9 @@ void AbsLqrLtvTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix A[NHORIZON-1];
-  Matrix B[NHORIZON-1];
-  Matrix f[NHORIZON-1];
+  Matrix A[NHORIZON - 1];
+  Matrix B[NHORIZON - 1];
+  Matrix f[NHORIZON - 1];
 
   double* Xptr = X_data;
   // double* Xref_ptr = Xref_data;
@@ -201,10 +201,10 @@ void AbsLqrLtvTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES*NSTATES;
+      Aptr += NSTATES * NSTATES;
       B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES*NINPUTS;
-      f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
+      Bptr += NSTATES * NINPUTS;
+      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
       // slap_SetConst(U[i], 0.01);
@@ -257,13 +257,13 @@ void AbsLqrLtvTest() {
                                        Q_temp_data);
 
   // Compute and store A, B offline
-  for (int i = 0; i < NHORIZON-1; ++i) {  
+  for (int i = 0; i < NHORIZON - 1; ++i) {
     model.get_jacobians(&(model.A[i]), &(model.B[i]), xhover, uhover);
     tiny_PQuadNonlinearDynamics(&(model.f[i]), xhover, uhover);
     slap_MatMulAdd(model.f[i], model.A[i], xhover, -1, 1);
     slap_MatMulAdd(model.f[i], model.B[i], uhover, -1, 1);
     // tiny_Print(f[i]);
-  }   
+  }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLtv(X, U, prob, model);
@@ -273,7 +273,7 @@ void AbsLqrLtvTest() {
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * x[k]
   //   tiny_PQuadNonlinearDynamics(&X[k+1], X[k], U[k]);
   // }
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
@@ -386,9 +386,9 @@ void DeltaLqrLtiTest() {
   //   slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * dx[k]
   //   // Next state: dx = A*dx + B*du + f
-  //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);  
+  //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   // }
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
@@ -404,7 +404,7 @@ void AbsLqrLtiTest() {
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};  
+  double p_data[NSTATES * NHORIZON] = {0};
   double A_data[NSTATES * NSTATES] = {0};
   double B_data[NSTATES * NINPUTS] = {0};
   double f_data[NSTATES] = {0};
@@ -488,14 +488,14 @@ void AbsLqrLtiTest() {
   double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
-  
+
   // Formulate problem as absolute: x, u
   // Compute and store A, B offline: x = Ax + Bu + f
   tiny_PQuadGetJacobians(&(model.A), &(model.B), xhover, uhover);
   tiny_PQuadNonlinearDynamics(&(model.f), xhover, uhover);
   slap_MatMulAdd(model.f, model.A, xhover, -1, 1);
   slap_MatMulAdd(model.f, model.B, uhover, -1, 1);
-  
+
   tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLti(X, U, prob, model);
   // for (int k = 0; k < NHORIZON - 1; ++k) {
@@ -503,9 +503,9 @@ void AbsLqrLtiTest() {
   //   slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * x[k]
   //   // Next state: x = A*x + B*u + f
-  //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);  
+  //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   // }
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }

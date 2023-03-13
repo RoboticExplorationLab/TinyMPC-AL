@@ -31,5 +31,5 @@ void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
 void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                              const tiny_ProblemData prob) {
   slap_MatrixCopy(*hes_el_xx, prob.Qf);
-  slap_MatMulAdd(*grad_el_x, prob.Qf, prob.X_ref[prob.nhorizon-1], -1, 0);
+  slap_MatMulAdd(*grad_el_x, prob.Qf, prob.X_ref[prob.nhorizon - 1], -1, 0);
 }

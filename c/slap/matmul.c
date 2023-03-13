@@ -14,12 +14,12 @@ enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha,
   int p = slap_NumCols(B);
   SLAP_ASSERT(slap_NumRows(B) == m, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "MatMulAdd: dimension mismatch, B has %d rows, expected %d", slap_NumRows(B),
-              m);
+              "MatMulAdd: dimension mismatch, B has %d rows, expected %d",
+              slap_NumRows(B), m);
   SLAP_ASSERT(slap_NumRows(C) == n, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "MatMulAdd: dimension mismatch, C has %d rows, expected %d", slap_NumRows(C),
-              n);
+              "MatMulAdd: dimension mismatch, C has %d rows, expected %d",
+              slap_NumRows(C), n);
   SLAP_ASSERT(slap_NumCols(C) == p, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               "MatMulAdd: dimension mismatch, C has %d columns, expected %d",

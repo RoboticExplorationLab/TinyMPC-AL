@@ -66,21 +66,28 @@ double slap_QuadraticForm(const Matrix y, const Matrix A, const Matrix x) {
 }
 
 enum slap_ErrorCode slap_OuterProduct(Matrix C, Matrix x, Matrix y) {
-  SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX, "OuterProduct: C matrix is invalid");
-  SLAP_ASSERT_VALID(x, SLAP_INVALID_MATRIX, "OuterProduct: x vector is invalid");
-  SLAP_ASSERT_VALID(y, SLAP_INVALID_MATRIX, "OuterProduct: y vector is invalid");
-  SLAP_ASSERT_DENSE(x, SLAP_MATRIX_NOT_DENSE, "OuterProduct: x must be a dense matrix");
-  SLAP_ASSERT_DENSE(y, SLAP_MATRIX_NOT_DENSE, "OuterProduct: y must be a dense matrix");
+  SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX,
+                    "OuterProduct: C matrix is invalid");
+  SLAP_ASSERT_VALID(x, SLAP_INVALID_MATRIX,
+                    "OuterProduct: x vector is invalid");
+  SLAP_ASSERT_VALID(y, SLAP_INVALID_MATRIX,
+                    "OuterProduct: y vector is invalid");
+  SLAP_ASSERT_DENSE(x, SLAP_MATRIX_NOT_DENSE,
+                    "OuterProduct: x must be a dense matrix");
+  SLAP_ASSERT_DENSE(y, SLAP_MATRIX_NOT_DENSE,
+                    "OuterProduct: y must be a dense matrix");
   int n = slap_NumElements(x);
   int m = slap_NumElements(y);
-  SLAP_ASSERT(slap_NumRows(C) >= n, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "OuterProduct: Output matrix doesn't have enough rows. Needs %d, has %d", n,
-              slap_NumRows(C));
+  SLAP_ASSERT(
+      slap_NumRows(C) >= n, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
+      SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
+      "OuterProduct: Output matrix doesn't have enough rows. Needs %d, has %d",
+      n, slap_NumRows(C));
   SLAP_ASSERT(slap_NumCols(C) >= m, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "OuterProduct: Output matrix doesn't have enough columns. Needs %d, has %d", m,
-              slap_NumCols(C));
+              "OuterProduct: Output matrix doesn't have enough columns. Needs "
+              "%d, has %d",
+              m, slap_NumCols(C));
   for (int j = 0; j < m; ++j) {
     double yj = y.data[j];
     for (int i = 0; i < n; ++i) {
@@ -92,20 +99,26 @@ enum slap_ErrorCode slap_OuterProduct(Matrix C, Matrix x, Matrix y) {
 }
 
 enum slap_ErrorCode slap_CrossProduct(Matrix z, Matrix x, Matrix y) {
-  SLAP_ASSERT_VALID(z, SLAP_INVALID_MATRIX, "CrossProduct: z vector is invalid");
-  SLAP_ASSERT_VALID(x, SLAP_INVALID_MATRIX, "CrossProduct: z vector is invalid");
-  SLAP_ASSERT_VALID(y, SLAP_INVALID_MATRIX, "CrossProduct: z vector is invalid");
+  SLAP_ASSERT_VALID(z, SLAP_INVALID_MATRIX,
+                    "CrossProduct: z vector is invalid");
+  SLAP_ASSERT_VALID(x, SLAP_INVALID_MATRIX,
+                    "CrossProduct: z vector is invalid");
+  SLAP_ASSERT_VALID(y, SLAP_INVALID_MATRIX,
+                    "CrossProduct: z vector is invalid");
   SLAP_ASSERT(slap_NumElements(z) >= 3, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "CrossProduct: z vector must have length greater than or equal to 3 (got %d)",
+              "CrossProduct: z vector must have length greater than or equal "
+              "to 3 (got %d)",
               slap_NumElements(z));
   SLAP_ASSERT(slap_NumElements(x) >= 3, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "CrossProduct: x vector must have length greater than or equal to 3 (got %d)",
+              "CrossProduct: x vector must have length greater than or equal "
+              "to 3 (got %d)",
               slap_NumElements(x));
   SLAP_ASSERT(slap_NumElements(y) >= 3, SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
               SLAP_INCOMPATIBLE_MATRIX_DIMENSIONS,
-              "CrossProduct: y vector must have length greater than or equal to 3 (got %d)",
+              "CrossProduct: y vector must have length greater than or equal "
+              "to 3 (got %d)",
               slap_NumElements(y));
   z.data[0] = x.data[1] * y.data[2] - x.data[2] * y.data[1];
   z.data[1] = x.data[2] * y.data[0] - x.data[0] * y.data[2];

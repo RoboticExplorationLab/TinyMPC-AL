@@ -71,7 +71,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     slap_MatMulAdd(prob->p[k], slap_Transpose(Qux), prob->d[k], -1,
                    1);  // p -= Qux'd
   }
-  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);  
+  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
   // Replace P[N] since we used it for Quu_temp (need improving later)
   return SLAP_NO_ERROR;
 }

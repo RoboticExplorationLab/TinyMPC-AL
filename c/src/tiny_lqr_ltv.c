@@ -1,9 +1,9 @@
 #include "tiny_lqr_ltv.h"
 
-enum slap_ErrorCode tiny_BackwardPassLtv(
-    tiny_ProblemData* prob, const tiny_Solver solver,
-    const tiny_LtvModel model, Matrix* Q_temp) {
-
+enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
+                                         const tiny_Solver solver,
+                                         const tiny_LtvModel model,
+                                         Matrix* Q_temp) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
@@ -38,8 +38,9 @@ enum slap_ErrorCode tiny_BackwardPassLtv(
                    1);  // Qxx = Q + A'P*A
 
     // Control Hessian Quu = R + B'P*B
-    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B[k], 1, 0);       // Qxu = P * B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), Qxu, 1, 1);  // Quu = R + B'P*B
+    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B[k], 1, 0);  // Qxu = P * B
+    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), Qxu, 1,
+                   1);  // Quu = R + B'P*B
     slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), model.B[k], solver.regu, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Qux, slap_Transpose(model.B[k]), prob->P[k], 1,
@@ -70,7 +71,7 @@ enum slap_ErrorCode tiny_BackwardPassLtv(
     slap_MatMulAdd(prob->p[k], slap_Transpose(Qux), prob->d[k], -1,
                    1);  // p -= Qux'd
   }
-  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);  
+  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
   // Replace P[N] since we used it for Quu_temp (need improving later)
   return SLAP_NO_ERROR;
 }

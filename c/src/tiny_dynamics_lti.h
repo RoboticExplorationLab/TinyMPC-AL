@@ -1,5 +1,5 @@
-#include "tiny_struct.h"
 #include "slap/slap.h"
+#include "tiny_struct.h"
 
 void tiny_DynamicsLti(Matrix* xn, const Matrix x, const Matrix u,
                       const tiny_LtiModel model);

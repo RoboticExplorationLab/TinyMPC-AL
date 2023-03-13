@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tiny_struct.h"
 #include "slap/slap.h"
+#include "tiny_struct.h"
 
 void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k);

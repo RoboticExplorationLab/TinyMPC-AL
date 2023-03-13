@@ -20,16 +20,21 @@
 // Codes generated from julia/bicycle_tvlqr
 // Discrete dynamics of bicycle model with predefined model params
 //========================================
-void tiny_Bicycle5dNonlinearDynamics_Raw(double* xn, const double* x, const double* u);
+void tiny_Bicycle5dNonlinearDynamics_Raw(double* xn, const double* x,
+                                         const double* u);
 
-void tiny_Bicycle5dNonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u);
+void tiny_Bicycle5dNonlinearDynamics(Matrix* xn, const Matrix x,
+                                     const Matrix u);
 
 //========================================
 // Codes generated from julia/bicycle_tvlqr
 // Jacobians of discrete dynamics of bicycle model with predefined model params
 //========================================
-void tiny_Bicycle5dGetJacobianA_Raw(double* A, const double* x, const double* u);
+void tiny_Bicycle5dGetJacobianA_Raw(double* A, const double* x,
+                                    const double* u);
 
-void tiny_Bicycle5dGetJacobianB_Raw(double* B, const double* x, const double* u);
+void tiny_Bicycle5dGetJacobianB_Raw(double* B, const double* x,
+                                    const double* u);
 
-void tiny_Bicycle5dGetJacobians(Matrix* A, Matrix* B, const Matrix x, const Matrix u);
+void tiny_Bicycle5dGetJacobians(Matrix* A, Matrix* B, const Matrix x,
+                                const Matrix u);

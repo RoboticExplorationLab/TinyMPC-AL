@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tiny_cost.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_cost.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -24,9 +24,9 @@ double r_data[NINPUTS] = {0};            // NOLINT
 double Qf_data[NSTATES * NSTATES] = {0};
 double ans_stage[2] = {0.04549999999999994, 0.1314999999999999};
 double ans_term = 0.0049999999999999975;
-double ans_gradx[NSTATES] = {-0.11, -0.12, -0.13,  0.42};
+double ans_gradx[NSTATES] = {-0.11, -0.12, -0.13, 0.42};
 double ans_gradu[NINPUTS] = {0.21, -0.14};
-double ans_gradxf[NSTATES] = {-0.6, -0.65, -0.65,  2.15};
+double ans_gradxf[NSTATES] = {-0.6, -0.65, -0.65, 2.15};
 
 void AddCostTest() {
   const double tol = 1e-8;

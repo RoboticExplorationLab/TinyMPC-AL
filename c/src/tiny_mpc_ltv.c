@@ -1,9 +1,8 @@
 #include "tiny_mpc_ltv.h"
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
-    tiny_ProblemData* prob, const tiny_Solver solver, 
-    const tiny_LtvModel model, const Matrix* X, const Matrix* U, 
-    Matrix* Q_temp, Matrix* ineq_temp) {
+    tiny_ProblemData* prob, const tiny_Solver solver, const tiny_LtvModel model,
+    const Matrix* X, const Matrix* U, Matrix* Q_temp, Matrix* ineq_temp) {
   // Copy terminal cost-to-go
   int N = prob->nhorizon;
   int n = prob->nstates;
@@ -21,7 +20,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   // NOTE: Assumes m <= n
   Matrix Quu_temp = slap_Reshape(prob->P[N - 1], m, m);
 
-  #ifdef INPUT_CONSTRAINT
+#ifdef INPUT_CONSTRAINT
   Matrix ineq_input =
       slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_inputs, 1);
   Matrix ineq_input2 =
@@ -33,9 +32,9 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   Matrix ineq_input_jac2 = slap_CreateSubMatrix(
       *ineq_temp, 0, prob->ncstr_inputs + 2 + prob->ninputs, prob->ncstr_inputs,
       prob->ninputs);
-  #endif
+#endif
 
-  #ifdef STATE_CONSTRAINT
+#ifdef STATE_CONSTRAINT
   Matrix ineq_state =
       slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_states, 1);
   Matrix ineq_state2 =
@@ -47,20 +46,20 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   Matrix ineq_state_jac2 = slap_CreateSubMatrix(
       *ineq_temp, 0, prob->ncstr_states + 2 + prob->nstates, prob->ncstr_states,
       prob->nstates);
-  #endif
+#endif
 
-  #ifdef GOAL_CONSTRAINT
+#ifdef GOAL_CONSTRAINT
   // ========= Goal constraints ==========
-  slap_MatrixCopy(Qx, prob->X_ref[N-1]); // h = xg
-  slap_SetIdentity(Qxx, 1);  // H constant
+  slap_MatrixCopy(Qx, prob->X_ref[N - 1]);  // h = xg
+  slap_SetIdentity(Qxx, 1);                 // H constant
   slap_MatrixAddition(prob->p[N - 2], prob->goal_dual, Qx,
                       -solver.penalty);  // (λ - ρ*h)
   slap_MatMulAdd(prob->p[N - 1], slap_Transpose(Qxx), prob->p[N - 2], 1,
                  1);  // p[N]  += H'*(λ - ρ*h)
   slap_MatMulAdd(prob->P[N - 1], slap_Transpose(Qxx), Qxx, solver.penalty,
                  1);  // P[N]  += ρ*H'H
-  #endif
-  #ifdef INPUT_CONSTRAINT
+#endif
+#ifdef INPUT_CONSTRAINT
   //========= State constraints at end ==========
   tiny_IneqStates(&ineq_state, *prob, X[N - 1]);  // ineq_state size = 2*NINPUTS
   tiny_ActiveIneqMask(&mask_state, prob->state_duals[N - 1], ineq_state);
@@ -69,14 +68,15 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   // Qx  += G'*(μx[k] - ρ*mask * g)
   tiny_IneqStatesOffset(&ineq_state, *prob);  // g
   slap_MatrixCopy(ineq_state2, prob->state_duals[N - 1]);
-  slap_MatMulAdd(ineq_state2, mask_state, ineq_state, -1, 1); //μx[k] - ρ*mask*g
+  slap_MatMulAdd(ineq_state2, mask_state, ineq_state, -1,
+                 1);  //μx[k] - ρ*mask*g
   slap_MatMulAdd(prob->p[N - 1], slap_Transpose(ineq_state_jac), ineq_state2, 1,
                  1);
   // Qxx += G'*ρmask*G
   slap_MatMulAdd(ineq_state_jac2, mask_state, ineq_state_jac, 1, 0);
   slap_MatMulAdd(prob->P[N - 1], slap_Transpose(ineq_state_jac),
                  ineq_state_jac2, 1, 1);
-  #endif
+#endif
   for (int k = N - 2; k >= 0; --k) {
     // Stage cost expansion
     tiny_ExpandStageCost(&Qxx, &Qx, &Quu, &Qu, *prob, k);
@@ -96,14 +96,15 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
                    1);  // Qxx = Q + A'P*A
 
     // Control Hessian Quu = R + B'P*B
-    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B[k], 1, 0);       // Qxu = P * B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), Qxu, 1, 1);  // Quu = R + B'P*B
+    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B[k], 1, 0);  // Qxu = P * B
+    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), Qxu, 1,
+                   1);  // Quu = R + B'P*B
     slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), model.B[k], solver.regu, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Qux, slap_Transpose(model.B[k]), prob->P[k], 1,
                    0);  // Qux = B'P*A
 
-    #ifdef INPUT_CONSTRAINT
+#ifdef INPUT_CONSTRAINT
     //========= Control constraints ==========
     tiny_IneqInputs(&ineq_input, *prob, U[k]);  // ineq_input size = 2*NINPUTS
     tiny_ActiveIneqMask(&mask_input, prob->input_duals[k], ineq_input);
@@ -117,9 +118,9 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
     // Quu += ∇hu'*mask*∇hu
     slap_MatMulAdd(ineq_input_jac2, mask_input, ineq_input_jac, 1, 0);
     slap_MatMulAdd(Quu, slap_Transpose(ineq_input_jac), ineq_input_jac2, 1, 1);
-    #endif
+#endif
 
-    #ifdef STATE_CONSTRAINT
+#ifdef STATE_CONSTRAINT
     //========= State constraints ==========
     tiny_IneqStates(&ineq_state, *prob, X[k]);  // ineq_state size = 2*NINPUTS
     tiny_ActiveIneqMask(&mask_state, prob->state_duals[k], ineq_state);
@@ -133,7 +134,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
     // Qxx += ρ*∇hx'*mask*∇hx
     slap_MatMulAdd(ineq_state_jac2, mask_state, ineq_state_jac, 1, 0);
     slap_MatMulAdd(Qxx, slap_Transpose(ineq_state_jac), ineq_state_jac2, 1, 1);
-    #endif
+#endif
 
     // Calculate Gains
     slap_MatrixCopy(Quu_temp, Quu);
@@ -161,14 +162,14 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
                    1);  // p -= Qux'd
   }
 
-  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);  
+  tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
   // Replace P[N] since we used it for Quu_temp (need improving later)
   return SLAP_NO_ERROR;
 }
 
-enum slap_ErrorCode tiny_MpcLtv(
-    Matrix* X, Matrix* U, tiny_ProblemData* prob, tiny_Solver* solver,
-    const tiny_LtvModel model, const int verbose) {
+enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
+                                tiny_Solver* solver, const tiny_LtvModel model,
+                                const int verbose) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
@@ -184,27 +185,27 @@ enum slap_ErrorCode tiny_MpcLtv(
       prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
       ineq_temp_data);
 
-  #ifdef INPUT_CONSTRAINT
+#ifdef INPUT_CONSTRAINT
   Matrix ineq_input =
       slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_inputs, 1);
   Matrix new_input_duals =
       slap_CreateSubMatrix(ineq_temp, 0, 1, prob->ncstr_inputs, 1);
   Matrix mask_input = slap_CreateSubMatrix(ineq_temp, 0, 2, prob->ncstr_inputs,
                                            prob->ncstr_inputs);
-  #endif
+#endif
 
-  #ifdef STATE_CONSTRAINT
+#ifdef STATE_CONSTRAINT
   Matrix ineq_state =
       slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_states, 1);
   Matrix new_state_duals =
       slap_CreateSubMatrix(ineq_temp, 0, 1, prob->ncstr_states, 1);
   Matrix mask_state = slap_CreateSubMatrix(ineq_temp, 0, 2, prob->ncstr_states,
                                            prob->ncstr_states);
-  #endif
+#endif
 
-  #ifdef GOAL_CONSTRAINT
+#ifdef GOAL_CONSTRAINT
   Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, ineq_temp_data);
-  #endif
+#endif
 
   double cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
@@ -215,12 +216,10 @@ enum slap_ErrorCode tiny_MpcLtv(
     tiny_ForwardPassLtv(X, U, *prob, model);
 
     if (verbose > 0) {
-      printf(
-          "iter     J           ΔJ         reg         ρ\n");
-      printf(
-          "--------------------------------------------------\n");
-      printf("%3d   %10.3e  %9.2e  %9.2e   %9.2e\n", 
-              iter, 0.0,     0.0,  solver->regu, solver->penalty);
+      printf("iter     J           ΔJ         reg         ρ\n");
+      printf("--------------------------------------------------\n");
+      printf("%3d   %10.3e  %9.2e  %9.2e   %9.2e\n", iter, 0.0, 0.0,
+             solver->regu, solver->penalty);
     }
 
     if (verbose > 1) printf("update duals and penalty\n");
@@ -229,7 +228,7 @@ enum slap_ErrorCode tiny_MpcLtv(
     cstr_violation = 0.0;
     double norm_inf = 0.0;
 
-    #ifdef INPUT_CONSTRAINT
+#ifdef INPUT_CONSTRAINT
     for (int k = 0; k < N - 1; ++k) {
       //========= Control constraints ==========
       tiny_IneqInputs(&ineq_input, *prob,
@@ -237,7 +236,7 @@ enum slap_ErrorCode tiny_MpcLtv(
       tiny_ActiveIneqMask(&mask_input, prob->input_duals[k], ineq_input);
       slap_ScaleByConst(mask_input, solver->penalty);  // mask = ρ*mask
       // Constraint violation
-      slap_ArgMax(ineq_input, &norm_inf);        
+      slap_ArgMax(ineq_input, &norm_inf);
       norm_inf = norm_inf > 0.0 ? norm_inf : 0.0;
       norm_inf = norm_inf * 2;
       // convio = max(convio,norm(hxv + abs.(hxv),Inf))
@@ -246,12 +245,12 @@ enum slap_ErrorCode tiny_MpcLtv(
       tiny_IneqInputsOffset(&ineq_input, *prob);  // g
       slap_MatrixCopy(new_input_duals, prob->input_duals[k]);
       slap_MatMulAdd(new_input_duals, mask_input, ineq_input, -1,
-                      1);  //μ[k] - ρ*mask * g
+                     1);  //μ[k] - ρ*mask * g
       tiny_ClampIneqDuals(&(prob->input_duals)[k], new_input_duals);
     }
-    #endif
+#endif
 
-    #ifdef STATE_CONSTRAINT
+#ifdef STATE_CONSTRAINT
     for (int k = 0; k < N; ++k) {
       //========= State constraints ==========
       tiny_IneqStates(&ineq_state, *prob,
@@ -268,21 +267,21 @@ enum slap_ErrorCode tiny_MpcLtv(
       tiny_IneqStatesOffset(&ineq_state, *prob);  // g
       slap_MatrixCopy(new_state_duals, prob->state_duals[k]);
       slap_MatMulAdd(new_state_duals, mask_state, ineq_state, -1,
-                      1);  //μ[k] - ρ*mask*g
+                     1);  //μ[k] - ρ*mask*g
       tiny_ClampIneqDuals(&(prob->state_duals)[k], new_state_duals);
     }
-    #endif
+#endif
 
-    #ifdef GOAL_CONSTRAINT
-    //========= Goal constraints ==========
-    // slap_MatrixAddition(eq_goal, X[N - 1], prob->X_ref[N - 1], -1);
-    // norm_inf = slap_NormInf(eq_goal);
-    // cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
-    // // λ -= ρ*h
-    // slap_MatrixCopy(eq_goal, prob->X_ref[N-1]); // h = xg
-    // slap_MatrixAddition(prob->goal_dual, prob->goal_dual, eq_goal,
-    //                     -solver->penalty);
-    #endif
+#ifdef GOAL_CONSTRAINT
+//========= Goal constraints ==========
+// slap_MatrixAddition(eq_goal, X[N - 1], prob->X_ref[N - 1], -1);
+// norm_inf = slap_NormInf(eq_goal);
+// cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
+// // λ -= ρ*h
+// slap_MatrixCopy(eq_goal, prob->X_ref[N-1]); // h = xg
+// slap_MatrixAddition(prob->goal_dual, prob->goal_dual, eq_goal,
+//                     -solver->penalty);
+#endif
 
     if (verbose > 0) printf("convio: %.6f \n\n", cstr_violation);
     if (cstr_violation < solver->cstr_tol) {

@@ -21,7 +21,8 @@
 // Codes generated from julia/planar_quad_gen
 // Discrete dynamics of planar quadrotor
 //========================================
-void tiny_PQuadNonlinearDynamics_Raw(double* xn, const double* x, const double* u);
+void tiny_PQuadNonlinearDynamics_Raw(double* xn, const double* x,
+                                     const double* u);
 
 void tiny_PQuadNonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u);
 
@@ -33,4 +34,5 @@ void tiny_PQuadGetJacobianA_Raw(double* A, const double* x, const double* u);
 
 void tiny_PQuadGetJacobianB_Raw(double* B, const double* x, const double* u);
 
-void tiny_PQuadGetJacobians(Matrix* A, Matrix* B, const Matrix x, const Matrix u);
+void tiny_PQuadGetJacobians(Matrix* A, Matrix* B, const Matrix x,
+                            const Matrix u);

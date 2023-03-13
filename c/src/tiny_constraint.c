@@ -61,7 +61,7 @@ void tiny_IneqStatesOffset(Matrix* ineq_state, const tiny_ProblemData prob) {
   slap_MatrixCopy(upper_half, prob.x_max);
   slap_MatrixCopy(lower_half, prob.x_min);
   slap_ScaleByConst(lower_half, -1);
-} 
+}
 
 void tiny_IneqStatesJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
   slap_SetConst(*ineq_jac, 0);  // clear before processing
@@ -72,7 +72,6 @@ void tiny_IneqStatesJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
 }
-
 
 void tiny_ActiveIneqMask(Matrix* mask, const Matrix dual, const Matrix ineq) {
   slap_SetConst(*mask, 0);  // clear before processing

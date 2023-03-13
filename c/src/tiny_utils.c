@@ -141,5 +141,5 @@ void tiny_Clamp(double* arr, const double min, const double max, const int N) {
 
 // Clamp all data for matrix or vector
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max) {
-  tiny_Clamps(mat->data, min.data, max.data, (mat->rows)*(mat->cols));
+  tiny_Clamps(mat->data, min.data, max.data, (mat->rows) * (mat->cols));
 }

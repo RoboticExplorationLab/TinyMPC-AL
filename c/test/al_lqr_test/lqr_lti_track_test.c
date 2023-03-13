@@ -1,11 +1,11 @@
-// Test tracking LQR 
+// Test tracking LQR
 // Scenerio: Drive double integrator to track reference.
 
-#include "tiny_lqr_lti.h"
 #include "data/lqr_lti_track_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_lqr_lti.h"
 #include "tiny_utils.h"
 
 #define NSTATES 4
@@ -107,13 +107,13 @@ void LqrLtiTest() {
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
 
-  for (int i = 0; i < NHORIZON-1; ++i) {  
-    slap_MatrixCopy(model.f, Xref[i+1]);
+  for (int i = 0; i < NHORIZON - 1; ++i) {
+    slap_MatrixCopy(model.f, Xref[i + 1]);
     slap_MatMulAdd(model.f, model.A, Xref[i], -1, 1);
     slap_MatMulAdd(model.f, model.B, Uref[i], -1, 1);
     // tiny_Print(model.f);  // Check if reference is feasible
     // tiny_Print(slap_Transpose(Xref[i]));
-  }   
+  }
   tiny_BackwardPassLti(&prob, solver, model, &G_temp);
   tiny_ForwardPassLti(X, U, prob, model);
   // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);

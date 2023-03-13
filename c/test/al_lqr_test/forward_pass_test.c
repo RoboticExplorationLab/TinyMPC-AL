@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tiny_dynamics_lti.h"
 #include "data/forward_pass_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_dynamics_lti.h"
 
 #define NSTATES 4
 #define NINPUTS 2

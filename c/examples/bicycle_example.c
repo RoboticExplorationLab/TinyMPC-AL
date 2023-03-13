@@ -9,12 +9,12 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
-#include "tiny_mpc_ltv.h"
-#include "simpletest.h"
-#include "slap/slap.h"
-#include "tiny_utils.h"
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
+#include "simpletest.h"
+#include "slap/slap.h"
+#include "tiny_mpc_ltv.h"
+#include "tiny_utils.h"
 
 #define H 0.1
 #define NSTATES 5
@@ -33,12 +33,12 @@ void MpcTest() {
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
   double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON-1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON-1)] = {0};
-  double f_data[NSTATES * (NHORIZON-1)] = {0};
+  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  double f_data[NSTATES * (NHORIZON - 1)] = {0};
   double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};  
+  double goal_dual_data[NSTATES] = {0};
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
@@ -53,19 +53,19 @@ void MpcTest() {
   // double umax_data[NINPUTS] = {5, 2};
   // double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
   // double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
-  
+
   Matrix X[NSIM];
   Matrix Xref[NSIM];
   Matrix Uref[NSIM - 1];
   Matrix Xhrz[NHORIZON];
   Matrix Uhrz[NHORIZON - 1];
   Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1]; 
+  Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix A[NHORIZON-1];
-  Matrix B[NHORIZON-1];
-  Matrix f[NHORIZON-1];
+  Matrix A[NHORIZON - 1];
+  Matrix B[NHORIZON - 1];
+  Matrix f[NHORIZON - 1];
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
@@ -105,13 +105,13 @@ void MpcTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES*NSTATES;
+      Aptr += NSTATES * NSTATES;
       B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES*NINPUTS;
-      f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
+      Bptr += NSTATES * NINPUTS;
+      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
-      slap_MatrixCopy(Uhrz[i], Uref[i]); // Initialize U
+      slap_MatrixCopy(Uhrz[i], Uref[i]);  // Initialize U
       Uhrz_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS * NSTATES;
@@ -121,7 +121,7 @@ void MpcTest() {
       udual_ptr += 2 * NINPUTS;
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
-    slap_MatrixCopy(Xhrz[i], Xref[i]); // Initialize U
+    slap_MatrixCopy(Xhrz[i], Xref[i]);  // Initialize U
     Xhrz_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
@@ -130,11 +130,11 @@ void MpcTest() {
     state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
- 
+
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;  
+  model.get_jacobians = tiny_Bicycle5dGetJacobians;
   model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
   model.A = A;
   model.B = B;
@@ -168,7 +168,7 @@ void MpcTest() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_primal_iters = 10; // Often takes less than 5
+  solver.max_primal_iters = 10;  // Often takes less than 5
 
   // Absolute formulation
   // Warm-starting since horizon data is reused
@@ -179,13 +179,14 @@ void MpcTest() {
     // === 1. Setup and solve MPC ===
 
     slap_MatrixCopy(Xhrz[0], X[k]);
-    // Update A, B within horizon 
+    // Update A, B within horizon
     tiny_UpdateHorizonJacobians(&model, prob);
     // Update reference
-    prob.X_ref = &Xref[k];  
+    prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
 
-    // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark this
+    // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
+    // this
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
 
     // Test control constraints here (since we didn't save U)
@@ -194,20 +195,20 @@ void MpcTest() {
     // === 2. Simulate dynamics using the first control solution ===
 
     // Clamping control would not effect since our solution is feasible
-    tiny_ClampMatrix(&Uhrz[0], prob.u_min, prob.u_max);  
-    tiny_Bicycle5dNonlinearDynamics(&X[k+1], X[k], Uhrz[0]);
+    tiny_ClampMatrix(&Uhrz[0], prob.u_min, prob.u_max);
+    tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
   }
 
   // ========== Test ==========
   // Test state constraints
-  for (int k = 0; k < NSIM-NHORIZON-1; ++k) {
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
     }
   }
   // Test tracking performance
-  for (int k = NSIM-NHORIZON-5; k < NSIM-NHORIZON; ++k) {
+  for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
     TEST(slap_MatrixNormedDifference(X[k], Xref[k]) < 0.1);
   }
   // --------------------------

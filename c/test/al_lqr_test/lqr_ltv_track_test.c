@@ -1,14 +1,14 @@
-// Test TVLQR 
+// Test TVLQR
 // Scenerio: Drive bicycle to track references.
 
-#include "tiny_lqr_ltv.h"
-#include "tiny_dynamics_ltv.h"
+#include "bicycle_5d.h"
+#include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
+#include "tiny_dynamics_ltv.h"
+#include "tiny_lqr_ltv.h"
 #include "tiny_utils.h"
-#include "bicycle_5d.h"
-#include "data/lqr_ltv_data.h"
 
 #define H 0.1
 #define NSTATES 5
@@ -33,9 +33,9 @@ Matrix K[NHORIZON - 1];
 Matrix d[NHORIZON - 1];
 Matrix P[NHORIZON];
 Matrix p[NHORIZON];
-Matrix A[NHORIZON-1];
-Matrix B[NHORIZON-1];
-Matrix f[NHORIZON-1];
+Matrix A[NHORIZON - 1];
+Matrix B[NHORIZON - 1];
+Matrix f[NHORIZON - 1];
 
 void DeltaLqrLtvTest() {
   double X_data[NSTATES * NHORIZON] = {0};
@@ -44,9 +44,9 @@ void DeltaLqrLtvTest() {
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
   double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON-1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON-1)] = {0};
-  double f_data[NSTATES * (NHORIZON-1)] = {0};
+  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  double f_data[NSTATES * (NHORIZON - 1)] = {0};
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
   double* Uptr = U_data;
@@ -69,10 +69,10 @@ void DeltaLqrLtvTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES*NSTATES;
+      Aptr += NSTATES * NSTATES;
       B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES*NINPUTS;
-      f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
+      Bptr += NSTATES * NINPUTS;
+      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
       // slap_SetConst(U[i], 0.01);
@@ -95,7 +95,7 @@ void DeltaLqrLtvTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
- 
+
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
@@ -128,17 +128,17 @@ void DeltaLqrLtvTest() {
 
   // DELTA FORMULATION: Xref in objective and Xnom linearization
   // Compute and store A, B offline
-  for (int i = 0; i < NHORIZON-1; ++i) {  
+  for (int i = 0; i < NHORIZON - 1; ++i) {
     model.get_jacobians(&(model.A[i]), &(model.B[i]), Xnom[i], Unom[i]);
     tiny_Bicycle5dNonlinearDynamics(&(model.f[i]), Xnom[i], Unom[i]);
-    slap_MatrixAddition(model.f[i], model.f[i], Xnom[i+1], -1);  // = 0
+    slap_MatrixAddition(model.f[i], model.f[i], Xnom[i + 1], -1);  // = 0
     // printf("%f\n",slap_NormTwoSquared(model.f[i]));
-  }   
+  }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLtv(X, U, prob, model);  // delta_x and delta_u
 
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(Uref[k]);
@@ -157,9 +157,9 @@ void AbsLqrLtvTest() {
   double d_data[NINPUTS * (NHORIZON - 1)] = {0};
   double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
   double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON-1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON-1)] = {0};
-  double f_data[NSTATES * (NHORIZON-1)] = {0};
+  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  double f_data[NSTATES * (NHORIZON - 1)] = {0};
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
   double* Uptr = U_data;
@@ -181,10 +181,10 @@ void AbsLqrLtvTest() {
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES*NSTATES;
+      Aptr += NSTATES * NSTATES;
       B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES*NINPUTS;
-      f[i]= slap_MatrixFromArray(NSTATES, 1, fptr);
+      Bptr += NSTATES * NINPUTS;
+      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
       // slap_SetConst(U[i], 0.01);
@@ -205,7 +205,7 @@ void AbsLqrLtvTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
- 
+
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
@@ -238,18 +238,19 @@ void AbsLqrLtvTest() {
 
   // Absolute formulation
   // Compute and store A, B offline
-  for (int i = 0; i < NHORIZON-1; ++i) {  
-    model.get_jacobians(&(model.A[i]), &(model.B[i]), prob.X_ref[i], prob.U_ref[i]);
+  for (int i = 0; i < NHORIZON - 1; ++i) {
+    model.get_jacobians(&(model.A[i]), &(model.B[i]), prob.X_ref[i],
+                        prob.U_ref[i]);
     tiny_Bicycle5dNonlinearDynamics(&(model.f[i]), Xref[i], Uref[i]);
     slap_MatMulAdd(model.f[i], model.A[i], Xref[i], -1, 1);
     slap_MatMulAdd(model.f[i], model.B[i], Uref[i], -1, 1);
     // printf("%f\n",slap_NormTwoSquared(model.f[i]));
-  }   
+  }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLtv(X, U, prob, model);
 
-  for (int k = 0; k < NHORIZON-1; ++k) {
+  for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(slap_Transpose(X[k]));

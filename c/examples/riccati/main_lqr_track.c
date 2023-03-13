@@ -41,7 +41,7 @@ int main(void) {
 
   printf("xn_data size: %f: \n", size_xn);
   for (int i=0; i<size_xn; i++) {
-    printf("xn_data[%d]: \n", i, xn_data[i]);
+    printf("xn_data[%d]: %f\n", i, xn_data[i]);
   }
 
   // Create matrix from array data
@@ -114,7 +114,7 @@ int main(void) {
     slap_MatMulAdd(xhist[k + 1], A, xhist[k], 1, 0);  // x[k+1] = A * x[k]
     slap_MatMulAdd(xhist[k + 1], B, uhist[k], 1, 1);  // x[k+1] += B * u[k]
 
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xn[k], xhist[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(xn[k], xhist[k]));
   }
   slap_FreeMatrix(S);
   return 0;

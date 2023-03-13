@@ -40,6 +40,6 @@ because the later one ignores all metadata.
 
 ## Done
 
-- Augmented Lagrangian LQR/TVLQR.
+- Augmented Lagrangian LQR/TVLQR and MPC.
 - Successful unit and integration testing.
 - Experiments on double integrator, planar quadrotor and bicycle model.

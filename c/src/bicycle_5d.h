@@ -6,6 +6,8 @@
 
 //========================================
 // Bicycle model parameters
+// X = [x; y; theta; v; delta] : x, y, yaw, linear vel, steering angle
+// U = [a; delta_dot] : linear accel and steering rate
 //========================================
 // struct tiny_Model_Bicycle {
 //   double drive_min[2];

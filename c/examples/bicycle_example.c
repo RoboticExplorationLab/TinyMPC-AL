@@ -1,5 +1,6 @@
 // MPC
 // Scenerio: Drive bicycle to track references with constraints.
+// Check trajopt at test/al_lqr_test/al_lqr_ltv_test.c
 
 // === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
 // IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
@@ -41,6 +42,8 @@ void MpcTest() {
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
+
+  // Put constraints on u, x4, x5
   double umin_data[NINPUTS] = {-2.1, -1.1};
   double umax_data[NINPUTS] = {2.1, 1.1};
   double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
@@ -131,7 +134,7 @@ void MpcTest() {
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from Bicycle
+  model.get_jacobians = tiny_Bicycle5dGetJacobians;  
   model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
   model.A = A;
   model.B = B;

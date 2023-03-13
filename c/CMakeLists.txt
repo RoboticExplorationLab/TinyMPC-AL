@@ -53,7 +53,7 @@ add_executable(getting_started examples/getting_started.c)
 target_link_libraries(getting_started PRIVATE slap::slap)
 
 # using cJSON example
-add_executable(using_cjson examples/json_example.c)
+add_executable(using_cjson examples/json/json_example.c)
 target_link_libraries(using_cjson PRIVATE cjson)
 
-# add_subdirectory(examples/riccati)
+add_subdirectory(examples/riccati)

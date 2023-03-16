@@ -103,7 +103,7 @@ void DeltaLqrLtvTest() {
   model.A = A;
   model.B = B;
   model.f = f;
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -138,7 +138,7 @@ void DeltaLqrLtvTest() {
   tiny_ForwardPassLtv(X, U, prob, model);
   // for (int k = 0; k < NHORIZON - 1; ++k) {
   //   // Control input: du = - d - K*dx
-  //   slap_MatrixCopy(U[k], prob.d[k]);              // du[k] = -d[k]
+  //   slap_Copy(U[k], prob.d[k]);              // du[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // du[k] -= K[k] * dx[k]
   //   // Next state: dx = A*dx + B*du + f
   //   tiny_DynamicsLtv(&X[k + 1], X[k], U[k], model, k);
@@ -233,7 +233,7 @@ void AbsLqrLtvTest() {
   model.A = A;
   model.B = B;
   model.f = f;
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -269,7 +269,7 @@ void AbsLqrLtvTest() {
   tiny_ForwardPassLtv(X, U, prob, model);
   // for (int k = 0; k < NHORIZON - 1; ++k) {
   //   // Control input: du = - d - K*(x - xf)
-  //   slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
+  //   slap_Copy(U[k], prob.d[k]);              // u[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * x[k]
   //   tiny_PQuadNonlinearDynamics(&X[k+1], X[k], U[k]);
   // }
@@ -350,7 +350,7 @@ void DeltaLqrLtiTest() {
   model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
 
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -383,7 +383,7 @@ void DeltaLqrLtiTest() {
   tiny_ForwardPassLti(X, U, prob, model);
   // for (int k = 0; k < NHORIZON - 1; ++k) {
   //   // Control input: du = - d - K*dx
-  //   slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
+  //   slap_Copy(U[k], prob.d[k]);              // u[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * dx[k]
   //   // Next state: dx = A*dx + B*du + f
   //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
@@ -466,7 +466,7 @@ void AbsLqrLtiTest() {
   model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
 
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -500,7 +500,7 @@ void AbsLqrLtiTest() {
   tiny_ForwardPassLti(X, U, prob, model);
   // for (int k = 0; k < NHORIZON - 1; ++k) {
   //   // Control input: u = - d - K*x
-  //   slap_MatrixCopy(U[k], prob.d[k]);              // u[k] = -d[k]
+  //   slap_Copy(U[k], prob.d[k]);              // u[k] = -d[k]
   //   slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);   // u[k] -= K[k] * x[k]
   //   // Next state: x = A*x + B*u + f
   //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);

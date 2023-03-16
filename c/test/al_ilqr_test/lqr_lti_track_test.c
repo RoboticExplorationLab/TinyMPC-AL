@@ -79,7 +79,7 @@ void LqrLtiTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;

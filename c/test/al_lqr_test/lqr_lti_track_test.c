@@ -80,7 +80,7 @@ void LqrLtiTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
@@ -108,7 +108,7 @@ void LqrLtiTest() {
                                        G_temp_data);
 
   for (int i = 0; i < NHORIZON - 1; ++i) {
-    slap_MatrixCopy(model.f, Xref[i + 1]);
+    slap_Copy(model.f, Xref[i + 1]);
     slap_MatMulAdd(model.f, model.A, Xref[i], -1, 1);
     slap_MatMulAdd(model.f, model.B, Uref[i], -1, 1);
     // tiny_Print(model.f);  // Check if reference is feasible

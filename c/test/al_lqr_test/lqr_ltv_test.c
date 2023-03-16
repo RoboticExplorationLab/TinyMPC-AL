@@ -1,13 +1,13 @@
 // Test LQR
 // Scenerio: Drive planar quadrotor to arbitrary goal state.
 
-#include "planar_quadrotor.h"
+#include "tinympc/planar_quadrotor.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_lqr_lti.h"
-#include "tiny_lqr_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/tiny_lqr_lti.h"
+#include "tinympc/tiny_lqr_ltv.h"
+#include "tinympc/tiny_utils.h"
 
 #define H 0.1
 #define NSTATES 6

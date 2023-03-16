@@ -1,14 +1,14 @@
 // Test TVLQR
 // Scenerio: Drive bicycle to track references.
 
-#include "bicycle_5d.h"
+#include "tinympc/bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_dynamics_ltv.h"
-#include "tiny_lqr_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/tiny_dynamics_ltv.h"
+#include "tinympc/tiny_lqr_ltv.h"
+#include "tinympc/tiny_utils.h"
 
 #define H 0.1
 #define NSTATES 5

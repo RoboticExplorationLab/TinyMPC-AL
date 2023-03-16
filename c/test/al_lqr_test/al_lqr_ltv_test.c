@@ -8,13 +8,13 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
-#include "bicycle_5d.h"
+#include "tinympc/bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_mpc_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/tiny_mpc_ltv.h"
+#include "tinympc/tiny_utils.h"
 
 #define H 0.1
 #define NSTATES 5

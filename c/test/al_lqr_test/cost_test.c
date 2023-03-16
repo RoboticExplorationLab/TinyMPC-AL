@@ -6,7 +6,7 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_cost.h"
+#include "tinympc/tiny_cost.h"
 
 #define NSTATES 4
 #define NINPUTS 2

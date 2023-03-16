@@ -6,7 +6,7 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_struct.h"
+#include "tinympc/tiny_struct.h"
 
 #define NSTATES 2
 #define NINPUTS 1

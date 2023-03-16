@@ -1,8 +1,33 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(TinyMPC VERSION 0.1.0 LANGUAGES C CXX)
+project(TinyMPC VERSION 0.1.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Include fetch content module
+include(FetchContent)
+
+# Download dependency manager (CPM) if not already done
+set(CPM_DOWNLOAD_VERSION 0.34.0) 
+
+if(CPM_SOURCE_CACHE)
+    set(CPM_DOWNLOAD_LOCATION "${CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+elseif(DEFINED ENV{CPM_SOURCE_CACHE})
+    set(CPM_DOWNLOAD_LOCATION "$ENV{CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+else()
+    set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+endif()
+
+if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+  message(STATUS "Downloading CPM.cmake")
+  file(DOWNLOAD 
+    https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake 
+    ${CPM_DOWNLOAD_LOCATION}
+    )
+endif()
+
+include(${CPM_DOWNLOAD_LOCATION})
+
 
 # Handle default build type
 set(TINY_DEFAULT_BUILD_TYPE "Release")
@@ -12,11 +37,69 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
+# Enable testing
+option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
+
+# Enable clang-tidy analysis
+option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." ON)
+
+# Floating point precision
+set(TINY_FLOAT double CACHE STRING "Floating point precision for TinyMPC (float,double).")
+
+# Build examples
+option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." OFF)
+
+# Build with -march=native
+option(TINY_VECTORIZE "Compile with -march=native" OFF)
+
+##############################
+# Dependencies
+##############################
+
+# slap
+if (PROJECT_IS_TOP_LEVEL)
+  FetchContent_Declare(libslap
+    GIT_REPOSITORY https://github.com/bjack205/slap
+    GIT_TAG main
+    )
+  set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(libslap)
+endif()
+
+# Google Test
+if (TINY_BUILD_TESTS)
+  CPMAddPackage(
+      NAME googletest
+      GITHUB_REPOSITORY google/googletest
+      VERSION 1.13.0
+      DOWNLOAD_EXTRACT_TIMESTAMP
+      OPTIONS
+      "INSTALL_GTEST OFF"
+      "gtest_force_shared_crt ON"
+  )
+  add_library(gtest::gtest ALIAS gtest_main)
+  enable_testing()
+  include(GoogleTest)
+  include(CTest)
+endif ()
+
+
 ##############################
 # Build
 ##############################
-
 # Compile options
+if (NOT WIN32)
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+  # add_compile_options(-Wno-error=unknown-pragmas
+  #                     -Wformat=2 -Wno-unused-parameter -Wshadow 
+  #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
+  #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
+  if (TINY_VECTORIZE)
+    add_compile_options(-march=native)
+  endif()
+endif()
+
+
 # TODO: Future options to optimize library for specific use of constraints
 option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
 if (SET_GOAL_CONSTRAINT)
@@ -31,20 +114,26 @@ if (SET_STATE_CONSTRAINT)
   add_definitions(-DSTATE_CONSTRAINT)
 endif()
 
-add_compile_options(-Wall -Wextra -pedantic -Wno-error=unknown-pragmas)
-# add_compile_options(-Wall -Wextra -Wpedantic -Werror
-#                     -Wformat=2 -Wno-unused-parameter -Wshadow 
-#                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
-#                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
+# Make all includes relative to src/ directory
+include_directories(${PROJECT_SOURCE_DIR}/src)
+
+# Build source files
+add_subdirectory(src/tinympc)
+
+##############################
+# Testing
+##############################
+if (TINY_BUILD_TESTS)
+  add_subdirectory(test)
+endif()
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU")
   add_compile_options(-Wjump-misses-init -Wlogical-op)
-endif ()                    
-# Make all includes relative to src/ directory
-include_directories(${PROJECT_SOURCE_DIR})
+endif()                    
 
-# Build source files
-add_subdirectory(slap)
-add_subdirectory(examples)
-add_subdirectory(src)
-add_subdirectory(test)
+##############################
+# Examples
+##############################
+if (TINY_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()

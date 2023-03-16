@@ -19,7 +19,7 @@
 #define H 0.1
 #define NSTATES 5
 #define NINPUTS 2
-#define NHORIZON 5
+#define NHORIZON 21
 #define NSIM 101
 
 void MpcTest() {
@@ -148,7 +148,7 @@ void MpcTest() {
   prob.ncstr_states = 2 * NSTATES;
   prob.ncstr_goal = NSTATES;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 100e-1);
+  slap_SetIdentity(prob.Q, 10e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);

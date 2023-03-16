@@ -1,3 +1,5 @@
+set(BUILD_SHARED_LIBS NO)
+
 add_library(tinympc
   # constrained_ilqr.h
   # constrained_ilqr.c
@@ -31,20 +33,16 @@ add_library(tinympc
 
   tiny_constraint.h
   tiny_constraint.c
-
-  bicycle_5d.h
-  bicycle_5d.c
-
-  planar_quadrotor.h
-  planar_quadrotor.c
-  )
+)
 
 target_link_libraries(tinympc
-  PRIVATE
-  slap
+  PUBLIC
+  slap::slap
   )
 
 target_include_directories(tinympc
   PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}
-  )
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+)
+
+add_library(tinympc::tinympc ALIAS tinympc)

@@ -1,8 +1,19 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(TinyMPC VERSION 0.1.0 LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.2)
+list(APPEND CMAKE_MESSAGE_CONTEXT tinympc)
+project(TinyMPC VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Include useful modules
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(CMakePrintHelpers)
+include(GNUInstallDirs)
+# include(Functions)
+include(FetchContent)
+
+# Add CPM Dependency Manager
+include(FindCPM)
 
 # Handle default build type
 set(TINY_DEFAULT_BUILD_TYPE "Release")
@@ -30,6 +41,9 @@ option(SET_STATE_CONSTRAINT "Set state constraints" ON)
 if (SET_STATE_CONSTRAINT)
   add_definitions(-DSTATE_CONSTRAINT)
 endif()
+
+# Floating point precision
+set(SLAP_FLOAT double CACHE STRING "Floating point precision for slap (float,double).")
 
 add_compile_options(-Wall -Wextra -pedantic -Wno-error=unknown-pragmas)
 # add_compile_options(-Wall -Wextra -Wpedantic -Werror

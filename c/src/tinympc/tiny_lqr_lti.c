@@ -24,7 +24,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     // Stage cost expansion
     tiny_ExpandStageCost(&Qxx, &Qx, &Quu, &Qu, *prob, k);
     // State Gradient: Qx = q + A'(P*f + p)
-    slap_MatrixCopy(prob->p[k], prob->p[k + 1]);
+    slap_Copy(prob->p[k], prob->p[k + 1]);
     slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
                    1);  // p[k] = P[k+1]*f + p[k+1]
     slap_MatMulAdd(Qx, slap_Transpose(model.A), prob->p[k], 1, 1);
@@ -47,15 +47,15 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
                    0);  // Qux = B'P*A
 
     // Calculate Gains
-    slap_MatrixCopy(Quu_temp, Quu);
+    slap_Copy(Quu_temp, Quu);
     slap_Cholesky(Quu_temp);
-    slap_MatrixCopy(prob->K[k], Qux);
-    slap_MatrixCopy(prob->d[k], Qu);
+    slap_Copy(prob->K[k], Qux);
+    slap_Copy(prob->d[k], Qu);
     slap_CholeskySolve(Quu_temp, prob->d[k]);  // d = Quu\Qu
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Quu\Qux
 
     // Cost-to-Go Hessian: P = Qxx + K'Quu*K - K'Qux - Qux'K
-    slap_MatrixCopy(prob->P[k], Qxx);                            // P = Qxx
+    slap_Copy(prob->P[k], Qxx);                            // P = Qxx
     slap_MatMulAdd(Qxu, slap_Transpose(prob->K[k]), Quu, 1, 0);  // Qxu = K'Quu
     slap_MatMulAdd(prob->P[k], Qxu, prob->K[k], 1, 1);           // P += K'Quu*K
     slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Qux, -2,
@@ -64,7 +64,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     //                1);  // P -= Qux'K
 
     // Cost-to-Go Gradient: p = Qx + K'Quu*d - K'Qu - Qux'd
-    slap_MatrixCopy(prob->p[k], Qx);                    // p = Qx
+    slap_Copy(prob->p[k], Qx);                    // p = Qx
     slap_MatMulAdd(prob->p[k], Qxu, prob->d[k], 1, 1);  // p += K'Quu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Qu, -1,
                    1);  // p -= K'Qu

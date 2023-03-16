@@ -46,7 +46,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
       prob->nstates);
 
   //========= Goal constraints ==========
-  slap_MatrixCopy(Qx, prob->X_ref[N - 1]);  // h = xg
+  slap_Copy(Qx, prob->X_ref[N - 1]);  // h = xg
   slap_SetIdentity(Qxx, 1);                 // H constant
   slap_MatrixAddition(prob->p[N - 2], prob->goal_dual, Qx,
                       -solver.penalty);  // (λ - ρ*h)
@@ -62,7 +62,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
   tiny_IneqStatesJacobian(&ineq_state_jac, *prob);
   // Qx  += G'*(μx[k] - ρ*mask * g)
   tiny_IneqStatesOffset(&ineq_state, *prob);  // g
-  slap_MatrixCopy(ineq_state2, prob->state_duals[N - 1]);
+  slap_Copy(ineq_state2, prob->state_duals[N - 1]);
   slap_MatMulAdd(ineq_state2, mask_state, ineq_state, -1,
                  1);  //μx[k] - ρ*mask*g
   slap_MatMulAdd(prob->p[N - 1], slap_Transpose(ineq_state_jac), ineq_state2, 1,
@@ -76,7 +76,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     // Stage cost expansion
     tiny_ExpandStageCost(&Qxx, &Qx, &Quu, &Qu, *prob, k);
     // State Gradient: Qx = q + A'(P*f + p)
-    slap_MatrixCopy(prob->p[k], prob->p[k + 1]);
+    slap_Copy(prob->p[k], prob->p[k + 1]);
     slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
                    1);  // p[k] = P[k+1]*f + p[k+1]
     slap_MatMulAdd(Qx, slap_Transpose(model.A), prob->p[k], 1, 1);
@@ -105,7 +105,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     tiny_IneqInputsJacobian(&ineq_input_jac, *prob);
     // Qu  += G'*(μ[k] + (mask * g)
     tiny_IneqInputsOffset(&ineq_input, *prob);  // g
-    slap_MatrixCopy(ineq_input2, prob->input_duals[k]);
+    slap_Copy(ineq_input2, prob->input_duals[k]);
     slap_MatMulAdd(ineq_input2, mask_input, ineq_input, -1, 1);
     slap_MatMulAdd(Qu, slap_Transpose(ineq_input_jac), ineq_input2, 1, 1);
     // Quu += ∇hu'*mask*∇hu
@@ -119,7 +119,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     tiny_IneqStatesJacobian(&ineq_state_jac, *prob);
     // Qx  += G'*(μx[k] - ρ*mask * g)
     tiny_IneqStatesOffset(&ineq_state, *prob);  // g
-    slap_MatrixCopy(ineq_state2, prob->state_duals[k]);
+    slap_Copy(ineq_state2, prob->state_duals[k]);
     slap_MatMulAdd(ineq_state2, mask_state, ineq_state, -1, 1);
     slap_MatMulAdd(Qx, slap_Transpose(ineq_state_jac), ineq_state2, 1, 1);
     // Qxx += ρ*∇hx'*mask*∇hx
@@ -127,15 +127,15 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_MatMulAdd(Qxx, slap_Transpose(ineq_state_jac), ineq_state_jac2, 1, 1);
 
     // Calculate Gains
-    slap_MatrixCopy(Quu_temp, Quu);
+    slap_Copy(Quu_temp, Quu);
     slap_Cholesky(Quu_temp);
-    slap_MatrixCopy(prob->K[k], Qux);
-    slap_MatrixCopy(prob->d[k], Qu);
+    slap_Copy(prob->K[k], Qux);
+    slap_Copy(prob->d[k], Qu);
     slap_CholeskySolve(Quu_temp, prob->d[k]);  // d = Quu\Qu
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Quu\Qux
 
     // Cost-to-Go Hessian: P = Qxx + K'Quu*K - K'Qux - Qux'K
-    slap_MatrixCopy(prob->P[k], Qxx);                            // P = Qxx
+    slap_Copy(prob->P[k], Qxx);                            // P = Qxx
     slap_MatMulAdd(Qxu, slap_Transpose(prob->K[k]), Quu, 1, 0);  // Qxu = K'Quu
     slap_MatMulAdd(prob->P[k], Qxu, prob->K[k], 1, 1);           // P += K'Quu*K
     slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Qux, -2,
@@ -144,7 +144,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     //                1);  // P -= Qux'K
 
     // Cost-to-Go Gradient: p = Qx + K'Quu*d - K'Qu - Qux'd
-    slap_MatrixCopy(prob->p[k], Qx);                    // p = Qx
+    slap_Copy(prob->p[k], Qx);                    // p = Qx
     slap_MatMulAdd(prob->p[k], Qxu, prob->d[k], 1, 1);  // p += K'Quu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Qu, -1,
                    1);  // p -= K'Qu
@@ -226,7 +226,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
       cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
       // Update duals
       tiny_IneqInputsOffset(&ineq_input, *prob);  // g
-      slap_MatrixCopy(new_input_duals, prob->input_duals[k]);
+      slap_Copy(new_input_duals, prob->input_duals[k]);
       slap_MatMulAdd(new_input_duals, mask_input, ineq_input, -1,
                      1);  //μ[k] - ρ*mask * g
       tiny_ClampIneqDuals(&(prob->input_duals)[k], new_input_duals);
@@ -246,7 +246,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
       cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
       // Update duals
       tiny_IneqStatesOffset(&ineq_state, *prob);  // g
-      slap_MatrixCopy(new_state_duals, prob->state_duals[k]);
+      slap_Copy(new_state_duals, prob->state_duals[k]);
       slap_MatMulAdd(new_state_duals, mask_state, ineq_state, -1,
                      1);  //μ[k] - ρ*mask*g
       tiny_ClampIneqDuals(&(prob->state_duals)[k], new_state_duals);
@@ -257,7 +257,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
     norm_inf = slap_NormInf(eq_goal);
     cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
     // λ -= ρ*h
-    slap_MatrixCopy(eq_goal, prob->X_ref[N - 1]);  // h = xg
+    slap_Copy(eq_goal, prob->X_ref[N - 1]);  // h = xg
     slap_MatrixAddition(prob->goal_dual, prob->goal_dual, eq_goal,
                         -solver->penalty);
 

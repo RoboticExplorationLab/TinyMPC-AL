@@ -27,8 +27,8 @@ void tiny_IneqInputsOffset(Matrix* ineq_input, const tiny_ProblemData prob) {
   Matrix upper_half = slap_CreateSubMatrix(*ineq_input, 0, 0, prob.ninputs, 1);
   Matrix lower_half =
       slap_CreateSubMatrix(*ineq_input, prob.ninputs, 0, prob.ninputs, 1);
-  slap_MatrixCopy(upper_half, prob.u_max);
-  slap_MatrixCopy(lower_half, prob.u_min);
+  slap_Copy(upper_half, prob.u_max);
+  slap_Copy(lower_half, prob.u_min);
   slap_ScaleByConst(lower_half, -1);
 }
 
@@ -58,8 +58,8 @@ void tiny_IneqStatesOffset(Matrix* ineq_state, const tiny_ProblemData prob) {
   Matrix upper_half = slap_CreateSubMatrix(*ineq_state, 0, 0, prob.nstates, 1);
   Matrix lower_half =
       slap_CreateSubMatrix(*ineq_state, prob.nstates, 0, prob.nstates, 1);
-  slap_MatrixCopy(upper_half, prob.x_max);
-  slap_MatrixCopy(lower_half, prob.x_min);
+  slap_Copy(upper_half, prob.x_max);
+  slap_Copy(lower_half, prob.x_min);
   slap_ScaleByConst(lower_half, -1);
 }
 

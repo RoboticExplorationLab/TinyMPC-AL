@@ -22,14 +22,14 @@ void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
 void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                           Matrix* hes_el_uu, Matrix* grad_el_u,
                           const tiny_ProblemData prob, const int k) {
-  slap_MatrixCopy(*hes_el_xx, prob.Q);
+  slap_Copy(*hes_el_xx, prob.Q);
   slap_MatMulAdd(*grad_el_x, prob.Q, prob.X_ref[k], -1, 0);
-  slap_MatrixCopy(*hes_el_uu, prob.R);
+  slap_Copy(*hes_el_uu, prob.R);
   slap_MatMulAdd(*grad_el_u, prob.R, prob.U_ref[k], -1, 0);
 }
 
 void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                              const tiny_ProblemData prob) {
-  slap_MatrixCopy(*hes_el_xx, prob.Qf);
+  slap_Copy(*hes_el_xx, prob.Qf);
   slap_MatMulAdd(*grad_el_x, prob.Qf, prob.X_ref[prob.nhorizon - 1], -1, 0);
 }

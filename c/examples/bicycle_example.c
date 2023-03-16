@@ -111,7 +111,7 @@ void MpcTest() {
       f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
       fptr += NSTATES;
       Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
-      slap_MatrixCopy(Uhrz[i], Uref[i]);  // Initialize U
+      slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
       Uhrz_ptr += NINPUTS;
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
       Kptr += NINPUTS * NSTATES;
@@ -121,7 +121,7 @@ void MpcTest() {
       udual_ptr += 2 * NINPUTS;
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
-    slap_MatrixCopy(Xhrz[i], Xref[i]);  // Initialize U
+    slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
     Xhrz_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
@@ -139,7 +139,7 @@ void MpcTest() {
   model.A = A;
   model.B = B;
   model.f = f;
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -178,7 +178,7 @@ void MpcTest() {
     printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===
 
-    slap_MatrixCopy(Xhrz[0], X[k]);
+    slap_Copy(Xhrz[0], X[k]);
     // Update A, B within horizon
     tiny_UpdateHorizonJacobians(&model, prob);
     // Update reference

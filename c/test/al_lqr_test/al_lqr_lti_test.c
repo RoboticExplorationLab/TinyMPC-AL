@@ -91,7 +91,7 @@ void MpcLtiTest() {
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    slap_MatrixCopy(Xref[i], xg);
+    slap_Copy(Xref[i], xg);
     Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
@@ -100,7 +100,7 @@ void MpcLtiTest() {
     state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;

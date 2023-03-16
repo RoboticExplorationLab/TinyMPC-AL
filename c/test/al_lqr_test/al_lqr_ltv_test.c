@@ -126,7 +126,7 @@ void AbsLqrLtvTest() {
   model.A = A;
   model.B = B;
   model.f = f;
-  slap_MatrixCopy(X[0], model.x0);
+  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;

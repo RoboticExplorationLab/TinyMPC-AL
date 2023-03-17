@@ -13,8 +13,8 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_mpc_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/mpc_ltv.h"
+#include "tinympc/utils.h"
 
 #define H 0.1
 #define NSTATES 5

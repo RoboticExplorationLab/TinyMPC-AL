@@ -1,4 +1,4 @@
-#include "tiny_mpc_ltv.h"
+#include "mpc_ltv.h"
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
     tiny_ProblemData* prob, const tiny_Solver solver, const tiny_LtvModel model,

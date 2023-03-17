@@ -1,8 +1,9 @@
-#include "tiny_lqr_ltv.h"
+#include "lqr_lti.h"
 
-enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
+// Riccati recursion for LTI without constraints
+enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
                                          const tiny_Solver solver,
-                                         const tiny_LtvModel model,
+                                         const tiny_LtiModel model,
                                          Matrix* Q_temp) {
   int N = prob->nhorizon;
   int n = prob->nstates;
@@ -24,26 +25,25 @@ enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
     tiny_ExpandStageCost(&Qxx, &Qx, &Quu, &Qu, *prob, k);
     // State Gradient: Qx = q + A'(P*f + p)
     slap_Copy(prob->p[k], prob->p[k + 1]);
-    slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f[k], 1,
+    slap_MatMulAdd(prob->p[k], prob->P[k + 1], model.f, 1,
                    1);  // p[k] = P[k+1]*f + p[k+1]
-    slap_MatMulAdd(Qx, slap_Transpose(model.A[k]), prob->p[k], 1, 1);
-    // slap_PrintMatrix(model.f[k]);
+    slap_MatMulAdd(Qx, slap_Transpose(model.A), prob->p[k], 1, 1);
+
     // Control Gradient: Qu = r + B'(P*f + p)
-    slap_MatMulAdd(Qu, slap_Transpose(model.B[k]), prob->p[k], 1, 1);
+    slap_MatMulAdd(Qu, slap_Transpose(model.B), prob->p[k], 1, 1);
 
     // State Hessian: Qxx = Q + A'P*A
-    slap_MatMulAdd(prob->P[k], prob->P[k + 1], model.A[k], 1,
+    slap_MatMulAdd(prob->P[k], prob->P[k + 1], model.A, 1,
                    0);  // P[k] = P[k+1]*A
-    slap_MatMulAdd(Qxx, slap_Transpose(model.A[k]), prob->P[k], 1,
+    slap_MatMulAdd(Qxx, slap_Transpose(model.A), prob->P[k], 1,
                    1);  // Qxx = Q + A'P*A
 
     // Control Hessian Quu = R + B'P*B
-    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B[k], 1, 0);  // Qxu = P * B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), Qxu, 1,
-                   1);  // Quu = R + B'P*B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B[k]), model.B[k], solver.regu, 1);
+    slap_MatMulAdd(Qxu, prob->P[k + 1], model.B, 1, 0);       // Qxu = P * B
+    slap_MatMulAdd(Quu, slap_Transpose(model.B), Qxu, 1, 1);  // Quu = R + B'P*B
+    slap_MatMulAdd(Quu, slap_Transpose(model.B), model.B, solver.regu, 1);
     // Hessian Cross-Term
-    slap_MatMulAdd(Qux, slap_Transpose(model.B[k]), prob->P[k], 1,
+    slap_MatMulAdd(Qux, slap_Transpose(model.B), prob->P[k], 1,
                    0);  // Qux = B'P*A
 
     // Calculate Gains

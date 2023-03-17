@@ -4,9 +4,9 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_lqr_lti.h"
-#include "tiny_struct.h"
-#include "tiny_utils.h"
+#include "tinympc/lqr_lti.h"
+#include "tinympc/data_struct.h"
+#include "tinympc/utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2

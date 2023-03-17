@@ -1,4 +1,4 @@
-#include "tiny_constraint.h"
+#include "constraint_linear.h"
 
 double tiny_RiccatiConvergence(const tiny_ProblemData prob) {
   double norm_d_max = 0.0;

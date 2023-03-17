@@ -1,4 +1,4 @@
-#include "tiny_struct.h"
+#include "data_struct.h"
 
 void tiny_InitLtiModel(tiny_LtiModel* model) {
   *model = (tiny_LtiModel){

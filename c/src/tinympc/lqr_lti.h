@@ -1,7 +1,7 @@
 #pragma once
-#include "tiny_cost.h"
-#include "tiny_dynamics_lti.h"
-#include "tiny_struct.h"
+#include "cost_lqr.h"
+#include "dynamics_lti.h"
+#include "data_struct.h"
 
 // A and B are computed before LQR
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,

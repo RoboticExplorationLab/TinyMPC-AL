@@ -1,4 +1,4 @@
-#include "tiny_struct.h"
+#include "data_struct.h"
 
 double tiny_RiccatiConvergence(const tiny_ProblemData prob);
 

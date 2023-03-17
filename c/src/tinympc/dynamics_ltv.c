@@ -1,4 +1,4 @@
-#include "tiny_dynamics_ltv.h"
+#include "dynamics_ltv.h"
 
 void tiny_DynamicsLtv(Matrix* xn, const Matrix x, const Matrix u,
                       const tiny_LtvModel model, const int k) {

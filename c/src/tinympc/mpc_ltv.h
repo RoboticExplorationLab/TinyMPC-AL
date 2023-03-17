@@ -1,7 +1,7 @@
-#include "tiny_constraint.h"
-#include "tiny_cost.h"
-#include "tiny_dynamics_ltv.h"
-#include "tiny_struct.h"
+#include "constraint_linear.h"
+#include "cost_lqr.h"
+#include "dynamics_ltv.h"
+#include "data_struct.h"
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
     tiny_ProblemData* prob, const tiny_Solver solver, const tiny_LtvModel model,

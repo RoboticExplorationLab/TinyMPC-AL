@@ -1,4 +1,4 @@
-#include "constrained_ilqr.h"
+#include "nmpc.h"
 
 void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k) {

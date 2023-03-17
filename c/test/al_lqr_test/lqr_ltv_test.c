@@ -5,9 +5,9 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_lqr_lti.h"
-#include "tiny_lqr_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/lqr_lti.h"
+#include "tinympc/lqr_ltv.h"
+#include "tinympc/utils.h"
 
 #define H 0.1
 #define NSTATES 6

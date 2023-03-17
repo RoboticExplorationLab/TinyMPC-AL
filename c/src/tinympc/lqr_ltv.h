@@ -1,6 +1,6 @@
-#include "tiny_cost.h"
-#include "tiny_dynamics_ltv.h"
-#include "tiny_struct.h"
+#include "cost_lqr.h"
+#include "dynamics_ltv.h"
+#include "data_struct.h"
 
 enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
                                          const tiny_Solver solver,

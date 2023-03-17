@@ -1,4 +1,4 @@
-#include "tiny_dynamics_lti.h"
+#include "dynamics_lti.h"
 
 void tiny_DynamicsLti(Matrix* xn, const Matrix x, const Matrix u,
                       const tiny_LtiModel model) {

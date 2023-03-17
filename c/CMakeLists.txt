@@ -27,7 +27,7 @@ endif ()
 option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
 
 # Enable clang-tidy analysis
-option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." ON)
+option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 
 # Floating point precision
 set(TINY_FLOAT double CACHE STRING "Floating point precision for TinyMPC (float,double).")
@@ -43,14 +43,12 @@ option(TINY_VECTORIZE "Compile with -march=native" OFF)
 ##############################
 
 # slap
-if (PROJECT_IS_TOP_LEVEL)
-  FetchContent_Declare(libslap
-    GIT_REPOSITORY https://github.com/bjack205/slap
-    GIT_TAG main
-    )
-  set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-  FetchContent_MakeAvailable(libslap)
-endif()
+FetchContent_Declare(slap
+  GIT_REPOSITORY https://github.com/bjack205/slap
+  GIT_TAG main
+  )
+set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(slap)
 
 # Google Test
 if (TINY_BUILD_TESTS)
@@ -101,7 +99,7 @@ if (SET_STATE_CONSTRAINT)
 endif()
 
 # Floating point precision
-set(SLAP_FLOAT double CACHE STRING "Floating point precision for slap (float,double).")
+# set(SLAP_FLOAT double CACHE STRING "Floating point precision for slap (float,double).")
 
 # Make all includes relative to src/ directory
 include_directories(${PROJECT_SOURCE_DIR}/src)

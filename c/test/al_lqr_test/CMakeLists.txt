@@ -8,13 +8,19 @@ function(add_my_test name)
     ${TEST_NAME}.c
 
     test_utils.h
-    test_utils.c
+    test_utils.c  
+
+    bicycle_5d.h
+    bicycle_5d.c
+
+    planar_quadrotor.h
+    planar_quadrotor.c
     )
   target_link_libraries(${TEST_NAME}
     PRIVATE
     simpletest
-    slap
-    tinympc
+    slap::slap
+    tinympc::tinympc
     m  # math library
     )
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})

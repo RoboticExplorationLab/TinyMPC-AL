@@ -1,4 +1,4 @@
-#include "tiny_mpc_lti.h"
+#include "mpc_lti.h"
 
 // Riccati recursion for LTI with constraints
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(

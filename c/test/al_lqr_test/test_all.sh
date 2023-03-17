@@ -11,4 +11,3 @@ build/$DIR/al_lqr_lti_test
 build/$DIR/lqr_ltv_test
 build/$DIR/lqr_ltv_track_test
 build/$DIR/al_lqr_ltv_test
-

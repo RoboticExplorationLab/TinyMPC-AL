@@ -7,7 +7,7 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tiny_lqr_lti.h"
+#include "tinympc/lqr_lti.h"
 
 #define NSTATES 4
 #define NINPUTS 2

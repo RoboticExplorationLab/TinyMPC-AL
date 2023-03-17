@@ -1,5 +1,4 @@
-#include "slap/slap.h"
-#include "tiny_struct.h"
+#include "data_struct.h"
 
 void tiny_DynamicsLtv(Matrix* xn, const Matrix x, const Matrix u,
                       const tiny_LtvModel model, const int k);

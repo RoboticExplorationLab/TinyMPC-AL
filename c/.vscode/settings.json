@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "augmented_lagrangian_lqr.h": "c",
-        "slap.h": "c"
-    }
-}

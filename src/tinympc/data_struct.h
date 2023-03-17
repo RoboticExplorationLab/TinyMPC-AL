@@ -41,7 +41,7 @@ typedef struct {
 enum modelType {kTimeInvariant = 0, kTimeVariant = 1};
 
 typedef struct {
-  modelType type;
+  enum modelType type;
   int nstates;
   int ninputs;
   double dt;

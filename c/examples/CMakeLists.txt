@@ -1,14 +1,15 @@
 function(add_example name)
-  set(TEST_NAME ${name}_example)
-  add_executable(${TEST_NAME}
-    ${TEST_NAME}.c
+  set(EXAMPLE_NAME ${name}_example)
+  add_executable(${EXAMPLE_NAME}
+    ${EXAMPLE_NAME}.c
+    ${ARGN}
     )
-  target_link_libraries(${TEST_NAME}
+  target_link_libraries(${EXAMPLE_NAME}
     PRIVATE
     simpletest
-    slap
-    tinympc
+    slap::slap
+    tinympc::tinympc
     )
 endfunction()
 
-add_example(bicycle)
+add_example(bicycle bicycle_5d.h bicycle_5d.c)

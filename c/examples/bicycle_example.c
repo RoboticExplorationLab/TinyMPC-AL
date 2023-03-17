@@ -13,8 +13,7 @@
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
-#include "tiny_mpc_ltv.h"
-#include "tiny_utils.h"
+#include "tinympc/tinympc.h"
 
 #define H 0.1
 #define NSTATES 5
@@ -175,7 +174,7 @@ void MpcTest() {
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
-    printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===
 
     slap_Copy(Xhrz[0], X[k]);
@@ -209,7 +208,7 @@ void MpcTest() {
   }
   // Test tracking performance
   for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-    TEST(slap_MatrixNormedDifference(X[k], Xref[k]) < 0.1);
+    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
   }
   // --------------------------
 }

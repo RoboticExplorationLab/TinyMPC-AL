@@ -10,10 +10,10 @@ function(add_my_test name)
     test_utils.h
     test_utils.c  
 
-    bicycle_5d.h
+    bicycle_5d.h  # we don't want to include for all
     bicycle_5d.c
 
-    planar_quadrotor.h
+    planar_quadrotor.h   # we don't want to include for all
     planar_quadrotor.c
     )
   target_link_libraries(${TEST_NAME}

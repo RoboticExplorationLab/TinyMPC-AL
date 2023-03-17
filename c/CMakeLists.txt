@@ -33,7 +33,7 @@ option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 set(TINY_FLOAT double CACHE STRING "Floating point precision for TinyMPC (float,double).")
 
 # Build examples
-option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." OFF)
+option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
 
 # Build with -march=native
 option(TINY_VECTORIZE "Compile with -march=native" OFF)

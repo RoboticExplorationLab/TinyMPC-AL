@@ -10,7 +10,6 @@
 
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
-#include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/mpc_ltv.h"

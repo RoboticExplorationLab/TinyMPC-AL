@@ -13,8 +13,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS NO)
 
-include(CMakePrintHelpers)
-include(GNUInstallDirs)
+# include(CMakePrintHelpers)
+# include(GNUInstallDirs)
 # include(Functions)
 include(FetchContent)
 
@@ -50,12 +50,12 @@ option(TINY_VECTORIZE "Compile with -march=native" OFF)
 
 # slap
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-FetchContent_Declare(slap
-  GIT_REPOSITORY https://github.com/bjack205/slap
-  GIT_TAG main
-  )
-set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(slap)
+  FetchContent_Declare(slap
+    GIT_REPOSITORY https://github.com/bjack205/slap
+    GIT_TAG main
+    )
+  set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(slap)
 endif ()
 
 # Google Test

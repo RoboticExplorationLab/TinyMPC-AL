@@ -3,10 +3,6 @@
 extern "C" {
 #endif
 
-// NOTE: this is an odd fix to get gcov to run correctly on GitHub Actions:
-// https://www.osadl.org/fileadmin/dam/interface/docbook/howtos/coverage.pdf
-// void __gcov_flush(void);
-
 #include "data_struct.h"
 #include "utils.h"
 #include "cost_lqr.h"

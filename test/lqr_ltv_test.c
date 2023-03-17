@@ -2,7 +2,7 @@
 // Scenerio: Drive planar quadrotor to arbitrary goal state.
 
 #include "planar_quadrotor.h"
-#include "simpletest.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/lqr_lti.h"

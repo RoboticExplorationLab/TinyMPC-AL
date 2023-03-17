@@ -1,7 +1,7 @@
 // Task: Test AL-LQR on double integrator with input/state box constraints and
 // goal constraint. Scenerio: drive from initial state to goal state.
 
-#include "simpletest.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/mpc_lti.h"

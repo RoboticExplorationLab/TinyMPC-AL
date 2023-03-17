@@ -1,6 +1,6 @@
 // Test all inequality-related functions and tiny_RiccatiConvergence
 
-#include "simpletest.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/constraint_linear.h"

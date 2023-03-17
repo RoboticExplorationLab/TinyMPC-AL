@@ -1,11 +1,11 @@
-// Test LQR
-// Scenerio: Drive double integrator to arbitrary goal state.
+// Test tracking LQR
+// Scenerio: Drive double integrator to track reference.
 
-#include "simpletest.h"
+#include "data/lqr_lti_track_data.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/lqr_lti.h"
-#include "tinympc/data_struct.h"
 #include "tinympc/utils.h"
 
 #define NSTATES 4
@@ -17,10 +17,7 @@ void LqrLtiTest() {
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double xg_data[NSTATES] = {2, 5, 3, -1};
-  double Xref_data[NSTATES * NHORIZON] = {0};
-  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  double x0_data[NSTATES] = {2, 6, 3, -1.5};
   double X_data[NSTATES * NHORIZON] = {0};
   double U_data[NINPUTS * (NHORIZON - 1)] = {0};
   double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
@@ -30,8 +27,6 @@ void LqrLtiTest() {
   double Q_data[NSTATES * NSTATES] = {0};
   double R_data[NINPUTS * NINPUTS] = {0};
   double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -46,7 +41,6 @@ void LqrLtiTest() {
   model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
   model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -80,7 +74,6 @@ void LqrLtiTest() {
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    slap_Copy(Xref[i], xg);
     Xref_ptr += NSTATES;
     P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
     Pptr += NSTATES * NSTATES;
@@ -93,13 +86,11 @@ void LqrLtiTest() {
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1e-1);
+  slap_SetIdentity(prob.Q, 10e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 1000 * 1e-1);
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -112,18 +103,26 @@ void LqrLtiTest() {
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       Q_temp_data);
-  tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
-  tiny_ForwardPassLti(X, U, prob, model);
+  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
+                                       G_temp_data);
 
-  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(U[k]);
+  for (int i = 0; i < NHORIZON - 1; ++i) {
+    slap_Copy(model.f, Xref[i + 1]);
+    slap_MatMulAdd(model.f, model.A, Xref[i], -1, 1);
+    slap_MatMulAdd(model.f, model.B, Uref[i], -1, 1);
+    // tiny_Print(model.f);  // Check if reference is feasible
+    // tiny_Print(slap_Transpose(Xref[i]));
   }
-  // tiny_Print(X[NHORIZON-1]);
-  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
+  tiny_BackwardPassLti(&prob, solver, model, &G_temp);
+  tiny_ForwardPassLti(X, U, prob, model);
+  // // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
+  for (int k = 0; k < NHORIZON; ++k) {
+    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+  }
+  for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
+    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 1e-1);
+  }
 }
 
 int main() {

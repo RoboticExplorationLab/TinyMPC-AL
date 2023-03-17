@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "data/forward_pass_data.h"
-#include "simpletest.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/dynamics_lti.h"

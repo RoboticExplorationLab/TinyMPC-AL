@@ -3,7 +3,7 @@
 
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
-#include "simpletest.h"
+#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/dynamics_ltv.h"

@@ -18,15 +18,15 @@ function(add_my_test name)
     )
   target_link_libraries(${TEST_NAME}
     PRIVATE
-    simpletest
+    gtest::gtest
     slap::slap
     tinympc::tinympc
-    m  # math library
     )
-  add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+  add_test(NAME ${TEST_NAME}
+    COMMAND ${TEST_NAME}
+    CONFIGURATIONS ""
+    )
 endfunction()
-
-# add_subdirectory(data)
 
 # Add tests
 add_my_test(lqrdata)

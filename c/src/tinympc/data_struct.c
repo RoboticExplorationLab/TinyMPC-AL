@@ -37,9 +37,9 @@ void tiny_InitKnotPoint(tiny_KnotPoint* z) {
 
 void tiny_InitSolver(tiny_Solver* solver) {
   *solver = (tiny_Solver){
-      .regu = 1e-8,
-      .regu_min = 1e-8,
-      .regu_max = 1e2,
+      .reg = 1e-8,
+      .reg_min = 1e-8,
+      .reg_max = 1e2,
       .penalty = 1,
       .penalty_max = 1e8,
       .penalty_mul = 10,

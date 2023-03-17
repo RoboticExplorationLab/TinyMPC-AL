@@ -87,7 +87,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     // Control Hessian Guu = R + B'P*B
     slap_MatMulAdd(Gxu, prob->P[k + 1], model.B, 1, 0);       // Gxu = P * B
     slap_MatMulAdd(Guu, slap_Transpose(model.B), Gxu, 1, 1);  // Guu = R + B'P*B
-    slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.regu, 1);
+    slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.reg, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Gux, slap_Transpose(model.B), prob->P[k], 1,
                    0);  // Gux = B'P*A
@@ -215,7 +215,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     // Control Hessian Guu = R + B'P*B
     slap_MatMulAdd(Gxu, prob->P[k + 1], model.B, 1, 0);       // Gxu = P * B
     slap_MatMulAdd(Guu, slap_Transpose(model.B), Gxu, 1, 1);  // Guu = R + B'P*B
-    slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.regu, 1);
+    slap_MatMulAdd(Guu, slap_Transpose(model.B), model.B, solver.reg, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Gux, slap_Transpose(model.B), prob->P[k], 1,
                    0);  // Gux = B'P*A
@@ -332,7 +332,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
           "--------------------------------------------------------------------"
           "-\n");
       printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n", iter, 0.0,
-             0.0, norm_d_max, 1.0, solver->regu, solver->penalty);
+             0.0, norm_d_max, 1.0, solver->reg, solver->penalty);
     }
 
     printf("update duals and penalty\n");

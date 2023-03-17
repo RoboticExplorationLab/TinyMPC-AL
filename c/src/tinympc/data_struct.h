@@ -47,9 +47,9 @@ typedef struct {
 void tiny_InitKnotPoint(tiny_KnotPoint* z);
 
 typedef struct {
-  double regu;
-  double regu_min;
-  double regu_max;
+  double reg;
+  double reg_min;
+  double reg_max;
   double penalty;
   double penalty_max;
   double penalty_mul;

@@ -107,7 +107,7 @@ void BackPassTest() {
   prob.P = P;
   prob.p = p;
 
-  solver.regu = 1e-8;
+  solver.reg = 1e-8;
   solver.penalty_mul = 10;
 
   double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};

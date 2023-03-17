@@ -108,7 +108,7 @@ void LqrLtiTest() {
   prob.P = P;
   prob.p = p;
 
-  solver.regu = 1e-8;
+  solver.reg = 1e-8;
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 

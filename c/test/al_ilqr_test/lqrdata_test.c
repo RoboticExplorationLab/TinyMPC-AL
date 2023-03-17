@@ -35,13 +35,13 @@ double x0_data[NSTATES] = {0.1, 0.2};
 double u0_data[NSTATES] = {1.6};
 double Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON - 1)] = {0};
 double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON] = {0};
-double regu = 1e-8;
+double reg = 1e-8;
 double input_duals_data[2 * NINPUTS * (NHORIZON - 1)] = {1, 2, 3, 4};
 double state_duals_data[2 * NSTATES * (NHORIZON)] = {1, 2, 3, 4, 5, 6,
                                                      7, 8, 2, 4, 5, 6};
 double goal_duals_data[NSTATES] = {1, 2};
-double regu_min = 1;
-double regu_max = 100;
+double reg_min = 1;
+double reg_max = 100;
 double penalty_max = 1e5;
 double penalty_mul = 1;
 int max_primal_iters = 100;
@@ -119,17 +119,17 @@ void SolverTest() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
-  solver.regu = regu;
-  solver.regu_min = regu_min;
-  solver.regu_max = regu_max;
+  solver.reg = reg;
+  solver.reg_min = reg_min;
+  solver.reg_max = reg_max;
   solver.penalty_max = penalty_max;
   solver.penalty_mul = penalty_mul;
   solver.max_primal_iters = max_primal_iters;
   solver.max_search_iters = max_search_iters;
 
-  TEST(solver.regu == regu);
-  TEST(solver.regu_max == regu_max);
-  TEST(solver.regu_min == regu_min);
+  TEST(solver.reg == reg);
+  TEST(solver.reg_max == reg_max);
+  TEST(solver.reg_min == reg_min);
   TEST(solver.penalty_max == penalty_max);
   TEST(solver.penalty_mul == penalty_mul);
   TEST(solver.max_primal_iters == max_primal_iters);

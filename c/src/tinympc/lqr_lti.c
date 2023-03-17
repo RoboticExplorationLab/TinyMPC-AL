@@ -41,7 +41,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     // Control Hessian Quu = R + B'P*B
     slap_MatMulAdd(Qxu, prob->P[k + 1], model.B, 1, 0);       // Qxu = P * B
     slap_MatMulAdd(Quu, slap_Transpose(model.B), Qxu, 1, 1);  // Quu = R + B'P*B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B), model.B, solver.regu, 1);
+    slap_MatMulAdd(Quu, slap_Transpose(model.B), model.B, solver.reg, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Qux, slap_Transpose(model.B), prob->P[k], 1,
                    0);  // Qux = B'P*A

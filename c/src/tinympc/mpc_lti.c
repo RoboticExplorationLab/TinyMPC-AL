@@ -93,7 +93,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     // Control Hessian Quu = R + B'P*B
     slap_MatMulAdd(Qxu, prob->P[k + 1], model.B, 1, 0);       // Qxu = P * B
     slap_MatMulAdd(Quu, slap_Transpose(model.B), Qxu, 1, 1);  // Quu = R + B'P*B
-    slap_MatMulAdd(Quu, slap_Transpose(model.B), model.B, solver.regu, 1);
+    slap_MatMulAdd(Quu, slap_Transpose(model.B), model.B, solver.reg, 1);
     // Hessian Cross-Term
     slap_MatMulAdd(Qux, slap_Transpose(model.B), prob->P[k], 1,
                    0);  // Qux = B'P*A
@@ -203,7 +203,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
       printf("iter     J           ΔJ         reg         ρ\n");
       printf("--------------------------------------------------\n");
       printf("%3d   %10.3e  %9.2e  %9.2e   %9.2e\n", iter, 0.0, 0.0,
-             solver->regu, solver->penalty);
+             solver->reg, solver->penalty);
     }
 
     if (verbose > 1) printf("update duals and penalty\n");

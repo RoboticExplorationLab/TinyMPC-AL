@@ -173,6 +173,10 @@ void MpcTest() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+    // 1. Read from high level controller
+    // 2. Update problem data with info
+    // 3. Solve problem again
+
     printf("\n=> k = %d\n", k);
     printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===

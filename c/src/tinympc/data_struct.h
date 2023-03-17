@@ -20,6 +20,7 @@ typedef struct {
   Matrix B;
   Matrix f;
   Matrix x0;
+  // int data_size;  ///< number of doubles need to store the data
 } tiny_LtiModel;
 
 typedef struct {
@@ -32,6 +33,7 @@ typedef struct {
   Matrix x0;
   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
   void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
+  // int data_size;
 } tiny_LtvModel;
 
 void tiny_InitLtiModel(tiny_LtiModel* model);
@@ -89,6 +91,7 @@ typedef struct tiny_ProblemData {
   Matrix* input_duals;
   Matrix* state_duals;
   Matrix goal_dual;
+  // int data_size;
 } tiny_ProblemData;
 
 void tiny_InitProblemData(tiny_ProblemData* prob);

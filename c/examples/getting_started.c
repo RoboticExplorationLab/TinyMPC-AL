@@ -1,10 +1,9 @@
-#include <stdlib.h>
 #include <math.h>
+#include <stdlib.h>
+
 #include "slap/slap.h"
 
-double myfun(double x) {
-  return 2 * x * sin(x);
-}
+double myfun(double x) { return 2 * x * sin(x); }
 
 int main(void) {
   puts("Welcome to Getting Started with the slap Library!");
@@ -16,7 +15,7 @@ int main(void) {
   printf("\n~~~~~~~~~~~~~~~ BASIC OPS ~~~~~~~~~~~~~~\n");
 
   // Create a matrix with stack-allocated memory
-  double data_A[12] = {1,2,3, 4,5,6, 7,8,9, 10,11,12};
+  double data_A[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   Matrix A = slap_MatrixFromArray(3, 4, data_A);
 
   // Get the sizes of the matrix
@@ -66,7 +65,7 @@ int main(void) {
   slap_PrintMatrix(A);
 
   // Set Diagonal
-  double diag[3] = {1,2,3};
+  double diag[3] = {1, 2, 3};
   slap_SetDiagonal(A, diag, 3);
   printf("\nA: (Set Diagonal)\n");
   slap_PrintMatrix(A);
@@ -128,7 +127,7 @@ int main(void) {
   printf("\n~~~~~~~~~~~~~~~ COPYING ~~~~~~~~~~~~~~~\n");
 
   // Matrix with heap-allocated memory
-  double *data_B = (double*)malloc(n_el * sizeof(double));
+  double *data_B = (double *)malloc(n_el * sizeof(double));
   Matrix B = slap_MatrixFromArray(4, 3, data_B);
 
   // Copy from transposed array
@@ -141,8 +140,9 @@ int main(void) {
   slap_PrintMatrix(B);
 
   // Copy from array
-  double data_C[4] = {-1,2,-3,4};
-  slap_MatrixCopyFromArray(A_resize, data_C);  // note we're copying to a reshaped version of A
+  double data_C[4] = {-1, 2, -3, 4};
+  slap_MatrixCopyFromArray(
+      A_resize, data_C);  // note we're copying to a reshaped version of A
 
   printf("\nA (after array copy):\n");
   slap_PrintMatrix(A);
@@ -247,20 +247,21 @@ int main(void) {
   A2 = slap_MatrixFromArray(3, 3, data_A2);
   Matrix b = slap_MatrixFromArray(3, 1, data_b);
 
-  slap_MatMulAtB(A2, A, A);    // A2 = A'A. NOTE: Use with caution. Please see docs.
+  slap_MatMulAtB(A2, A,
+                 A);  // A2 = A'A. NOTE: Use with caution. Please see docs.
   slap_AddIdentity(A2, 0.01);  // Ensure A2 > 0
   slap_MatrixCopy(A, A2);      // Save A2 back to A for later
 
   enum slap_ErrorCode err;
-  err = slap_Cholesky(A2);     // Perform Cholesky decomposition
+  err = slap_Cholesky(A2);  // Perform Cholesky decomposition
   if (err == SLAP_CHOLESKY_FAIL) {
     printf("Matrix is not Positive-Definite!\n");
   }
 
-  slap_MatrixCopy(x, b);        // copy rhs to x
-  slap_CholeskySolve(A2, x);    // solve for x
+  slap_MatrixCopy(x, b);      // copy rhs to x
+  slap_CholeskySolve(A2, x);  // solve for x
 
-  slap_MatMulAB(y, A, x);       // Calculate y = A * x (y should equal b)
+  slap_MatMulAB(y, A, x);  // Calculate y = A * x (y should equal b)
   printf("\nCholesky Solve (these should be equal):\n");
   printf("b = ");
   slap_PrintMatrix(slap_Transpose(b));
@@ -282,14 +283,15 @@ int main(void) {
   slap_PrintMatrix(B_sub);
 
   printf("\nIteration over Sub-Array:\n");
-  for (MatrixIterator it = slap_Iterator(B_sub); !slap_IsFinished(&it); slap_Step(&it)) {
+  for (MatrixIterator it = slap_Iterator(B_sub); !slap_IsFinished(&it);
+       slap_Step(&it)) {
     int mem_index = it.index;
     int lin_index = it.k;
     int row_index = it.i;
     int col_index = it.j;
     double B_val = B_sub.data[mem_index];
-    printf("B_sub[%d,%d] = % 4.2f at linear index %d and memory index %d\n", row_index,
-           col_index, B_val, lin_index, mem_index);
+    printf("B_sub[%d,%d] = % 4.2f at linear index %d and memory index %d\n",
+           row_index, col_index, B_val, lin_index, mem_index);
   }
 
   // Function Mapping

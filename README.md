@@ -52,6 +52,4 @@ Additionally, for debugging purposes, we will first implement the solver in Juli
 ### Questions
 Do we have microcontrollers in the lab already?  
 Is SLAP slower than BLAS?  
-Seems like an arduino constrained MPC implementation exists, should look at it first.  
-
-
+Seems like an arduino constrained MPC implementation exists, should look at it first.

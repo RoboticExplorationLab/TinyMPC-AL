@@ -8,6 +8,7 @@ function(add_example name)
     PRIVATE
     slap::slap
     tinympc::tinympc
+    gtest::gtest
     )
 endfunction()
 

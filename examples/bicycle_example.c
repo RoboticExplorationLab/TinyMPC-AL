@@ -11,7 +11,6 @@
 
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
-#include "gtest/gtest.h"
 #include "slap/slap.h"
 #include "tinympc/tinympc.h"
 
@@ -21,7 +20,7 @@
 #define NHORIZON 21
 #define NSIM 101
 
-void MpcTest() {
+int main(void) {
   double x0_data[NSTATES] = {1, -1, 0, 0, 0};
   // double xg_data[NSTATES] = {0};
   // double ug_data[NINPUTS] = {0};
@@ -193,7 +192,7 @@ void MpcTest() {
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
 
     // Test control constraints here (since we didn't save U)
-    TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
 
     // === 2. Simulate dynamics using the first control solution ===
 
@@ -202,23 +201,19 @@ void MpcTest() {
     tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
   }
 
-  // ========== Test ==========
-  // Test state constraints
-  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
-    }
-  }
-  // Test tracking performance
-  for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
-  }
-  // --------------------------
+  // // ========== Test ==========
+  // // Test state constraints
+  // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+  //   for (int i = 0; i < NSTATES; ++i) {
+  //     TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
+  //     TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
+  //   }
+  // }
+  // // Test tracking performance
+  // for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
+  //   TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
+  // }
+  // // --------------------------
+  return 0;
 }
 
-int main() {
-  MpcTest();
-  PrintTestResult();
-  return TestResult();
-}

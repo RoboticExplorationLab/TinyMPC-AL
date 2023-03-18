@@ -80,9 +80,8 @@ endif ()
 ##############################
 # Compile options
 if (NOT WIN32)
-  add_compile_options(-Wall -Wextra -pedantic -Werror)
-  # add_compile_options(-Wno-error=unknown-pragmas
-  #                     -Wformat=2 -Wno-unused-parameter -Wshadow 
+  add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas)
+  # add_compile_options(-Wformat=2 -Wno-unused-parameter -Wshadow 
   #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
   #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
   if (TINY_VECTORIZE)
@@ -90,9 +89,9 @@ if (NOT WIN32)
   endif()
 endif()
 
-if (CMAKE_C_COMPILER_ID MATCHES "GNU")
-  add_compile_options(-Wjump-misses-init -Wlogical-op)
-endif()  
+# if (CMAKE_C_COMPILER_ID MATCHES "GNU")
+#   add_compile_options(-Wjump-misses-init -Wlogical-op)
+# endif()
 
 # TODO: Future options to optimize library for specific use of constraints
 option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
@@ -118,7 +117,7 @@ add_subdirectory(src/tinympc)
 # Tests
 ##############################
 if (TINY_BUILD_TESTS)
-  add_subdirectory(tests)
+  add_subdirectory(test)
 endif()                 
 
 ##############################

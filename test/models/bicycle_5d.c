@@ -1,5 +1,7 @@
 #include "bicycle_5d.h"
 
+#include <math.h>
+
 //========================================
 // Bicycle model parameters
 //========================================

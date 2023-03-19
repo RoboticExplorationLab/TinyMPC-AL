@@ -8,71 +8,80 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
-#include "gtest/gtest.h"
-#include "slap/slap.h"
-#include "tinympc/mpc_ltv.h"
-#include "tinympc/utils.h"
-#include "test_utils.h"
+#include <gtest/gtest.h>
+#include <tinympc/tinympc.h>
 
+#include "test_utils.h"
 #include "models/bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
 
-TEST(MpcLtvTest, SystemTest) {
+#define NSTATES 5
+#define NINPUTS 2
+#define NHORIZON 71
 
-  // const int H = 0.1;
-  const int NSTATES = 5;
-  const int NINPUTS = 2;
-  const int NHORIZON = 71;
+class MpcLtvTest : public testing::Test {
+  public:
+    double x0_data[NSTATES] = {1, -1, 0, 0, 0};
+    double Q_data[NSTATES * NSTATES] = {0};
+    double R_data[NINPUTS * NINPUTS] = {0};
+    double Qf_data[NSTATES * NSTATES] = {0};
+    double umin_data[NINPUTS] = {-2.1, -1.1};
+    double umax_data[NINPUTS] = {2.1, 1.1};
+    double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
+    double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
 
-  double x0_data[NSTATES] = {1, -1, 0, 0, 0};
-  // double xg_data[NSTATES] = {0};
-  // double ug_data[NINPUTS] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2.1, -1.1};
-  double umax_data[NINPUTS] = {2.1, 1.1};
-  double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
-  double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
+    Matrix X[NHORIZON];
+    Matrix U[NHORIZON - 1];
+    Matrix Xref[NHORIZON];
+    Matrix Uref[NHORIZON - 1];
+    Matrix K[NHORIZON - 1];
+    Matrix d[NHORIZON - 1];
+    Matrix P[NHORIZON];
+    Matrix p[NHORIZON];
+    Matrix A[NHORIZON - 1];
+    Matrix B[NHORIZON - 1];
+    Matrix f[NHORIZON - 1];
+    Matrix input_duals[NHORIZON - 1];
+    Matrix state_duals[NHORIZON];
 
-  // double umin_data[NINPUTS] = {-5, -2};
-  // double umax_data[NINPUTS] = {5, 2};
-  // double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-  // double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
+    double X_data[NSTATES * NHORIZON] = {0};
+    double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+    double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+    double p_data[NSTATES * NHORIZON] = {0};
+    double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+    double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+    double f_data[NSTATES * (NHORIZON - 1)] = {0};
+    double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+    double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
+    double goal_dual_data[NSTATES] = {0};
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-  Matrix A[NHORIZON - 1];
-  Matrix B[NHORIZON - 1];
-  Matrix f[NHORIZON - 1];
-  Matrix input_duals[NHORIZON - 1];
-  Matrix state_duals[NHORIZON];
+    tiny_LtvModel model;
+    tiny_ProblemData prob;
+    tiny_Solver solver;
 
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
+  private:
+    void SetUp() override {
+      tiny_InitLtvModel(&model);
+      tiny_InitProblemData(&prob);
+      tiny_InitSolver(&solver);
 
-  tiny_LtvModel model;
-  tiny_InitLtvModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+      model.ninputs = NSTATES;
+      model.nstates = NINPUTS;
+      model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+      model.A = A;
+      model.B = B;
+      model.f = f;
+      slap_Copy(X[0], model.x0);
+
+    }
+};
+
+TEST_F(MpcLtvTest, BicycleTest) {
+
+  model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from bicycle_5d.h
+  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
 
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
@@ -119,16 +128,6 @@ TEST(MpcLtvTest, SystemTest) {
     state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
-
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from Bicycle
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
-  model.A = A;
-  model.B = B;
-  model.f = f;
-  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;

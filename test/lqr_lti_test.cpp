@@ -1,70 +1,80 @@
 // Test LQR
 // Scenerio: Drive double integrator to arbitrary goal state.
 
-#include "gtest/gtest.h"
-#include "slap/slap.h"
+#include <gtest/gtest.h>
+#include <tinympc/tinympc.h>
+
 #include "test_utils.h"
-#include "tinympc/lqr_lti.h"
-#include "tinympc/data_struct.h"
-#include "tinympc/utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 51
+
+class LqrLtiTest : public testing::Test {
+  public:
+    double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+                                        0.1, 0, 1, 0, 0, 0.1, 0, 1};
+    double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+    double f_data[NSTATES] = {0};
+    double x0_data[NSTATES] = {5, 7, 2, -1.4};
+    double xg_data[NSTATES] = {2, 5, 3, -1};
+    double Xref_data[NSTATES * NHORIZON] = {0};
+    double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double X_data[NSTATES * NHORIZON] = {0};
+    double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+    double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+    double p_data[NSTATES * NHORIZON] = {0};
+    double Q_data[NSTATES * NSTATES] = {0};
+    double R_data[NINPUTS * NINPUTS] = {0};
+    double Qf_data[NSTATES * NSTATES] = {0};
+    double umin_data[NINPUTS] = {-2, -2};
+    double umax_data[NINPUTS] = {2, 2};
+    
+    tiny_LtiModel model;
+    tiny_ProblemData prob;
+    tiny_Solver solver;
+      
+    Matrix X[NHORIZON];
+    Matrix U[NHORIZON - 1];
+    Matrix Xref[NHORIZON];
+    Matrix Uref[NHORIZON - 1];
+    Matrix K[NHORIZON - 1];
+    Matrix d[NHORIZON - 1];
+    Matrix P[NHORIZON];
+    Matrix p[NHORIZON];
+
+    double* Xptr = X_data;
+    double* Xref_ptr = Xref_data;
+    double* Uptr = U_data;
+    double* Uref_ptr = Uref_data;
+    double* Kptr = K_data;
+    double* dptr = d_data;
+    double* Pptr = P_data;
+    double* pptr = p_data;
+
+    Matrix Q_temp;
+
+  private:
+    void SetUp() override {
+      tiny_InitLtiModel(&model);
+      tiny_InitProblemData(&prob);
+      tiny_InitSolver(&solver);
+
+      model.ninputs = NSTATES;
+      model.nstates = NINPUTS;
+      model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
+      model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+      model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
+      model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+
+    }
+};
+
 // U, X, Psln
-void LqrLtiTest() {
-  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
-                                      0.1, 0, 1, 0, 0, 0.1, 0, 1};
-  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
-  double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double xg_data[NSTATES] = {2, 5, 3, -1};
-  double Xref_data[NSTATES * NHORIZON] = {0};
-  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
-
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
-
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+TEST_F(LqrLtiTest, LqrLti) {
   Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
-
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-
-  double* Xptr = X_data;
-  double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
@@ -111,23 +121,18 @@ void LqrLtiTest() {
   solver.reg = 1e-8;
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
-
+  
   double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       Q_temp_data);
+  Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
+                                      Q_temp_data);
+  
   tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLti(X, U, prob, model);
 
   // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(U[k]);
-  }
+  // for (int k = 0; k < NHORIZON - 1; ++k) {
+  //   // tiny_Print(U[k]);
+  // }
   // tiny_Print(X[NHORIZON-1]);
-  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
-}
-
-int main() {
-  LqrLtiTest();
-  PrintTestResult();
-  return TestResult();
+  EXPECT_NEAR(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES), 0, 1e-1);
 }

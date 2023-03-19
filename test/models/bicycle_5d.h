@@ -1,8 +1,10 @@
 #pragma once
 
-#include <math.h>
-
 #include "slap/slap.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //========================================
 // Bicycle model parameters
@@ -38,3 +40,8 @@ void tiny_Bicycle5dGetJacobianB_Raw(double* B, const double* x,
 
 void tiny_Bicycle5dGetJacobians(Matrix* A, Matrix* B, const Matrix x,
                                 const Matrix u);
+
+                                
+#ifdef __cplusplus
+}
+#endif

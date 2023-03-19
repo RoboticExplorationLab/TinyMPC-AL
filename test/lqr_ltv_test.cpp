@@ -1,13 +1,11 @@
 // Test LQR
 // Scenerio: Drive planar quadrotor to arbitrary goal state.
 
-#include "planar_quadrotor.h"
-#include "gtest/gtest.h"
-#include "slap/slap.h"
+#include <gtest/gtest.h>
+#include <tinympc/tinympc.h>
+
 #include "test_utils.h"
-#include "tinympc/lqr_lti.h"
-#include "tinympc/lqr_ltv.h"
-#include "tinympc/utils.h"
+#include "models/planar_quadrotor.h"
 
 #define H 0.1
 #define NSTATES 6
@@ -15,94 +13,159 @@
 #define NHORIZON 51
 // GRADIENT EXPLOSION/VANISHING WHEN NHORIZON > 60 => LS FORMULATION
 
-double x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
-double ug_data[NINPUTS] = {0};                         // initial state
-double xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
-double xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};
-double uhover_data[NINPUTS] = {4.905, 4.905};
-double Q_data[NSTATES * NSTATES] = {0};
-double R_data[NINPUTS * NINPUTS] = {0};
-double Qf_data[NSTATES * NSTATES] = {0};
+class LqrLtvTest : public testing::Test {
+  public:
+    double x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
+    double ug_data[NINPUTS] = {0};                         // initial state
+    double xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
+    double xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};
+    double uhover_data[NINPUTS] = {4.905, 4.905};
+    double Q_data[NSTATES * NSTATES] = {0};
+    double R_data[NINPUTS * NINPUTS] = {0};
+    double Qf_data[NSTATES * NSTATES] = {0};
 
-void DeltaLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  tiny_LtvModel model;
-  tiny_InitLtvModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+    tiny_LtvModel model;
+    tiny_ProblemData prob;
+    tiny_Solver solver;
+      
+    Matrix X[NHORIZON];
+    Matrix U[NHORIZON - 1];
+    Matrix Xref[NHORIZON];
+    Matrix Uref[NHORIZON - 1];
+    Matrix K[NHORIZON - 1];
+    Matrix d[NHORIZON - 1];
+    Matrix P[NHORIZON];
+    Matrix p[NHORIZON];
+    Matrix A[NHORIZON - 1];
+    Matrix B[NHORIZON - 1];
+    Matrix f[NHORIZON - 1];
+    
+    // double* Xref_ptr = Xref_data;
+    // double* Uref_ptr = Uref_data;
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-  Matrix A[NHORIZON - 1];
-  Matrix B[NHORIZON - 1];
-  Matrix f[NHORIZON - 1];
+    double X_data[NSTATES * NHORIZON] = {0};
+    double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+    double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+    double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+    double p_data[NSTATES * NHORIZON] = {0};
+    double A_data[NSTATES * NSTATES] = {0};
+    double B_data[NSTATES * NINPUTS] = {0};
+    double f_data[NSTATES] = {0};
+    
+    double* Xptr = X_data;
+    double* Uptr = U_data;
+    double* Kptr = K_data;
+    double* dptr = d_data;
+    double* Pptr = P_data;
+    double* pptr = p_data;
+    double* Aptr = A_data;
+    double* Bptr = B_data;
+    double* fptr = f_data;
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
+    Matrix xhover;
+    Matrix uhover;
 
-  Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
-  Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
+  private:
+    void SetUp() override {
+      tiny_InitLtvModel(&model);
+      tiny_InitProblemData(&prob);
+      tiny_InitSolver(&solver);
+      
+      xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
+      uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
+      
 
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES * NSTATES;
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES * NINPUTS;
-      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
-      fptr += NSTATES;
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      // slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
-      // Uref_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
+      for (int i = 0; i < NHORIZON; ++i) {
+        if (i < NHORIZON - 1) {
+          U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+          // slap_SetConst(U[i], 0.01);
+          Uptr += NINPUTS;
+          Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
+          // Uref_ptr += NINPUTS;
+          K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
+          Kptr += NINPUTS * NSTATES;
+          d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
+          dptr += NINPUTS;
+        }
+        X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+        Xptr += NSTATES;
+        Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
+        // Xref_ptr += NSTATES;
+        P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
+        Pptr += NSTATES * NSTATES;
+        p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
+        pptr += NSTATES;
+      }
+
+      model.ninputs = NSTATES;
+      model.nstates = NINPUTS;
+      model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
+      model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+      model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
+      model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+      
     }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
-    // Xref_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-  }
+};
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_PQuadGetJacobians;  // from planar quadrotor
-  model.A = A;
-  model.B = B;
-  model.f = f;
+
+TEST_F(LqrLtvTest, DeltaLqrLtv1) {
+
+  // double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  // double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  // double f_data[NSTATES * (NHORIZON - 1)] = {0};
+  // double X_data[NSTATES * NHORIZON] = {0};
+  // double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  // double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  // double p_data[NSTATES * NHORIZON] = {0};
+  
+  // double* Xptr = X_data;
+  // double* Uptr = U_data;
+  // double* Kptr = K_data;
+  // double* dptr = d_data;
+  // double* Pptr = P_data;
+  // double* pptr = p_data;
+  // double* Aptr = A_data;
+  // double* Bptr = B_data;
+  // double* fptr = f_data;
+
+  // for (int i = 0; i < NHORIZON; ++i) {
+  //   if (i < NHORIZON - 1) {
+  //     A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
+  //     Aptr += NSTATES * NSTATES;
+  //     B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
+  //     Bptr += NSTATES * NINPUTS;
+  //     f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
+  //     fptr += NSTATES;
+  //     U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+  //     // slap_SetConst(U[i], 0.01);
+  //     Uptr += NINPUTS;
+  //     Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
+  //     // Uref_ptr += NINPUTS;
+  //     K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
+  //     Kptr += NINPUTS * NSTATES;
+  //     d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
+  //     dptr += NINPUTS;
+  //   }
+  //   X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+  //   Xptr += NSTATES;
+  //   Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  //   // Xref_ptr += NSTATES;
+  //   P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
+  //   Pptr += NSTATES * NSTATES;
+  //   p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
+  //   pptr += NSTATES;
+  // }
+
+  // model.ninputs = NSTATES;
+  // model.nstates = NINPUTS;
+  // model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  // model.get_jacobians = tiny_PQuadGetJacobians;  // from planar quadrotor
+  // model.A = A;
+  // model.B = B;
+  // model.f = f;
   slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
@@ -150,89 +213,69 @@ void DeltaLqrLtvTest() {
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.5);
+    EXPECT_LT(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES), 0.5);
   }
 }
 
-void AbsLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  tiny_LtvModel model;
-  tiny_InitLtvModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+TEST_F(LqrLtvTest, AbsLqrLtv1) {
+  // double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  // double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  // double f_data[NSTATES * (NHORIZON - 1)] = {0};
+  // double X_data[NSTATES * NHORIZON] = {0};
+  // double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  // double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  // double p_data[NSTATES * NHORIZON] = {0};
+  
+  // double* Xptr = X_data;
+  // double* Uptr = U_data;
+  // double* Kptr = K_data;
+  // double* dptr = d_data;
+  // double* Pptr = P_data;
+  // double* pptr = p_data;
+  // double* Aptr = A_data;
+  // double* Bptr = B_data;
+  // double* fptr = f_data;
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-  Matrix A[NHORIZON - 1];
-  Matrix B[NHORIZON - 1];
-  Matrix f[NHORIZON - 1];
+  // Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
+  // Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
+  // for (int i = 0; i < NHORIZON; ++i) {
+  //   if (i < NHORIZON - 1) {
+  //     A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
+  //     Aptr += NSTATES * NSTATES;
+  //     B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
+  //     Bptr += NSTATES * NINPUTS;
+  //     f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
+  //     fptr += NSTATES;
+  //     U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+  //     // slap_SetConst(U[i], 0.01);
+  //     Uptr += NINPUTS;
+  //     Uref[i] = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
+  //     // Uref_ptr += NINPUTS;
+  //     K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
+  //     Kptr += NINPUTS * NSTATES;
+  //     d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
+  //     dptr += NINPUTS;
+  //   }
+  //   X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+  //   Xptr += NSTATES;
+  //   Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  //   // Xref_ptr += NSTATES;
+  //   P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
+  //   Pptr += NSTATES * NSTATES;
+  //   p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
+  //   pptr += NSTATES;
+  // }
 
-  Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
-  Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
-
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES * NSTATES;
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES * NINPUTS;
-      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
-      fptr += NSTATES;
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      // slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
-      // Uref_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-    }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
-    // Xref_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-  }
-
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_PQuadGetJacobians;  // from planar quadrotor
-  model.A = A;
-  model.B = B;
-  model.f = f;
+  // model.ninputs = NSTATES;
+  // model.nstates = NINPUTS;
+  // model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  // model.get_jacobians = tiny_PQuadGetJacobians;  // from planar quadrotor
+  // model.A = A;
+  // model.B = B;
+  // model.f = f;
   slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
@@ -279,76 +322,33 @@ void AbsLqrLtvTest() {
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.5);
+    EXPECT_LT(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES), 0.5);
   }
 }
 
-void DeltaLqrLtiTest() {
-  double A_data[NSTATES * NSTATES] = {0};
-  double B_data[NSTATES * NINPUTS] = {0};
-  double f_data[NSTATES] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+TEST_F(LqrLtvTest, DeltaLqrLtv2) {
+  // double A_data[NSTATES * NSTATES] = {0};
+  // double B_data[NSTATES * NINPUTS] = {0};
+  // double f_data[NSTATES] = {0};
+  // double X_data[NSTATES * NHORIZON] = {0};
+  // double U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  // double d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  // double p_data[NSTATES * NHORIZON] = {0};
+  
+  // double* Xptr = X_data;
+  // double* Uptr = U_data;
+  // double* Kptr = K_data;
+  // double* dptr = d_data;
+  // double* Pptr = P_data;
+  // double* pptr = p_data;
+  // double* Aptr = A_data;
+  // double* Bptr = B_data;
+  // double* fptr = f_data;
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-
-  Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
-  Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
-
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      // slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
-      // Uref_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-    }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
-    // Xref_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-  }
-
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+  // Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
+  // Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
 
   slap_Copy(X[0], model.x0);
 
@@ -394,77 +394,43 @@ void DeltaLqrLtiTest() {
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.1);
+    EXPECT_LT(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES), 0.1);
   }
 }
 
-void AbsLqrLtiTest() {
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES] = {0};
-  double B_data[NSTATES * NINPUTS] = {0};
-  double f_data[NSTATES] = {0};
+TEST_F(LqrLtvTest, AbsLqrLtv2) {
 
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  // Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
+  // Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
+  // for (int i = 0; i < NHORIZON; ++i) {
+  //   if (i < NHORIZON - 1) {
+  //     U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
+  //     // slap_SetConst(U[i], 0.01);
+  //     Uptr += NINPUTS;
+  //     Uref[i] = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
+  //     // Uref_ptr += NINPUTS;
+  //     K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
+  //     Kptr += NINPUTS * NSTATES;
+  //     d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
+  //     dptr += NINPUTS;
+  //   }
+  //   X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
+  //   Xptr += NSTATES;
+  //   Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  //   // Xref_ptr += NSTATES;
+  //   P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
+  //   Pptr += NSTATES * NSTATES;
+  //   p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
+  //   pptr += NSTATES;
+  // }
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-
-  Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
-  Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
-
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      // slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
-      // Uref_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-    }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
-    // Xref_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-  }
-
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+  // model.ninputs = NSTATES;
+  // model.nstates = NINPUTS;
+  // model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  // model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
+  // model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
+  // model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
 
   slap_Copy(X[0], model.x0);
 
@@ -511,15 +477,6 @@ void AbsLqrLtiTest() {
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.1);
+    EXPECT_LT(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES), 0.1);
   }
-}
-
-int main() {
-  DeltaLqrLtvTest();
-  AbsLqrLtvTest();
-  DeltaLqrLtiTest();
-  AbsLqrLtiTest();  // Most robust
-  PrintTestResult();
-  return TestResult();
 }

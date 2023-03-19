@@ -1,128 +1,95 @@
 // Test all inequality-related functions and tiny_RiccatiConvergence
 
-#include "gtest/gtest.h"
-#include "slap/slap.h"
+#include <gtest/gtest.h>
+#include <tinympc/tinympc.h>
+
 #include "test_utils.h"
-#include "tinympc/constraint_linear.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 3
 
-void IneqInputsTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double u_data[NINPUTS] = {1.1, 0.8};
-  double ans[NINPUTS * 2] = {
-      u_data[0] - u_max_data[0], u_data[1] - u_max_data[1],
-      -u_data[0] + u_min_data[0], -u_data[1] + u_min_data[1]};
-  double ineq_data[NINPUTS * 2];
+class IneqLqrTest : public testing::Test {
+  public:
+    const double tol = 1e-8;
+    double u_max_data[NINPUTS] = {1, 1};
+    double u_min_data[NINPUTS] = {-1, -1};
+    double u_data[NINPUTS] = {1.1, 0.8};
+    double ans[NINPUTS * 2] = {
+        u_data[0] - u_max_data[0], u_data[1] - u_max_data[1],
+        -u_data[0] + u_min_data[0], -u_data[1] + u_min_data[1]};
+    double ineq_data[NINPUTS * 2];
 
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
+    tiny_ProblemData prob;
 
-  prob.nstates = NSTATES;
-  prob.ninputs = NINPUTS;
-  prob.nhorizon = NHORIZON;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_goal = NSTATES;
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
-  Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
-  Matrix mat = slap_MatrixFromArray(NINPUTS * 2, 1, ineq_data);
+    Matrix u;
+    Matrix mat;
+
+  private:
+    void SetUp() override {
+      tiny_InitProblemData(&prob);
+      
+      prob.nstates = NSTATES;
+      prob.ninputs = NINPUTS;
+      prob.nhorizon = NHORIZON;
+      prob.ncstr_states = 2 * NSTATES;
+      prob.ncstr_inputs = 2 * NINPUTS;
+      prob.ncstr_goal = NSTATES;
+      prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
+      prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
+      u = slap_MatrixFromArray(NINPUTS, 1, u_data);
+      mat = slap_MatrixFromArray(NINPUTS * 2, 1, ineq_data);
+    };
+};
+
+TEST_F(IneqLqrTest, IneqInputs) {
   tiny_IneqInputs(&mat, prob, u);
   // slap_PrintMatrix(mat);
-  TEST(SumOfSquaredError(mat.data, ans, NINPUTS * 2) < tol);
+  EXPECT_NEAR(SumOfSquaredError(mat.data, ans, NINPUTS * 2), 0, tol);
 }
 
-void IneqInputsOffsetTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double ans[NINPUTS * 2] = {u_max_data[0], u_max_data[1], -u_min_data[0],
+TEST_F(IneqLqrTest, IneqInputsOffset) {
+  
+  double ans1[NINPUTS * 2] = {u_max_data[0], u_max_data[1], -u_min_data[0],
                              -u_min_data[1]};
-  double ineq_data[NINPUTS * 2];
-
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-
-  prob.nstates = NSTATES;
-  prob.ninputs = NINPUTS;
-  prob.nhorizon = NHORIZON;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_goal = NSTATES;
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
-  Matrix mat = slap_MatrixFromArray(NINPUTS * 2, 1, ineq_data);
   tiny_IneqInputsOffset(&mat, prob);
   // slap_PrintMatrix(mat);
-  TEST(SumOfSquaredError(mat.data, ans, NINPUTS * 2) < tol);
+  EXPECT_NEAR(SumOfSquaredError(mat.data, ans1, NINPUTS * 2), 0, tol);
 }
 
-void IneqInputsJacobianTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double ans[NINPUTS * 2 * NINPUTS] = {1, 0, -1, 0, 0, 1, 0, -1};
+TEST_F(IneqLqrTest, IneqInputsJacobian) {
+  double ans_jac[NINPUTS * 2 * NINPUTS] = {1, 0, -1, 0, 0, 1, 0, -1};
   double jac_data[NINPUTS * 2 * NINPUTS];
-
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-
-  prob.nstates = NSTATES;
-  prob.ninputs = NINPUTS;
-  prob.nhorizon = NHORIZON;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_goal = NSTATES;
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
-  Matrix mat = slap_MatrixFromArray(NINPUTS * 2, NINPUTS, jac_data);
-  tiny_IneqInputsJacobian(&mat, prob);
+  Matrix jac_mat = slap_MatrixFromArray(NINPUTS * 2, NINPUTS, jac_data);
+  tiny_IneqInputsJacobian(&jac_mat, prob);
   // slap_PrintMatrix(mat);
-  TEST(SumOfSquaredError(mat.data, ans, NINPUTS * 2 * NINPUTS) < tol);
+  EXPECT_NEAR(SumOfSquaredError(jac_mat.data, ans_jac, NINPUTS * 2 * NINPUTS), 0, tol);
 }
 
-void ActiveIneqMaskTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double u_data[NINPUTS] = {-2, 2};
-  double ans1[NINPUTS * 2] = {u_data[0] - u_max_data[0],    //-3
-                              u_data[1] - u_max_data[1],    // 1
-                              -u_data[0] + u_min_data[0],   // 1
-                              -u_data[1] + u_min_data[1]};  // -3
+TEST_F(IneqLqrTest, ActiveIneqMask) {
+  double u_data1[NINPUTS] = {-2, 2};
+  double ans1[NINPUTS * 2] = {u_data1[0] - u_max_data[0],    //-3
+                              u_data1[1] - u_max_data[1],    // 1
+                              -u_data1[0] + u_min_data[0],   // 1
+                              -u_data1[1] + u_min_data[1]};  // -3
   double dual_data[NINPUTS * 2] = {1, 0, 2, 0};
   double ans2[NINPUTS * 2 * NINPUTS * 2] = {1, 0, 0, 0, 0, 1, 0, 0,
                                             0, 0, 1, 0, 0, 0, 0, 0};
   double ineq_data[NINPUTS * 2];
   double mask_data[NINPUTS * 2 * NINPUTS * 2];
 
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-
-  prob.nstates = NSTATES;
-  prob.ninputs = NINPUTS;
-  prob.nhorizon = NHORIZON;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_goal = NSTATES;
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
-  Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
+  u = slap_MatrixFromArray(NINPUTS, 1, u_data1);
   Matrix ineq = slap_MatrixFromArray(NINPUTS * 2, 1, ineq_data);
   tiny_IneqInputs(&ineq, prob, u);
   Matrix input_dual = slap_MatrixFromArray(NINPUTS * 2, 1, dual_data);
   Matrix mask = slap_MatrixFromArray(NINPUTS * 2, NINPUTS * 2, mask_data);
   tiny_ActiveIneqMask(&mask, input_dual, ineq);
   // slap_PrintMatrix(mask);
-  TEST(SumOfSquaredError(ineq.data, ans1, NINPUTS * 2) < tol);
-  TEST(SumOfSquaredError(mask.data, ans2, NINPUTS * 2 * NINPUTS * 2) < tol);
+  EXPECT_NEAR(SumOfSquaredError(ineq.data, ans1, NINPUTS * 2), 0, tol);
+  EXPECT_NEAR(SumOfSquaredError(mask.data, ans2, NINPUTS * 2 * NINPUTS * 2), 0, tol);
 }
-void RiccatiConvergenceTest() {
+
+TEST_F(IneqLqrTest, RiccatiConvergence) {
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
 
@@ -138,26 +105,15 @@ void RiccatiConvergenceTest() {
   }
   prob.d = d;
   double norm_d_max = tiny_RiccatiConvergence(prob);
-  TESTAPPROX(norm_d_max, ans, 1e-6);
+  EXPECT_NEAR(norm_d_max, ans, 1e-6);
 }
 
-void ClampIneqDualsTest() {
+TEST_F(IneqLqrTest, ClampIneqDuals) {
   double dual_data[2] = {-2, -1};
   double new_dual_data[2] = {10, -10};
   double ans[2] = {10, 0};
   Matrix dual = slap_MatrixFromArray(2, 1, dual_data);
   Matrix new_dual = slap_MatrixFromArray(2, 1, new_dual_data);
   tiny_ClampIneqDuals(&dual, new_dual);
-  TEST(SumOfSquaredError(dual.data, ans, 2) < 1e-8);
-}
-
-int main() {
-  IneqInputsTest();
-  IneqInputsOffsetTest();
-  IneqInputsJacobianTest();
-  ActiveIneqMaskTest();
-  RiccatiConvergenceTest();
-  ClampIneqDualsTest();
-  PrintTestResult();
-  return TestResult();
+  EXPECT_NEAR(SumOfSquaredError(dual.data, ans, 2), 0, 1e-8);
 }

@@ -12,6 +12,8 @@
       slap_DENSE, \
   })
 
+
+// TODO (sschoedel): replace tiny_LtiModel and tiny_LtvModel with tiny_Model
 typedef struct {
   int nstates;
   int ninputs;
@@ -35,6 +37,22 @@ typedef struct {
   void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
   // int data_size;
 } tiny_LtvModel;
+
+enum modelType {kTimeInvariant = 0, kTimeVariant = 1};
+
+typedef struct {
+  enum modelType type;
+  int nstates;
+  int ninputs;
+  double dt;
+  Matrix* A;
+  Matrix* B;
+  Matrix* f;
+  Matrix x0;
+  void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
+  void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
+  // int data_size;
+} tiny_Model;
 
 void tiny_InitLtiModel(tiny_LtiModel* model);
 void tiny_InitLtvModel(tiny_LtvModel* model);

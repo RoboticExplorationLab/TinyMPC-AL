@@ -3,7 +3,7 @@
 ##############################
 cmake_minimum_required(VERSION 3.2)
 list(APPEND CMAKE_MESSAGE_CONTEXT tinympc)
-project(TinyMPC VERSION 0.1 LANGUAGES C CXX)
+project(tinyMPC VERSION 0.1 LANGUAGES C CXX)
 
 ##############################
 # Project wide

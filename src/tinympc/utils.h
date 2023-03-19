@@ -7,7 +7,18 @@
 #include <string.h>
 
 #include "slap/slap.h"
+#include "errors.h"
 
+#define kNullMat  \
+  ((Matrix){      \
+      0,          \
+      0,          \
+      0,          \
+      0,          \
+      NULL,       \
+      slap_DENSE, \
+  })
+  
 //========================================
 // Print matrix with its name (dummy)
 //========================================

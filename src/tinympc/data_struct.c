@@ -1,31 +1,5 @@
 #include "data_struct.h"
 
-void tiny_InitLtiModel(tiny_LtiModel* model) {
-  *model = (tiny_LtiModel){
-      .nstates = 0,
-      .ninputs = 0,
-      .dt = 0.0,
-      .A = kNullMat,
-      .B = kNullMat,
-      .f = kNullMat,
-      .x0 = kNullMat,
-  };
-}
-
-void tiny_InitLtvModel(tiny_LtvModel* model) {
-  *model = (tiny_LtvModel){
-      .nstates = 0,
-      .ninputs = 0,
-      .dt = 0.0,
-      .A = NULL,
-      .B = NULL,
-      .f = NULL,
-      .x0 = kNullMat,
-      .get_jacobians = NULL,
-      .get_nonlinear_dynamics = NULL,
-  };
-}
-
 void tiny_InitKnotPoint(tiny_KnotPoint* z) {
   *z = (tiny_KnotPoint){
       .x = kNullMat,
@@ -57,7 +31,6 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .nhorizon = 0,
       .ncstr_states = 0,
       .ncstr_inputs = 0,
-      .ncstr_goal = 0,
       .Q = kNullMat,
       .R = kNullMat,
       .q = kNullMat,
@@ -78,6 +51,5 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .p = NULL,
       .input_duals = NULL,
       .state_duals = NULL,
-      .goal_dual = kNullMat,
   };
 }

@@ -23,7 +23,7 @@ enum slap_ErrorCode tiny_ForwardPassLtv(Matrix* X, Matrix* U,
   return SLAP_NO_ERROR;
 }
 
-void tiny_UpdateHorizonJacobians(tiny_LtvModel* model, tiny_ProblemData prob) {
+void tiny_UpdateJacobians(tiny_LtvModel* model, tiny_ProblemData prob) {
   for (int i = 0; i < prob.nhorizon - 1; ++i) {
     model->get_jacobians(&(model->A[i]), &(model->B[i]), prob.X_ref[i],
                          prob.U_ref[i]);

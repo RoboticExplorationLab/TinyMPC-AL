@@ -178,12 +178,11 @@ void MpcTest() {
     // === 1. Setup and solve MPC ===
 
     slap_Copy(Xhrz[0], X[k]);
-    // Update A, B within horizon
-    tiny_UpdateHorizonJacobians(&model, prob);
     // Update reference
     prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
-
+    // Update A, B within horizon
+    tiny_UpdateJacobians(&model, prob);
     // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
     // this
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);

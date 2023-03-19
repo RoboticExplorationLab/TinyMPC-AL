@@ -7,4 +7,4 @@ enum slap_ErrorCode tiny_ForwardPassLtv(Matrix* X, Matrix* U,
                                         const tiny_ProblemData prob,
                                         const tiny_LtvModel model);
 
-void tiny_UpdateHorizonJacobians(tiny_LtvModel* model, tiny_ProblemData prob);
+void tiny_UpdateJacobians(tiny_LtvModel* model, tiny_ProblemData prob);

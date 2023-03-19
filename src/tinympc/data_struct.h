@@ -1,43 +1,6 @@
 #pragma once
 
-#include "slap/slap.h"
-
-#define kNullMat  \
-  ((Matrix){      \
-      0,          \
-      0,          \
-      0,          \
-      0,          \
-      NULL,       \
-      slap_DENSE, \
-  })
-
-typedef struct {
-  int nstates;
-  int ninputs;
-  double dt;
-  Matrix A;
-  Matrix B;
-  Matrix f;
-  Matrix x0;
-  // int data_size;  ///< number of doubles need to store the data
-} tiny_LtiModel;
-
-typedef struct {
-  int nstates;
-  int ninputs;
-  double dt;
-  Matrix* A;
-  Matrix* B;
-  Matrix* f;
-  Matrix x0;
-  void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
-  void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
-  // int data_size;
-} tiny_LtvModel;
-
-void tiny_InitLtiModel(tiny_LtiModel* model);
-void tiny_InitLtvModel(tiny_LtvModel* model);
+#include "utils.h"
 
 typedef struct {
   Matrix x;   ///< state vector

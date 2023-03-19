@@ -157,7 +157,7 @@ void AbsLqrLtvTest() {
 
   // Absolute formulation
   // Compute and store A, B before solving
-  tiny_UpdateHorizonJacobians(&model, prob);
+  tiny_UpdateJacobians(&model, prob);
 
   solver.max_primal_iters = 50;
   tiny_MpcLtv(X, U, &prob, &solver, model, 0);

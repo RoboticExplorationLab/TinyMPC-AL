@@ -10,35 +10,45 @@ if (TINY_CLANG_TIDY AND (CMAKE_C_COMPILER_ID STREQUAL "Clang"))
 endif ()
 
 add_library(tinympc
-  lqr_lti.h
-  lqr_lti.c
-
-  lqr_ltv.h
-  lqr_ltv.c
-
-  mpc_lti.h
-  mpc_lti.c
-
-  mpc_ltv.h
-  mpc_ltv.c
-
   utils.h
   utils.c
 
-  data_struct.h
-  data_struct.c
+  errors.h
 
-  cost_lqr.h
-  cost_lqr.c
+  model_lti.h
+  model_lti.c
 
-  dynamics_lti.h
-  dynamics_lti.c
+  model_ltv.h
+  model_ltv.c
 
-  dynamics_ltv.h
-  dynamics_ltv.c
+  # lqr_lti.h
+  # lqr_lti.c
 
-  constraint_linear.h
-  constraint_linear.c
+  # lqr_ltv.h
+  # lqr_ltv.c
+
+  # mpc_lti.h
+  # mpc_lti.c
+
+  # mpc_ltv.h
+  # mpc_ltv.c
+
+
+
+  # data_struct.h
+  # data_struct.c
+
+  # cost_lqr.h
+  # cost_lqr.c
+
+  # dynamics_lti.h
+  # dynamics_lti.c
+
+  # dynamics_ltv.h
+  # dynamics_ltv.c
+
+  # constraint_linear.h
+  # constraint_linear.c
   )
 
 target_include_directories(tinympc

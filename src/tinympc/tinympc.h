@@ -3,16 +3,18 @@
 extern "C" {
 #endif
 
-#include "data_struct.h"
+// #include "data_struct.h"
+#include "model_lti.h"
+#include "model_ltv.h"
 #include "utils.h"
-#include "cost_lqr.h"
-#include "constraint_linear.h"
-#include "dynamics_lti.h"
-#include "mpc_lti.h"
-#include "lqr_lti.h"
-#include "dynamics_ltv.h"
-#include "mpc_ltv.h"
-#include "lqr_ltv.h"
+// #include "cost_lqr.h"
+// #include "constraint_linear.h"
+// #include "dynamics_lti.h"
+// #include "mpc_lti.h"
+// #include "lqr_lti.h"
+// #include "dynamics_ltv.h"
+// #include "mpc_ltv.h"
+// #include "lqr_ltv.h"
 
 // #if (MODEL == LTI_MODEL)
 //   #include "dynamics_lti.h"

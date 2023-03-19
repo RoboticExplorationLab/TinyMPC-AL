@@ -5,10 +5,10 @@
 // #include "riccati/riccati_solver.h"
 #include "slap/matrix.h"
 
-double SumOfSquaredError(const double* x, const double* y, int len) {
-  double err = 0;
+sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, int len) {
+  sfloat err = 0;
   for (int i = 0; i < len; ++i) {
-    double diff = x[i] - y[i];
+    sfloat diff = x[i] - y[i];
     err += diff * diff;
   }
   return sqrt(err);

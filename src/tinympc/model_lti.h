@@ -1,5 +1,6 @@
 #pragma once
 
+#include "errors.h"
 #include "utils.h"
 
 typedef struct {
@@ -27,5 +28,4 @@ enum tiny_ErrorCode tiny_SetModelJacFunc_Lti(
 
 enum tiny_ErrorCode tiny_SetModelNonlinear_Lti(
     tiny_LtiModel* model, 
-    void (*get_nonlinear_dynamics)(Matrix*, Matrix*, const Matrix, 
-    const Matrix));
+    void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix));

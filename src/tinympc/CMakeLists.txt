@@ -10,9 +10,6 @@ if (TINY_CLANG_TIDY AND (CMAKE_C_COMPILER_ID STREQUAL "Clang"))
 endif ()
 
 add_library(tinympc
-  # constrained_ilqr.h
-  # constrained_ilqr.c
-
   lqr_lti.h
   lqr_lti.c
 

@@ -1,4 +1,3 @@
-#include "simpletest.h"
 #include "test_utils.h"
 #include "tinympc/model_ltv.h"
 #include "tinympc/utils.h"

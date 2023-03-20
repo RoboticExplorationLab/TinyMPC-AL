@@ -59,3 +59,7 @@ void tiny_Clamps(double* arr, const double* min, const double* max,
 void tiny_Clamp(double* arr, const double min, const double max, const int N);
 
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max);
+
+enum tiny_ErrorCode tiny_MatricesfromArray(Matrix* mats, const int rows, 
+                                          const int cols, const int num, sfloat* data);
+                                          

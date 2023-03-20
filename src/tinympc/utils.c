@@ -143,3 +143,13 @@ void tiny_Clamp(double* arr, const double min, const double max, const int N) {
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max) {
   tiny_Clamps(mat->data, min.data, max.data, (mat->rows) * (mat->cols));
 }
+
+// Create an array of matrices from data array
+enum tiny_ErrorCode tiny_MatricesfromArray(Matrix* mats, const int rows, 
+    const int cols, const int num, sfloat* data) {
+  sfloat* ptr = data;
+  for (int k = 0; k < num; ++k) {
+    mats[k] = slap_MatrixFromArray(rows, cols, ptr);
+    ptr += rows*cols;
+  }
+}

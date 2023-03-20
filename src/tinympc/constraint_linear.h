@@ -1,7 +1,5 @@
 #include "data_struct.h"
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob);
-
 void tiny_IneqInputs(Matrix* ineq, const tiny_ProblemData prob, const Matrix u);
 
 void tiny_IneqInputsOffset(Matrix* ineq_input, const tiny_ProblemData prob);

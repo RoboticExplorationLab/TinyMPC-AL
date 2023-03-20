@@ -28,8 +28,8 @@ function(add_my_test name)
 endfunction()
 
 # Add tests
-# add_my_test(model_lti)
-# add_my_test(model_ltv)
+add_my_test(model_lti)
+add_my_test(model_ltv)
 # add_my_test(lqrdata)
 # add_my_test(lqr_ineq_utils)
 # add_my_test(forward_pass)

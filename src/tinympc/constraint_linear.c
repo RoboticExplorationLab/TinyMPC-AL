@@ -1,16 +1,5 @@
 #include "constraint_linear.h"
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob) {
-  double norm_d_max = 0.0;
-  for (int k = 0; k < prob.nhorizon - 1; ++k) {
-    double norm_d = slap_NormTwo(prob.d[k]);
-    if (norm_d > norm_d_max) {
-      norm_d_max = norm_d;
-    }
-  }
-  return norm_d_max;
-}
-
 // [u-p.u_max;-u + p.u_min]
 void tiny_IneqInputs(Matrix* ineq_input, const tiny_ProblemData prob,
                      const Matrix u) {

@@ -19,9 +19,10 @@ enum tiny_ErrorCode tiny_SetModelDims_Ltv(tiny_LtvModel* model, const int nstate
                                         const int ninputs, const int nhorizon);
 
 enum tiny_ErrorCode tiny_InitModelData_Ltv(tiny_LtvModel* model, 
-    sfloat* A, sfloat* B, sfloat* f);
+    Matrix* A, Matrix* B, Matrix* f);
 
-enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, sfloat* data);
+enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, Matrix* mats,
+    sfloat* data);
 
 enum tiny_ErrorCode tiny_SetModelJacFunc_Ltv(
     tiny_LtvModel* model, 

@@ -19,26 +19,26 @@ enum tiny_ErrorCode tiny_SetModelDims_Ltv(tiny_LtvModel* model, const int nstate
 }
 
 enum tiny_ErrorCode tiny_InitModelData_Ltv(tiny_LtvModel* model, 
-    sfloat* A, sfloat* B, sfloat* f) {
+    Matrix* A, Matrix* B, Matrix* f) {
   SLAP_ASSERT(A != NULL && B != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
   "InitModelData: A and B must not be NULL");
-  sfloat* Aptr = A;
-  sfloat* Bptr = B;
-  sfloat* fptr = f;
-  for (int k = 0; k < model->nhorizon - 1; ++k) {
-    model->A[k] = slap_MatrixFromArray(model->nstates, model->nstates, Aptr);
-    Aptr += model->nstates * model->nstates;
-    model->B[k] = slap_MatrixFromArray(model->nstates, model->ninputs, Bptr);
-    Bptr += model->nstates * model->ninputs;
-    model->f[k] = slap_MatrixFromArray(model->nstates, 1, fptr);
-    fptr += model->nstates;
-  }
+  model->A = A;
+  model->B = B;
+  model->f = f;
   return TINY_NO_ERROR;
 }
 
-enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, sfloat* data) {
-  SLAP_ASSERT(data != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
-  "InitModelMemory: data must not be NULL");
+enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, Matrix* mats,
+    sfloat* data) {
+  SLAP_ASSERT(data != NULL && mats != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  "InitModelMemory: data and mats must not be NULL");
+  Matrix* mat_ptr = mats;
+  model->A = mat_ptr;
+  mat_ptr += model->nhorizon - 1;
+  model->B = mat_ptr;
+  mat_ptr += model->nhorizon - 1;
+  model->f = mat_ptr;
+  
   sfloat* ptr = data;
   for (int k = 0; k < model->nhorizon - 1; ++k) {
     model->A[k] = slap_MatrixFromArray(model->nstates, model->nstates, ptr);

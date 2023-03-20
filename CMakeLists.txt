@@ -12,6 +12,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS NO)
+# set(CMAKE_CXX_EXTENSIONS YES)
 
 # include(CMakePrintHelpers)
 # include(GNUInstallDirs)
@@ -79,15 +80,15 @@ endif ()
 # Main build targets
 ##############################
 # Compile options
-if (NOT WIN32)
-  add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas)
-  # add_compile_options(-Wformat=2 -Wno-unused-parameter -Wshadow 
-  #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
-  #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
-  if (TINY_VECTORIZE)
-    add_compile_options(-march=native)
-  endif()
-endif()
+# if (NOT WIN32)
+#   add_compile_options(-Wall -Wextra -pedantic -Werror -Wno-error=unknown-pragmas -Wno-error=vla -Wno-vla)
+#   # add_compile_options(-Wformat=2 -Wno-unused-parameter -Wshadow 
+#   #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 
+#   #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
+#   if (TINY_VECTORIZE)
+#     add_compile_options(-march=native)
+#   endif()
+# endif()
 
 # if (CMAKE_C_COMPILER_ID MATCHES "GNU")
 #   add_compile_options(-Wjump-misses-init -Wlogical-op)

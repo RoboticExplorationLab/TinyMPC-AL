@@ -24,7 +24,7 @@ void tiny_InitModelData_Lti_Test() {
   const int NINPUTS = 1;
   sfloat A_data[] = {1, 0, 1, 1};  
   sfloat B_data[] = {1, 2};        
-  sfloat f_data[2] = {4, 5};                  
+  sfloat f_data[] = {4, 5};                  
   tiny_LtiModel model;
   tiny_SetModelDims_Lti(&model, NSTATES, NINPUTS);
   tiny_InitModelData_Lti(&model, A_data, B_data, f_data);
@@ -48,7 +48,7 @@ void tiny_InitModelMemory_Lti_Test() {
   const int NINPUTS = 1;
   sfloat A_data[] = {1, 0, 1, 1};  
   sfloat B_data[] = {1, 2};        
-  sfloat f_data[2] = {4, 5};                  
+  sfloat f_data[] = {4, 5};                  
   tiny_LtiModel model;
   tiny_SetModelDims_Lti(&model, NSTATES, NINPUTS);
   sfloat data[model.data_size];

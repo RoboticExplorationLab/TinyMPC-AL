@@ -20,29 +20,32 @@ void tiny_SetModelDims_Ltv_Test() {
   // TEST(tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON) == TINY_SLAP_ERROR);
 }
 
-// void tiny_InitModelData_Ltv_Test() {
-//   const sfloat tol = 1e-8;
-//   const int NSTATES = 2;
-//   const int NINPUTS = 1;
-//   sfloat A_data[] = {1, 0, 1, 1};  
-//   sfloat B_data[] = {1, 2};        
-//   sfloat f_data[2] = {4, 5};                  
-//   tiny_LtvModel model;
-//   tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS);
-//   tiny_InitModelData_Ltv(&model, A_data, B_data, f_data);
+void tiny_InitModelData_Ltv_Test() {
+  const sfloat tol = 1e-8;
+  const int NSTATES = 1;
+  const int NINPUTS = 1;
+  const int NHORIZON = 2;
+  sfloat A_data[] = {1, 0};  
+  sfloat B_data[] = {1, 2};        
+  sfloat f_data[] = {4, 5};                  
+  tiny_LtvModel model;
+  tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON);
+  tiny_InitModelData_Ltv(&model, A_data, B_data, f_data);
 
-//   TEST(model.A.rows == model.nstates);
-//   TEST(model.A.cols == model.nstates);
-//   TEST(SumOfSquaredError(A_data, model.A.data, model.nstates * model.nstates) <
-//        tol);
-//   TEST(model.B.rows == model.nstates);
-//   TEST(model.B.cols == model.ninputs);
-//   TEST(SumOfSquaredError(B_data, model.B.data, model.nstates * model.ninputs) <
-//        tol);
-//   TEST(model.f.rows == model.nstates);
-//   TEST(model.f.cols == 1);
-//   TEST(SumOfSquaredError(f_data, model.f.data, model.nstates) < tol);
-// }
+  for (int k = 0; k < NHORIZON-1; ++k) {
+    TEST(model.A[k].rows == model.nstates);
+    TEST(model.A[k].cols == model.nstates);
+    TEST(SumOfSquaredError(A_data[k], model.A[k].data, model.nstates * model.nstates) <
+        tol);
+    TEST(model.B[k].rows == model.nstates);
+    TEST(model.B[k].cols == model.ninputs);
+    TEST(SumOfSquaredError(B_data[k], model.B[k].data, model.nstates * model.ninputs) <
+        tol);
+    TEST(model.f[k].rows == model.nstates);
+    TEST(model.f[k].cols == 1);
+    TEST(SumOfSquaredError(f_data[k], model.f[k].data, model.nstates) < tol);
+  }
+}
 
 // void tiny_InitModelMemory_Ltv_Test() {
 //   const sfloat tol = 1e-8;

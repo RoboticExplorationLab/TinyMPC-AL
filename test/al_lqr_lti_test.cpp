@@ -1,18 +1,18 @@
 // Task: Test AL-LQR on double integrator with input/state box constraints and
 // goal constraint. Scenerio: drive from initial state to goal state.
 
-#include "simpletest.h"
-#include "slap/slap.h"
+#include <gtest/gtest.h>
+#include <tinympc/tinympc.h>
+
 #include "test_utils.h"
-#include "tinympc/mpc_lti.h"
-#include "tinympc/utils.h"
 
 #define NSTATES 4
 #define NINPUTS 2
 #define NHORIZON 51
 // U, X, Psln
-void MpcLtiTest() {
-  // double tol = 1e-4;
+
+class MpcLtiTest : public testing::Test {
+ public:
   double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
@@ -37,20 +37,10 @@ void MpcLtiTest() {
   double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
   double goal_dual_data[NSTATES] = {0};
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  tiny_LtiModel model;
+  tiny_ProblemData prob;
+  tiny_Solver solver;
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -63,6 +53,25 @@ void MpcLtiTest() {
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
+  Matrix xg;
+
+ protected:
+  void SetUp() override {
+    tiny_InitLtiModel(&model);
+    tiny_InitProblemData(&prob);
+    tiny_InitSolver(&solver);
+
+    model.ninputs = NSTATES;
+    model.nstates = NINPUTS;
+    model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
+    model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+    model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
+    model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+    xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  }
+};
+
+TEST_F(MpcLtiTest, DoubleIntegrator) {
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
   double* Uptr = U_data;
@@ -73,7 +82,7 @@ void MpcLtiTest() {
   double* pptr = p_data;
   double* udual_ptr = input_dual_data;
   double* xdual_ptr = state_dual_data;
-
+  
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
@@ -100,6 +109,7 @@ void MpcLtiTest() {
     state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
+  
   slap_Copy(X[0], model.x0);
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -133,19 +143,12 @@ void MpcLtiTest() {
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // tiny_Print(X[k]);
-    TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    EXPECT_LT(slap_NormInf(U[k]), slap_NormInf(prob.u_max) + solver.cstr_tol);
     for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
+      EXPECT_LT(X[k].data[i], xmax_data[i] + solver.cstr_tol);
+      EXPECT_GT(X[k].data[i], xmin_data[i] - solver.cstr_tol);
     }
   }
-  // tiny_Print(X[NHORIZON - 1]);
-  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
-       solver.cstr_tol);
-}
-
-int main() {
-  MpcLtiTest();
-  PrintTestResult();
-  return TestResult();
+  
+  EXPECT_LT(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES), solver.cstr_tol);
 }

@@ -55,6 +55,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     GIT_TAG main
     )
   set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(SLAP_FLOAT TINY_FLOAT CACHE STRING "" FORCE)
   FetchContent_MakeAvailable(slap)
 endif ()
 

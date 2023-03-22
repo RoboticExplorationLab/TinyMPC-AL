@@ -133,7 +133,7 @@ void AbsLqrLtvTest() {
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 2 * NINPUTS;
   prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_goal = NSTATES;
+  prob.ncstr_goal = 0;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 10e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);

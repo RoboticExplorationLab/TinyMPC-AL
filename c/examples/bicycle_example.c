@@ -21,7 +21,7 @@
 #define NHORIZON 21
 #define NSIM 101
 
-void MpcTest() {
+int main() {
   double x0_data[NSTATES] = {1, -1, 0, 0, 0};
   // double xg_data[NSTATES] = {0};
   // double ug_data[NINPUTS] = {0};
@@ -145,9 +145,9 @@ void MpcTest() {
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 2 * NINPUTS;
   prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_goal = NSTATES;
+  prob.ncstr_goal = 0;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
+  slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
@@ -211,10 +211,7 @@ void MpcTest() {
     TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
   }
   // --------------------------
-}
 
-int main() {
-  MpcTest();
   PrintTestResult();
   return TestResult();
 }

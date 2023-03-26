@@ -4,8 +4,8 @@
 //
 
 #include "matmul.h"
-enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha,
-                                   double beta) {
+enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, sfloat alpha,
+                                   sfloat beta) {
   SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX, "MatMulAdd: invalid C matrix");
   SLAP_ASSERT_VALID(A, SLAP_INVALID_MATRIX, "MatMulAdd: invalid A matrix");
   SLAP_ASSERT_VALID(B, SLAP_INVALID_MATRIX, "MatMulAdd: invalid B matrix");
@@ -26,11 +26,11 @@ enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha,
               slap_NumCols(C), p);
   for (int i = 0; i < n; ++i) {    // rows of output
     for (int j = 0; j < p; ++j) {  // Columns of output
-      double* Cij = slap_GetElement(C, i, j);
+      sfloat* Cij = slap_GetElement(C, i, j);
       *Cij *= beta;
       for (int k = 0; k < m; ++k) {  // columns of A, rows of B
-        double Aik = *slap_GetElementConst(A, i, k);
-        double Bkj = *slap_GetElementConst(B, k, j);
+        sfloat Aik = *slap_GetElementConst(A, i, k);
+        sfloat Bkj = *slap_GetElementConst(B, k, j);
         *Cij += alpha * Aik * Bkj;
       }
     }
@@ -48,9 +48,9 @@ enum slap_ErrorCode slap_MatMulAB(Matrix C, Matrix A, Matrix B) {
   int n = A.rows;
   int m = A.cols;
   int p = B.cols;
-  double Aik;
-  double Bkj;
-  double Cij;
+  sfloat Aik;
+  sfloat Bkj;
+  sfloat Cij;
   int ij;
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < p; ++j) {
@@ -81,10 +81,10 @@ enum slap_ErrorCode slap_MatMulAtB(Matrix C, Matrix A, Matrix B) {
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < p; ++j) {
       ij = i + n * j;
-      double Cij = 0;
+      sfloat Cij = 0;
       for (int k = 0; k < m; ++k) {
-        double Aki = A.data[k + i * m];
-        double Bkj = B.data[k + j * m];
+        sfloat Aki = A.data[k + i * m];
+        sfloat Bkj = B.data[k + j * m];
         Cij += Aki * Bkj;
       }
       C.data[ij] = Cij;

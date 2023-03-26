@@ -2,10 +2,10 @@
 
 void tiny_InitProblemData(tiny_ProblemData* prob);
 
-void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k);
 
-void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
                           const Matrix x);
 
 void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
@@ -36,7 +36,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
                                                 const tiny_LtiModel model,
                                                 const int verbose);
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob);
+sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob);
 
 void tiny_IneqInputs(Matrix* ineq, const tiny_ProblemData prob, const Matrix u);
 

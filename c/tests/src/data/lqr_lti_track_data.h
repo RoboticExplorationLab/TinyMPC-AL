@@ -1,5 +1,5 @@
 #pragma once
-
+#include "slap/slap.h"
 double Xref_data[204] = {5.0,
                          7.0,
                          2.0,

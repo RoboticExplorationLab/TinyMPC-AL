@@ -1,10 +1,10 @@
 #include "slap_arduino.h"
 #include <Wire.h>
 
-double data_A[4];
-double data_B[4];
-double data_C[4];
-double time = 0.;
+sfloat data_A[4];
+sfloat data_B[4];
+sfloat data_C[4];
+sfloat time = 0.;
 
 void setup() {
 /* serial to display data */
@@ -20,8 +20,8 @@ while(!Serial) {}
   Serial.println("B00");
   Serial.println(*slap_GetElement(B, 0, 0));
   // C = alpha * A * B + beta * C;
-  double alpha = 2;
-  double beta = 0;
+  sfloat alpha = 2;
+  sfloat beta = 0;
   slap_MatMulAdd(C, A, B, alpha, beta);
   Serial.println("C00");
   Serial.println(*slap_GetElement(C, 0, 0));  

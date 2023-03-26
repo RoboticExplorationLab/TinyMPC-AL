@@ -1,4 +1,4 @@
-// Task: Test AL-LQR on double integrator with input/state box constraints and
+// Task: Test AL-LQR on sfloat integrator with input/state box constraints and
 // goal constraint. Scenerio: drive from initial state to goal state.
 
 #include "constrained_ilqr.h"
@@ -12,31 +12,31 @@
 #define NHORIZON 51
 // U, X, Psln
 void InputConstrainedLqrLtiTest() {
-  // double tol = 1e-4;
-  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+  // sfloat tol = 1e-4;
+  sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
-  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
-  double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double xg_data[NSTATES] = {0};
-  double Xref_data[NSTATES * NHORIZON] = {0};
-  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-6, -6};
-  double umax_data[NINPUTS] = {6, 6};
-  double xmin_data[NSTATES] = {-2, -2, -2, -2};
-  double xmax_data[NSTATES] = {6, 8, 3, 2};
-  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
+  sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+  sfloat f_data[NSTATES] = {0};
+  sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
+  sfloat xg_data[NSTATES] = {0};
+  sfloat Xref_data[NSTATES * NHORIZON] = {0};
+  sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat Q_data[NSTATES * NSTATES] = {0};
+  sfloat R_data[NINPUTS * NINPUTS] = {0};
+  sfloat Qf_data[NSTATES * NSTATES] = {0};
+  sfloat umin_data[NINPUTS] = {-6, -6};
+  sfloat umax_data[NINPUTS] = {6, 6};
+  sfloat xmin_data[NSTATES] = {-2, -2, -2, -2};
+  sfloat xmax_data[NSTATES] = {6, 8, 3, 2};
+  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
+  sfloat goal_dual_data[NSTATES] = {0};
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
@@ -63,16 +63,16 @@ void InputConstrainedLqrLtiTest() {
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
-  double* Xptr = X_data;
-  double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* udual_ptr = input_dual_data;
-  double* xdual_ptr = state_dual_data;
+  sfloat* Xptr = X_data;
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
+  sfloat* udual_ptr = input_dual_data;
+  sfloat* xdual_ptr = state_dual_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {

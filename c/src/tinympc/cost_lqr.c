@@ -1,8 +1,8 @@
 #include "cost_lqr.h"
 
-void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[k], -1);
   *cost += 0.5 * slap_QuadraticForm(dx, prob.Q, dx);
@@ -11,9 +11,9 @@ void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
   *cost += 0.5 * slap_QuadraticForm(du, prob.R, du);
 }
 
-void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
                           const Matrix x) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[prob.nhorizon - 1], -1);
   *cost += 0.5 * slap_QuadraticForm(dx, prob.Qf, dx);

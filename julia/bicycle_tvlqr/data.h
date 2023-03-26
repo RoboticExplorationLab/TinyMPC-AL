@@ -1,2 +1,2 @@
-double X_ref_data;
+sfloat X_ref_data;
 

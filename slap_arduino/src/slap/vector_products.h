@@ -18,7 +18,7 @@
  * @param y A vector of length n
  * @return Dot product of x,y. NAN if invalid.
  */
-double slap_InnerProduct(Matrix x, Matrix y);
+sfloat slap_InnerProduct(Matrix x, Matrix y);
 
 /**
  * @brief Calculate the scaled inner product \f$ y^T A x \f$
@@ -29,7 +29,7 @@ double slap_InnerProduct(Matrix x, Matrix y);
  * @param y A vector of length m
  * @return The dot product, or NAN if invalid.
  */
-double slap_QuadraticForm(Matrix y, Matrix Q, Matrix x);
+sfloat slap_QuadraticForm(Matrix y, Matrix Q, Matrix x);
 
 /**
  * @brief Take the outer product of two vectors

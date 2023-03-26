@@ -13,20 +13,20 @@ enum slap_ErrorCode slap_Cholesky(Matrix A) {
   for (int j = 0; j < n; ++j) {
     for (int k = 0; k < j; ++k) {
       for (int i = j; i < n; ++i) {
-        double* Aij = slap_GetElement(A, i, j);
-        double Aik = *slap_GetElement(A, i, k);
-        double Ajk = *slap_GetElement(A, j, k);
+        sfloat* Aij = slap_GetElement(A, i, j);
+        sfloat Aik = *slap_GetElement(A, i, k);
+        sfloat Ajk = *slap_GetElement(A, j, k);
         *Aij -= Aik * Ajk;
       }
     }
-    double Ajj = *slap_GetElement(A, j, j);
+    sfloat Ajj = *slap_GetElement(A, j, j);
     if (Ajj <= 0) {
       return SLAP_CHOLESKY_FAIL;
     }
-    double ajj = sqrt(Ajj);
+    sfloat ajj = sqrt(Ajj);
 
     for (int i = j; i < n; ++i) {
-      double* Aij = slap_GetElement(A, i, j);
+      sfloat* Aij = slap_GetElement(A, i, j);
       *Aij /= ajj;
     }
   }
@@ -47,14 +47,14 @@ enum slap_ErrorCode slap_TriSolve(Matrix L, Matrix b) {
   for (int j_ = 0; j_ < n; ++j_) {
     int j = tL ? n - j_ - 1 : j_;
     for (int k = 0; k < m; ++k) {
-      double* xjk = slap_GetElement(b, j, k);
-      double Ljj = *slap_GetElement(L, j, j);
+      sfloat* xjk = slap_GetElement(b, j, k);
+      sfloat Ljj = *slap_GetElement(L, j, j);
       *xjk /= Ljj;
 
       for (int i_ = j_ + 1; i_ < n; ++i_) {
         int i = tL ? i_ - (j_ + 1) : i_;
-        double* xik = slap_GetElement(b, i, k);
-        double Lij = *slap_GetElement(L, i, j);
+        sfloat* xik = slap_GetElement(b, i, k);
+        sfloat Lij = *slap_GetElement(L, i, j);
         *xik -= Lij * (*xjk);
       }
     }

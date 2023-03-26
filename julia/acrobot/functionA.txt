@@ -1,5 +1,5 @@
 #include <math.h>
-void tiny_GetJacobianA(double* A, const double* x, const double* u) {
+void tiny_GetJacobianA(sfloat* A, const sfloat* x, const sfloat* u) {
   A[0] = 1;
   A[1] = 0;
   A[2] = 0;

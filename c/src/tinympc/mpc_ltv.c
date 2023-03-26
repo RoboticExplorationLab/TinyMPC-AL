@@ -174,10 +174,10 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
   for (int k = 0; k < N - 1; ++k) {
     tiny_DynamicsLtv(&(X[k + 1]), X[k], U[k], model, k);
   }
-  double G_temp_data[(n + m) * (n + m + 1)];
+  sfloat G_temp_data[(n + m) * (n + m + 1)];
   Matrix Q_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
 
-  double ineq_temp_data[prob->ncstr_states *
+  sfloat ineq_temp_data[prob->ncstr_states *
                         (prob->ncstr_states + prob->ncstr_states + 2)];
   Matrix ineq_temp = slap_MatrixFromArray(
       prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
@@ -198,7 +198,7 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
 
   Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, ineq_temp_data);
 
-  double cstr_violation = 0.0;
+  sfloat cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
     if (verbose > 1) printf("backward pass\n");
     tiny_ConstrainedBackwardPassLtv(prob, *solver, model, X, U, &Q_temp,
@@ -217,7 +217,7 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
 
     // For linear systems, only 1 iteration
     cstr_violation = 0.0;
-    double norm_inf = 0.0;
+    sfloat norm_inf = 0.0;
 
     if (prob->ncstr_inputs > 0) {
       for (int k = 0; k < N - 1; ++k) {

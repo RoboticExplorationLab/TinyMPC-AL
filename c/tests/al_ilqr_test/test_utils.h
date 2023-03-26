@@ -1,9 +1,9 @@
 #pragma once
 
 // #include "riccati/riccati_solver.h"
-double SumOfSquaredError(const double* x, const double* y, int len);
+sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, int len);
 
-// void DiscreteDoubleIntegratorDynamics(double h, double dim, Matrix* A,
+// void DiscretesfloatIntegratorDynamics(sfloat h, sfloat dim, Matrix* A,
 // Matrix* B);
 
-// RiccatiSolver* DoubleIntegratorProblem();
+// RiccatiSolver* sfloatIntegratorProblem();

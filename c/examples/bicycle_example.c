@@ -22,36 +22,36 @@
 #define NSIM 101
 
 int main() {
-  double x0_data[NSTATES] = {1, -1, 0, 0, 0};
-  // double xg_data[NSTATES] = {0};
-  // double ug_data[NINPUTS] = {0};
-  double Xhrz_data[NSTATES * NHORIZON] = {0};
-  double X_data[NSTATES * NSIM] = {0};
-  double Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
+  sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};
+  // sfloat xg_data[NSTATES] = {0};
+  // sfloat ug_data[NINPUTS] = {0};
+  sfloat Xhrz_data[NSTATES * NHORIZON] = {0};
+  sfloat X_data[NSTATES * NSIM] = {0};
+  sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};
+  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
+  sfloat goal_dual_data[NSTATES] = {0};
+  sfloat Q_data[NSTATES * NSTATES] = {0};
+  sfloat R_data[NINPUTS * NINPUTS] = {0};
+  sfloat Qf_data[NSTATES * NSTATES] = {0};
 
   // Put constraints on u, x4, x5
-  double umin_data[NINPUTS] = {-2.1, -1.1};
-  double umax_data[NINPUTS] = {2.1, 1.1};
-  double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
-  double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
+  sfloat umin_data[NINPUTS] = {-2.1, -1.1};
+  sfloat umax_data[NINPUTS] = {2.1, 1.1};
+  sfloat xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
+  sfloat xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
 
-  // double umin_data[NINPUTS] = {-5, -2};
-  // double umax_data[NINPUTS] = {5, 2};
-  // double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-  // double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
+  // sfloat umin_data[NINPUTS] = {-5, -2};
+  // sfloat umax_data[NINPUTS] = {5, 2};
+  // sfloat xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
+  // sfloat xmax_data[NSTATES] = {100, 100, 100, 100, 100};
 
   Matrix X[NSIM];
   Matrix Xref[NSIM];
@@ -75,20 +75,20 @@ int main() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
-  double* Xhrz_ptr = Xhrz_data;
-  double* Xptr = X_data;
-  double* Xref_ptr = Xref_data;
-  double* Uhrz_ptr = Uhrz_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
-  double* udual_ptr = input_dual_data;
-  double* xdual_ptr = state_dual_data;
+  sfloat* Xhrz_ptr = Xhrz_data;
+  sfloat* Xptr = X_data;
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uhrz_ptr = Uhrz_data;
+  sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
+  sfloat* Aptr = A_data;
+  sfloat* Bptr = B_data;
+  sfloat* fptr = f_data;
+  sfloat* udual_ptr = input_dual_data;
+  sfloat* xdual_ptr = state_dual_data;
 
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {

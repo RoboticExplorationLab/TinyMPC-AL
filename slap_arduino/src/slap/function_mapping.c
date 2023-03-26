@@ -7,16 +7,16 @@
 
 #include "iterator.h"
 
-enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double)) {
+enum slap_ErrorCode slap_Map(Matrix mat, sfloat (*function)(sfloat)) {
   SLAP_ASSERT_VALID(mat, SLAP_INVALID_MATRIX, "Map: invalid matrix");
   for (MatrixIterator it = slap_Iterator(mat); !slap_IsFinished(&it); slap_Step(&it)) {
-    double* value = mat.data + it.index;
+    sfloat* value = mat.data + it.index;
     *value = function(*value);
   }
   return SLAP_NO_ERROR;
 }
 enum slap_ErrorCode slap_BinaryMap(Matrix C, Matrix A, Matrix B,
-                                   double (*function)(double, double)) {
+                                   sfloat (*function)(sfloat, sfloat)) {
   // Check for valid matrices
   SLAP_ASSERT_VALID(C, SLAP_INVALID_MATRIX, "BinaryMap: invalid output C matrix");
   SLAP_ASSERT_VALID(A, SLAP_INVALID_MATRIX, "BinaryMap: invalid input A matrix");
@@ -28,9 +28,9 @@ enum slap_ErrorCode slap_BinaryMap(Matrix C, Matrix A, Matrix B,
 
   for (MatrixIterator it = slap_Iterator(C); !slap_IsFinished(&it); slap_Step(&it)) {
     // NOTE: use Cartesian indexing on A,B because they might have different strides
-    double *Ck = C.data + it.index;
-    double Ak = *slap_GetElement(A, it.i, it.j);
-    double Bk = *slap_GetElement(B, it.i, it.j);
+    sfloat *Ck = C.data + it.index;
+    sfloat Ak = *slap_GetElement(A, it.i, it.j);
+    sfloat Bk = *slap_GetElement(B, it.i, it.j);
     *Ck = function(Ak, Bk);
   }
   return SLAP_NO_ERROR;

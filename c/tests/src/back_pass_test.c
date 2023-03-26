@@ -14,25 +14,25 @@
 #define NHORIZON 3
 // U, X, Psln
 void BackPassTest() {
-  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+  sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
-  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
-  double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double Xref_data[NSTATES * NHORIZON] = {0};
-  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
-  // double X_data[NSTATES*NHORIZON] = {0};
-  // double U_data[NINPUTS*(NHORIZON-1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
-  const double tol = 1e-8;
+  sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+  sfloat f_data[NSTATES] = {0};
+  sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
+  sfloat Xref_data[NSTATES * NHORIZON] = {0};
+  sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  // sfloat X_data[NSTATES*NHORIZON] = {0};
+  // sfloat U_data[NINPUTS*(NHORIZON-1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat Q_data[NSTATES * NSTATES] = {0};
+  sfloat R_data[NINPUTS * NINPUTS] = {0};
+  sfloat Qf_data[NSTATES * NSTATES] = {0};
+  sfloat umin_data[NINPUTS] = {-2, -2};
+  sfloat umax_data[NINPUTS] = {2, 2};
+  const sfloat tol = 1e-8;
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -55,12 +55,12 @@ void BackPassTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
 
-  double* Xref_ptr = Xref_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
@@ -102,7 +102,7 @@ void BackPassTest() {
   solver.reg = 1e-8;
   solver.penalty_mul = 10;
 
-  double G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        G_temp_data);
   tiny_BackwardPassLti(&prob, solver, model, &G_temp);

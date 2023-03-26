@@ -1,8 +1,8 @@
 #include "nmpc.h"
 
-void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[k], -1);
   *cost += 0.5 * slap_QuadraticForm(dx, prob.Q, dx);
@@ -11,9 +11,9 @@ void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
   *cost += 0.5 * slap_QuadraticForm(du, prob.R, du);
 }
 
-void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
                           const Matrix x) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[prob.nhorizon - 1], -1);
   *cost += 0.5 * slap_QuadraticForm(dx, prob.Qf, dx);
@@ -23,7 +23,7 @@ void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                           Matrix* hes_el_uu, Matrix* grad_el_u,
                           const tiny_ProblemData prob, const Matrix x,
                           const Matrix u, const int k) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[k], -1);
   slap_Copy(*hes_el_xx, prob.Q);
@@ -36,7 +36,7 @@ void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
 
 void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
                              const tiny_ProblemData prob, const Matrix x) {
-  double dx_data[prob.nstates];
+  sfloat dx_data[prob.nstates];
   Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
   slap_MatrixAddition(dx, x, prob.X_ref[prob.nhorizon - 1], -1);
   slap_Copy(*hes_el_xx, prob.Qf);
@@ -289,10 +289,10 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
   for (int k = 0; k < N - 1; ++k) {
     tiny_DynamicsLti(&(X[k + 1]), X[k], U[k], model);
   }
-  double G_temp_data[(n + m) * (n + m + 1)];
+  sfloat G_temp_data[(n + m) * (n + m + 1)];
   Matrix G_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
 
-  double ineq_temp_data[prob->ncstr_states *
+  sfloat ineq_temp_data[prob->ncstr_states *
                         (prob->ncstr_states + prob->ncstr_states + 2)];
   Matrix ineq_temp = slap_MatrixFromArray(
       prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
@@ -314,8 +314,8 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
 
   Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, ineq_temp_data);
 
-  double norm_d_max = 0.0;
-  double cstr_violation = 0.0;
+  sfloat norm_d_max = 0.0;
+  sfloat cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
     tiny_ConstrainedBackwardPassLti(prob, model, *solver, X, U, &G_temp,
                                     &ineq_temp);
@@ -340,7 +340,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
     // For linear systems, only 1 iteration, shouldn't need condition here
     if (0 * norm_d_max < solver->riccati_tol) {
       cstr_violation = 0.0;
-      double norm_inf = 0.0;
+      sfloat norm_inf = 0.0;
 
       for (int k = 0; k < N - 1; ++k) {
         //========= Control constraints ==========
@@ -403,8 +403,8 @@ enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
                                         const tiny_ProblemData prob,
                                         const tiny_LtiModel model) {
   int N = prob.nhorizon;
-  double u_data[prob.ninputs];
-  double x_data[prob.nstates];
+  sfloat u_data[prob.ninputs];
+  sfloat x_data[prob.nstates];
   Matrix Un = slap_MatrixFromArray(prob.ninputs, 1, u_data);
   Matrix Xn = slap_MatrixFromArray(prob.nstates, 1, x_data);
   slap_Copy(Xn, prob.x0);
@@ -422,10 +422,10 @@ enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
   return SLAP_NO_ERROR;
 }
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob) {
-  double norm_d_max = 0.0;
+sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob) {
+  sfloat norm_d_max = 0.0;
   for (int k = 0; k < prob.nhorizon - 1; ++k) {
-    double norm_d = slap_NormTwo(prob.d[k]);
+    sfloat norm_d = slap_NormTwo(prob.d[k]);
     if (norm_d > norm_d_max) {
       norm_d_max = norm_d;
     }

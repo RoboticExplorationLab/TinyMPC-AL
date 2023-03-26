@@ -22,7 +22,7 @@
  * @param val Value to which each element will be set
  * @return 0 if successful
  */
-enum slap_ErrorCode slap_SetConst(Matrix mat, double val);
+enum slap_ErrorCode slap_SetConst(Matrix mat, sfloat val);
 
 /**
  * @brief Scale a matrix by a constant factor
@@ -31,7 +31,7 @@ enum slap_ErrorCode slap_SetConst(Matrix mat, double val);
  * @param mat Fully initialized matrix of non-zero size. Values will be modified.
  * @param alpha scalar by which to multiply the matrix
  */
-enum slap_ErrorCode slap_ScaleByConst(Matrix mat, double alpha);
+enum slap_ErrorCode slap_ScaleByConst(Matrix mat, sfloat alpha);
 
 /**
  * @brief Set the diagonal elements of the matrix to val, and the rest to zeros.
@@ -40,7 +40,7 @@ enum slap_ErrorCode slap_ScaleByConst(Matrix mat, double alpha);
  * @param mat Square matrix
  * @param val Value for the diagonal elements
  */
-enum slap_ErrorCode slap_SetIdentity(Matrix mat, double val);
+enum slap_ErrorCode slap_SetIdentity(Matrix mat, sfloat val);
 
 /**
  * @brief Set the first n elements of a matrix diagonal from an array
@@ -52,7 +52,7 @@ enum slap_ErrorCode slap_SetIdentity(Matrix mat, double val);
  * @param mat Matrix (nrows >= ncols)
  * @param diag Array of length `nrows`.
  */
-enum slap_ErrorCode slap_SetDiagonal(Matrix mat, const double* diag, int len);
+enum slap_ErrorCode slap_SetDiagonal(Matrix mat, const sfloat* diag, int len);
 
 /**
  * @brief Add a multiple of the identity to the matrix
@@ -61,7 +61,7 @@ enum slap_ErrorCode slap_SetDiagonal(Matrix mat, const double* diag, int len);
  * @param mat A valid matrix
  * @param alpha The value to add to the diagonal elements
  */
-enum slap_ErrorCode slap_AddIdentity(Matrix mat, double alpha);
+enum slap_ErrorCode slap_AddIdentity(Matrix mat, sfloat alpha);
 
 /**
  * @brief Sets the matrix to a equally-spaced range
@@ -89,6 +89,6 @@ enum slap_ErrorCode slap_AddIdentity(Matrix mat, double alpha);
  * @param start Value of the first element
  * @param stop Value of the last element
  */
-enum slap_ErrorCode slap_SetRange(Matrix mat, double start, double stop);
+enum slap_ErrorCode slap_SetRange(Matrix mat, sfloat start, sfloat stop);
 
 /**@}*/

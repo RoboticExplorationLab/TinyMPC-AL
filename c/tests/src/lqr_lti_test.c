@@ -1,5 +1,5 @@
 // Test LQR
-// Scenerio: Drive double integrator to arbitrary goal state.
+// Scenerio: Drive sfloat integrator to arbitrary goal state.
 
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -13,25 +13,25 @@
 #define NHORIZON 51
 // U, X, Psln
 void LqrLtiTest() {
-  double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+  sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
-  double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
-  double f_data[NSTATES] = {0};
-  double x0_data[NSTATES] = {5, 7, 2, -1.4};
-  double xg_data[NSTATES] = {2, 5, 3, -1};
-  double Xref_data[NSTATES * NHORIZON] = {0};
-  double Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double Q_data[NSTATES * NSTATES] = {0};
-  double R_data[NINPUTS * NINPUTS] = {0};
-  double Qf_data[NSTATES * NSTATES] = {0};
-  double umin_data[NINPUTS] = {-2, -2};
-  double umax_data[NINPUTS] = {2, 2};
+  sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+  sfloat f_data[NSTATES] = {0};
+  sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
+  sfloat xg_data[NSTATES] = {2, 5, 3, -1};
+  sfloat Xref_data[NSTATES * NHORIZON] = {0};
+  sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat Q_data[NSTATES * NSTATES] = {0};
+  sfloat R_data[NINPUTS * NINPUTS] = {0};
+  sfloat Qf_data[NSTATES * NSTATES] = {0};
+  sfloat umin_data[NINPUTS] = {-2, -2};
+  sfloat umax_data[NINPUTS] = {2, 2};
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -57,14 +57,14 @@ void LqrLtiTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
 
-  double* Xptr = X_data;
-  double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
+  sfloat* Xptr = X_data;
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
@@ -112,7 +112,7 @@ void LqrLtiTest() {
   solver.penalty_mul = 10;
   solver.max_primal_iters = 1;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
   tiny_BackwardPassLti(&prob, solver, model, &Q_temp);

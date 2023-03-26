@@ -15,40 +15,40 @@
 // int nx = 2;
 // int nu = 1;
 // int nh = 2;
-double dt = 0.1;
-double A_data[NSTATES * NSTATES] = {1, 0, 1, 1};  // NOLINT
-double B_data[NSTATES * NINPUTS] = {1, 2};        // NOLINT
-double f_data[NSTATES] = {4, 5};                  // NOLINT
-double t = 1.0;
-double Q_data[NSTATES * NSTATES] = {1, 0, 0, 1};  // NOLINT
-double R_data[NINPUTS * NINPUTS] = {1};           // NOLINT
-double q_data[NSTATES] = {0.1, 0.2};              // NOLINT
-double r_data[NINPUTS] = {-0.6};                  // NOLINT
-double Qf_data[NSTATES * NSTATES] = {0};
-double u_max_data[NINPUTS] = {1.1};
-double u_min_data[NINPUTS] = {-1.1};
-double x_max_data[NSTATES] = {1.6, 1.7};
-double x_min_data[NSTATES] = {-1.6, -1.7};
-double x_ref_data[NSTATES * NHORIZON] = {0.2, 1.1, 2.5, 3.7, 2.1, 4.5};
-double u_ref_data[NINPUTS * (NHORIZON - 1)] = {1, 2};
-double x0_data[NSTATES] = {0.1, 0.2};
-double u0_data[NSTATES] = {1.6};
-double Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON - 1)] = {0};
-double Pp_data[NSTATES * (NSTATES + 1) * NHORIZON] = {0};
-double reg = 1e-8;
-double input_duals_data[2 * NINPUTS * (NHORIZON - 1)] = {1, 2, 3, 4};
-double state_duals_data[2 * NSTATES * (NHORIZON)] = {1, 2, 3, 4, 5, 6,
+sfloat dt = 0.1;
+sfloat A_data[NSTATES * NSTATES] = {1, 0, 1, 1};  // NOLINT
+sfloat B_data[NSTATES * NINPUTS] = {1, 2};        // NOLINT
+sfloat f_data[NSTATES] = {4, 5};                  // NOLINT
+sfloat t = 1.0;
+sfloat Q_data[NSTATES * NSTATES] = {1, 0, 0, 1};  // NOLINT
+sfloat R_data[NINPUTS * NINPUTS] = {1};           // NOLINT
+sfloat q_data[NSTATES] = {0.1, 0.2};              // NOLINT
+sfloat r_data[NINPUTS] = {-0.6};                  // NOLINT
+sfloat Qf_data[NSTATES * NSTATES] = {0};
+sfloat u_max_data[NINPUTS] = {1.1};
+sfloat u_min_data[NINPUTS] = {-1.1};
+sfloat x_max_data[NSTATES] = {1.6, 1.7};
+sfloat x_min_data[NSTATES] = {-1.6, -1.7};
+sfloat x_ref_data[NSTATES * NHORIZON] = {0.2, 1.1, 2.5, 3.7, 2.1, 4.5};
+sfloat u_ref_data[NINPUTS * (NHORIZON - 1)] = {1, 2};
+sfloat x0_data[NSTATES] = {0.1, 0.2};
+sfloat u0_data[NSTATES] = {1.6};
+sfloat Kd_data[NINPUTS * (NSTATES + 1) * (NHORIZON - 1)] = {0};
+sfloat Pp_data[NSTATES * (NSTATES + 1) * NHORIZON] = {0};
+sfloat reg = 1e-8;
+sfloat input_duals_data[2 * NINPUTS * (NHORIZON - 1)] = {1, 2, 3, 4};
+sfloat state_duals_data[2 * NSTATES * (NHORIZON)] = {1, 2, 3, 4, 5, 6,
                                                      7, 8, 2, 4, 5, 6};
-double goal_duals_data[NSTATES] = {1, 2};
-double reg_min = 1;
-double reg_max = 100;
-double penalty_max = 1e5;
-double penalty_mul = 1;
+sfloat goal_duals_data[NSTATES] = {1, 2};
+sfloat reg_min = 1;
+sfloat reg_max = 100;
+sfloat penalty_max = 1e5;
+sfloat penalty_mul = 1;
 int max_primal_iters = 100;
 int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
-  const double tol = 1e-8;
+  const sfloat tol = 1e-8;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   model.nstates = NSTATES;
@@ -77,7 +77,7 @@ void LinearDiscreteModelTest() {
 }
 
 void KnotPointTest() {
-  const double tol = 1e-8;
+  const sfloat tol = 1e-8;
   tiny_KnotPoint z;
   tiny_InitKnotPoint(&z);
   tiny_KnotPoint Z[NHORIZON];
@@ -137,7 +137,7 @@ void SolverTest() {
 }
 
 void ProblemDataTest() {
-  const double tol = 1e-8;
+  const sfloat tol = 1e-8;
   Matrix U_ref[NHORIZON - 1];
   Matrix X_ref[NHORIZON];
   Matrix K[NHORIZON - 1];
@@ -146,12 +146,12 @@ void ProblemDataTest() {
   Matrix p[NHORIZON];
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
-  double* uptr = u_ref_data;
-  double* xptr = x_ref_data;
-  double* Kd_ptr = Kd_data;
-  double* Pp_ptr = Pp_data;
-  double* input_dual_ptr = input_duals_data;
-  double* state_dual_ptr = state_duals_data;
+  sfloat* uptr = u_ref_data;
+  sfloat* xptr = x_ref_data;
+  sfloat* Kd_ptr = Kd_data;
+  sfloat* Pp_ptr = Pp_data;
+  sfloat* input_dual_ptr = input_duals_data;
+  sfloat* state_dual_ptr = state_duals_data;
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U_ref[i] = slap_MatrixFromArray(NINPUTS, 1, uptr);

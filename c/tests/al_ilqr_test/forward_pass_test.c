@@ -13,14 +13,14 @@
 #define NINPUTS 2
 #define NHORIZON 3
 
-double A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
+sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
                                     0.1, 0, 1, 0, 0, 0.1, 0, 1};
-double B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
-double f_data[NSTATES] = {0, 0, 0, 0};
-// double x0_data[NSTATES] = {5,7,2,-1.4};
+sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
+sfloat f_data[NSTATES] = {0, 0, 0, 0};
+// sfloat x0_data[NSTATES] = {5,7,2,-1.4};
 
 void ForwardPassTest() {
-  const double tol = 1e-8;
+  const sfloat tol = 1e-8;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
@@ -39,11 +39,11 @@ void ForwardPassTest() {
   Matrix K[NHORIZON - 1];
   Matrix d[NHORIZON - 1];
 
-  double* xptr = x_data;
-  double* xsol_ptr = xsol_data;
-  double* uptr = u_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
+  sfloat* xptr = x_data;
+  sfloat* xsol_ptr = xsol_data;
+  sfloat* uptr = u_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {

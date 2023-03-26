@@ -36,7 +36,7 @@ option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
 option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 
 # Floating point precision
-set(TINY_FLOAT double CACHE STRING "Floating point precision for TinyMPC (float,double).")
+set(SLAP_FLOAT float CACHE STRING "Floating point precision for slap (float,double).")
 
 # Build examples
 option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
@@ -80,7 +80,7 @@ endif ()
 ##############################
 # Compile options
 if (NOT WIN32)
-  add_compile_options(-Wall -Wextra -pedantic -Werror)
+  add_compile_options(-Wall -Wextra -pedantic)
   # add_compile_options(-Wno-error=unknown-pragmas
   #                     -Wformat=2 -Wno-unused-parameter -Wshadow 
   #                     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition 

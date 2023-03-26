@@ -1,6 +1,6 @@
 #include "data_struct.h"
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob);
+sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob);
 
 void tiny_IneqInputs(Matrix* ineq, const tiny_ProblemData prob, const Matrix u);
 

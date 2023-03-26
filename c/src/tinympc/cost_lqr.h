@@ -3,10 +3,10 @@
 #include "slap/slap.h"
 #include "data_struct.h"
 
-void tiny_AddStageCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
                        const Matrix x, const Matrix u, const int k);
 
-void tiny_AddTerminalCost(double* cost, const tiny_ProblemData prob,
+void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
                           const Matrix x);
 
 void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,

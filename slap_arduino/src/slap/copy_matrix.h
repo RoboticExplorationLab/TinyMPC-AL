@@ -46,4 +46,4 @@ enum slap_ErrorCode slap_MatrixCopyTranspose(Matrix dest, Matrix src);
  * @param data Data to be copied into the array. Must have length of at least mat.rows * * mat.cols.
  * @return slap error code
  */
-enum slap_ErrorCode slap_MatrixCopyFromArray(Matrix mat, const double* data);
+enum slap_ErrorCode slap_MatrixCopyFromArray(Matrix mat, const sfloat* data);

@@ -1,9 +1,9 @@
 #include "constraint_linear.h"
 
-double tiny_RiccatiConvergence(const tiny_ProblemData prob) {
-  double norm_d_max = 0.0;
+sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob) {
+  sfloat norm_d_max = 0.0;
   for (int k = 0; k < prob.nhorizon - 1; ++k) {
-    double norm_d = slap_NormTwo(prob.d[k]);
+    sfloat norm_d = slap_NormTwo(prob.d[k]);
     if (norm_d > norm_d_max) {
       norm_d_max = norm_d;
     }

@@ -10,14 +10,14 @@
 #define NHORIZON 3
 
 void IneqInputsTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double u_data[NINPUTS] = {1.1, 0.8};
-  double ans[NINPUTS * 2] = {
+  const sfloat tol = 1e-8;
+  sfloat u_max_data[NINPUTS] = {1, 1};
+  sfloat u_min_data[NINPUTS] = {-1, -1};
+  sfloat u_data[NINPUTS] = {1.1, 0.8};
+  sfloat ans[NINPUTS * 2] = {
       u_data[0] - u_max_data[0], u_data[1] - u_max_data[1],
       -u_data[0] + u_min_data[0], -u_data[1] + u_min_data[1]};
-  double ineq_data[NINPUTS * 2];
+  sfloat ineq_data[NINPUTS * 2];
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
@@ -38,12 +38,12 @@ void IneqInputsTest() {
 }
 
 void IneqInputsOffsetTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double ans[NINPUTS * 2] = {u_max_data[0], u_max_data[1], -u_min_data[0],
+  const sfloat tol = 1e-8;
+  sfloat u_max_data[NINPUTS] = {1, 1};
+  sfloat u_min_data[NINPUTS] = {-1, -1};
+  sfloat ans[NINPUTS * 2] = {u_max_data[0], u_max_data[1], -u_min_data[0],
                              -u_min_data[1]};
-  double ineq_data[NINPUTS * 2];
+  sfloat ineq_data[NINPUTS * 2];
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
@@ -63,11 +63,11 @@ void IneqInputsOffsetTest() {
 }
 
 void IneqInputsJacobianTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double ans[NINPUTS * 2 * NINPUTS] = {1, 0, -1, 0, 0, 1, 0, -1};
-  double jac_data[NINPUTS * 2 * NINPUTS];
+  const sfloat tol = 1e-8;
+  sfloat u_max_data[NINPUTS] = {1, 1};
+  sfloat u_min_data[NINPUTS] = {-1, -1};
+  sfloat ans[NINPUTS * 2 * NINPUTS] = {1, 0, -1, 0, 0, 1, 0, -1};
+  sfloat jac_data[NINPUTS * 2 * NINPUTS];
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
@@ -87,19 +87,19 @@ void IneqInputsJacobianTest() {
 }
 
 void ActiveIneqMaskTest() {
-  const double tol = 1e-8;
-  double u_max_data[NINPUTS] = {1, 1};
-  double u_min_data[NINPUTS] = {-1, -1};
-  double u_data[NINPUTS] = {-2, 2};
-  double ans1[NINPUTS * 2] = {u_data[0] - u_max_data[0],    //-3
+  const sfloat tol = 1e-8;
+  sfloat u_max_data[NINPUTS] = {1, 1};
+  sfloat u_min_data[NINPUTS] = {-1, -1};
+  sfloat u_data[NINPUTS] = {-2, 2};
+  sfloat ans1[NINPUTS * 2] = {u_data[0] - u_max_data[0],    //-3
                               u_data[1] - u_max_data[1],    // 1
                               -u_data[0] + u_min_data[0],   // 1
                               -u_data[1] + u_min_data[1]};  // -3
-  double dual_data[NINPUTS * 2] = {1, 0, 2, 0};
-  double ans2[NINPUTS * 2 * NINPUTS * 2] = {1, 0, 0, 0, 0, 1, 0, 0,
+  sfloat dual_data[NINPUTS * 2] = {1, 0, 2, 0};
+  sfloat ans2[NINPUTS * 2 * NINPUTS * 2] = {1, 0, 0, 0, 0, 1, 0, 0,
                                             0, 0, 1, 0, 0, 0, 0, 0};
-  double ineq_data[NINPUTS * 2];
-  double mask_data[NINPUTS * 2 * NINPUTS * 2];
+  sfloat ineq_data[NINPUTS * 2];
+  sfloat mask_data[NINPUTS * 2 * NINPUTS * 2];
 
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
@@ -128,23 +128,23 @@ void RiccatiConvergenceTest() {
 
   prob.nhorizon = 3;
   prob.ninputs = 2;
-  double d_data[4] = {1.2, -0.3, -2.1, 3.1};
-  double ans = 3.744329045369811;
+  sfloat d_data[4] = {1.2, -0.3, -2.1, 3.1};
+  sfloat ans = 3.744329045369811;
   Matrix d[2];
-  double* dptr = d_data;
+  sfloat* dptr = d_data;
   for (int k = 0; k < prob.nhorizon - 1; ++k) {
     d[k] = slap_MatrixFromArray(prob.ninputs, 1, dptr);
     dptr += prob.ninputs;
   }
   prob.d = d;
-  double norm_d_max = tiny_RiccatiConvergence(prob);
+  sfloat norm_d_max = tiny_RiccatiConvergence(prob);
   TESTAPPROX(norm_d_max, ans, 1e-6);
 }
 
 void ClampIneqDualsTest() {
-  double dual_data[2] = {-2, -1};
-  double new_dual_data[2] = {10, -10};
-  double ans[2] = {10, 0};
+  sfloat dual_data[2] = {-2, -1};
+  sfloat new_dual_data[2] = {10, -10};
+  sfloat ans[2] = {10, 0};
   Matrix dual = slap_MatrixFromArray(2, 1, dual_data);
   Matrix new_dual = slap_MatrixFromArray(2, 1, new_dual_data);
   tiny_ClampIneqDuals(&dual, new_dual);

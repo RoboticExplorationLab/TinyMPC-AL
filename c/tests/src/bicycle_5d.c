@@ -4,18 +4,18 @@
 // Bicycle model parameters
 //========================================
 // struct tiny_Model_Bicycle {
-//   double drive_min[2];
-//   double drive_max[2];
-//   double u_min[2];
-//   double u_max[2];
+//   sfloat drive_min[2];
+//   sfloat drive_max[2];
+//   sfloat u_min[2];
+//   sfloat u_max[2];
 // } tiny_DefaultModel_Bicycle = {{-2, -0.5}, {2, 0.5}, {-4, -0.7}, {4, 0.7}};
 
 //========================================
 // Codes generated from julia/bicycle_tvlqr
 // Discrete dynamics of bicycle model with predefined model params
 //========================================
-void tiny_Bicycle5dNonlinearDynamics_Raw(double* xn, const double* x,
-                                         const double* u) {
+void tiny_Bicycle5dNonlinearDynamics_Raw(sfloat* xn, const sfloat* x,
+                                         const sfloat* u) {
   xn[0] =
       0.16666666666666666 *
           (0.1 * (0.1 * u[0] + x[3]) *
@@ -56,8 +56,8 @@ void tiny_Bicycle5dNonlinearDynamics(Matrix* xn, const Matrix x,
 // Codes generated from julia/bicycle_tvlqr
 // Jacobians of discrete dynamics of bicycle model with predefined model params
 //========================================
-void tiny_Bicycle5dGetJacobianA_Raw(double* A, const double* x,
-                                    const double* u) {
+void tiny_Bicycle5dGetJacobianA_Raw(sfloat* A, const sfloat* x,
+                                    const sfloat* u) {
   A[0] = 1;
   A[1] = 0;
   A[2] = 0;
@@ -145,8 +145,8 @@ void tiny_Bicycle5dGetJacobianA_Raw(double* A, const double* x,
   A[24] = 1;
 }
 
-void tiny_Bicycle5dGetJacobianB_Raw(double* B, const double* x,
-                                    const double* u) {
+void tiny_Bicycle5dGetJacobianB_Raw(sfloat* B, const sfloat* x,
+                                    const sfloat* u) {
   B[0] =
       0.16666666666666666 *
       (0.01 *

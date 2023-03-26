@@ -15,18 +15,18 @@
 typedef struct {
   int nstates;
   int ninputs;
-  double dt;
+  sfloat dt;
   Matrix A;
   Matrix B;
   Matrix f;
   Matrix x0;
-  // int data_size;  ///< number of doubles need to store the data
+  // int data_size;  ///< number of sfloats need to store the data
 } tiny_LtiModel;
 
 typedef struct {
   int nstates;
   int ninputs;
-  double dt;
+  sfloat dt;
   Matrix* A;
   Matrix* B;
   Matrix* f;
@@ -42,23 +42,23 @@ void tiny_InitLtvModel(tiny_LtvModel* model);
 typedef struct {
   Matrix x;   ///< state vector
   Matrix u;   ///< control input vector
-  double t;   ///< time
-  double dt;  ///< time step
+  sfloat t;   ///< time
+  sfloat dt;  ///< time step
 } tiny_KnotPoint;
 
 void tiny_InitKnotPoint(tiny_KnotPoint* z);
 
 typedef struct {
-  double reg;
-  double reg_min;
-  double reg_max;
-  double penalty;
-  double penalty_max;
-  double penalty_mul;
+  sfloat reg;
+  sfloat reg_min;
+  sfloat reg_max;
+  sfloat penalty;
+  sfloat penalty_max;
+  sfloat penalty_mul;
   int max_primal_iters;
   int max_search_iters;
-  double riccati_tol;
-  double cstr_tol;
+  sfloat riccati_tol;
+  sfloat cstr_tol;
 } tiny_Solver;
 
 void tiny_InitSolver(tiny_Solver* solver);
@@ -82,7 +82,7 @@ typedef struct tiny_ProblemData {
   Matrix x_min;
   Matrix* X_ref;
   Matrix* U_ref;
-  double dt;
+  sfloat dt;
   Matrix x0;
   Matrix* K;
   Matrix* d;

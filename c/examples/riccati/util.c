@@ -8,7 +8,7 @@
 //========================================
 // Read data from file
 //========================================
-int tiny_ReadData(const char* filename, double* des, const int size,
+int tiny_ReadData(const char* filename, sfloat* des, const int size,
                   bool verbose) {
   FILE* input;
   int i;
@@ -40,7 +40,7 @@ int tiny_ReadData(const char* filename, double* des, const int size,
     return EXIT_FAILURE;
   }
 
-  if (verbose == true) printf("All doubles read successfully.\n");
+  if (verbose == true) printf("All sfloats read successfully.\n");
 
   return EXIT_SUCCESS;
 }
@@ -49,7 +49,7 @@ int tiny_ReadData(const char* filename, double* des, const int size,
 // Read data from file and copy the last knot point into
 // remaining space of the array. Useful for extend horizon at the end.
 //========================================
-int tiny_ReadData_Extend(const char* filename, double* des, const int stride,
+int tiny_ReadData_Extend(const char* filename, sfloat* des, const int stride,
                          const int size, bool verbose) {
   FILE* input;
   int i;
@@ -74,7 +74,7 @@ int tiny_ReadData_Extend(const char* filename, double* des, const int stride,
   }
 
   if (verbose == true)
-    printf("All doubles read successfully and now extend.\n");
+    printf("All sfloats read successfully and now extend.\n");
 
   int remain_cnt = (size - k) / stride;  // # of remaining chunks
   for (i = 0; i < remain_cnt; i += 1) {
@@ -90,8 +90,8 @@ int tiny_ReadData_Extend(const char* filename, double* des, const int stride,
 // Read data from file and copy the goal state into
 // remaining space of the array. Useful for extend horizon at the end.
 //========================================
-int tiny_ReadData_ExtendGoal(const char* filename, double* des,
-                             const double* xf, const int stride, const int size,
+int tiny_ReadData_ExtendGoal(const char* filename, sfloat* des,
+                             const sfloat* xf, const int stride, const int size,
                              bool verbose) {
   FILE* input;
   int i;
@@ -116,7 +116,7 @@ int tiny_ReadData_ExtendGoal(const char* filename, double* des,
   }
 
   if (verbose == true)
-    printf("All doubles read successfully and now extend.\n");
+    printf("All sfloats read successfully and now extend.\n");
 
   int remain_cnt = (size - k) / stride;  // # of remaining chunks
   for (i = 0; i < remain_cnt; i += 1) {
@@ -131,13 +131,13 @@ int tiny_ReadData_ExtendGoal(const char* filename, double* des,
 //========================================
 // Clamp the inputs to within min max value
 //========================================
-void tiny_Clamps(double* arr, const double* min, const double* max,
+void tiny_Clamps(sfloat* arr, const sfloat* min, const sfloat* max,
                  const int N) {
   for (int k = 0; k < N; ++k) {
     arr[k] = (arr[k] > max[k]) ? max[k] : ((arr[k] < min[k]) ? min[k] : arr[k]);
   }
 }
-void tiny_Clamp(double* arr, const double min, const double max, const int N) {
+void tiny_Clamp(sfloat* arr, const sfloat min, const sfloat max, const int N) {
   for (int k = 0; k < N; ++k) {
     arr[k] = (arr[k] > max) ? max : ((arr[k] < min) ? min : arr[k]);
   }

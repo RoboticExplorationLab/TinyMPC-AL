@@ -20,10 +20,10 @@
  * Applies `mat[k] = function(mat[k])` for all elements
  *
  * @param mat A valid matrix (can be dense or strided)
- * @param function A function pointer that takes and returns a double
+ * @param function A function pointer that takes and returns a sfloat
  * @return
  */
-enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double));
+enum slap_ErrorCode slap_Map(Matrix mat, sfloat (*function)(sfloat));
 
 /**
  * @brief Applies a function element-wise to a pair of matrices
@@ -36,8 +36,8 @@ enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double));
  * The matrices can be aliased.
  *
  * # Example
- * ```double c
- * double binary_op(double x, double y) {
+ * ```sfloat c
+ * sfloat binary_op(sfloat x, sfloat y) {
  *   return 2 * x - y * x;
  * }
  *
@@ -52,7 +52,7 @@ enum slap_ErrorCode slap_Map(Matrix mat, double (*function)(double));
  * @param[out] C Destination matrix
  * @param[in] A Input matrix, provides first arguments to function
  * @param[in] B Input matrix, provides second arguments to function
- * @param function A function that takes two doubles and returns a double
+ * @param function A function that takes two sfloats and returns a sfloat
  */
 enum slap_ErrorCode slap_BinaryMap(Matrix C, Matrix A, Matrix B,
-                                   double (*function)(double, double));
+                                   sfloat (*function)(sfloat, sfloat));

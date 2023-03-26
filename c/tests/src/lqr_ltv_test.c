@@ -15,25 +15,25 @@
 #define NHORIZON 51
 // GRADIENT EXPLOSION/VANISHING WHEN NHORIZON > 60 => LS FORMULATION
 
-double x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
-double ug_data[NINPUTS] = {0};                         // initial state
-double xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
-double xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};
-double uhover_data[NINPUTS] = {4.905, 4.905};
-double Q_data[NSTATES * NSTATES] = {0};
-double R_data[NINPUTS * NINPUTS] = {0};
-double Qf_data[NSTATES * NSTATES] = {0};
+sfloat x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
+sfloat ug_data[NINPUTS] = {0};                         // initial state
+sfloat xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
+sfloat xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};
+sfloat uhover_data[NINPUTS] = {4.905, 4.905};
+sfloat Q_data[NSTATES * NSTATES] = {0};
+sfloat R_data[NINPUTS * NINPUTS] = {0};
+sfloat Qf_data[NSTATES * NSTATES] = {0};
 
 void DeltaLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
@@ -53,17 +53,17 @@ void DeltaLqrLtvTest() {
   Matrix B[NHORIZON - 1];
   Matrix f[NHORIZON - 1];
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
+  sfloat* Xptr = X_data;
+  // sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  // sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
+  sfloat* Aptr = A_data;
+  sfloat* Bptr = B_data;
+  sfloat* fptr = f_data;
 
   Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
   Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
@@ -122,7 +122,7 @@ void DeltaLqrLtvTest() {
   prob.P = P;
   prob.p = p;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
 
@@ -145,7 +145,7 @@ void DeltaLqrLtvTest() {
   //   // tiny_PQuadNonlinearDynamics(&X[k+1], X[k], U[k]);
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
 
@@ -155,15 +155,15 @@ void DeltaLqrLtvTest() {
 }
 
 void AbsLqrLtvTest() {
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
@@ -183,17 +183,17 @@ void AbsLqrLtvTest() {
   Matrix B[NHORIZON - 1];
   Matrix f[NHORIZON - 1];
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
+  sfloat* Xptr = X_data;
+  // sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  // sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
+  sfloat* Aptr = A_data;
+  sfloat* Bptr = B_data;
+  sfloat* fptr = f_data;
 
   Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
   Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
@@ -252,7 +252,7 @@ void AbsLqrLtvTest() {
   prob.P = P;
   prob.p = p;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
 
@@ -274,7 +274,7 @@ void AbsLqrLtvTest() {
   //   tiny_PQuadNonlinearDynamics(&X[k+1], X[k], U[k]);
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
 
@@ -284,15 +284,15 @@ void AbsLqrLtvTest() {
 }
 
 void DeltaLqrLtiTest() {
-  double A_data[NSTATES * NSTATES] = {0};
-  double B_data[NSTATES * NINPUTS] = {0};
-  double f_data[NSTATES] = {0};
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES] = {0};
+  sfloat B_data[NSTATES * NINPUTS] = {0};
+  sfloat f_data[NSTATES] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
@@ -309,14 +309,14 @@ void DeltaLqrLtiTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
+  sfloat* Xptr = X_data;
+  // sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  // sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
 
   Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
   Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
@@ -369,7 +369,7 @@ void DeltaLqrLtiTest() {
   prob.P = P;
   prob.p = p;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
   // Formulate problem as delta_x = x - x_hover = x (xhover = 0);
@@ -389,7 +389,7 @@ void DeltaLqrLtiTest() {
   //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
 
@@ -399,15 +399,15 @@ void DeltaLqrLtiTest() {
 }
 
 void AbsLqrLtiTest() {
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES] = {0};
-  double B_data[NSTATES * NINPUTS] = {0};
-  double f_data[NSTATES] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES] = {0};
+  sfloat B_data[NSTATES * NINPUTS] = {0};
+  sfloat f_data[NSTATES] = {0};
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -425,14 +425,14 @@ void AbsLqrLtiTest() {
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
 
-  double* Xptr = X_data;
-  // double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  // double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
+  sfloat* Xptr = X_data;
+  // sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  // sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
 
   Matrix xhover = slap_MatrixFromArray(NSTATES, 1, xhover_data);
   Matrix uhover = slap_MatrixFromArray(NINPUTS, 1, uhover_data);
@@ -485,7 +485,7 @@ void AbsLqrLtiTest() {
   prob.P = P;
   prob.p = p;
 
-  double Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
 
@@ -506,7 +506,7 @@ void AbsLqrLtiTest() {
   //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
 

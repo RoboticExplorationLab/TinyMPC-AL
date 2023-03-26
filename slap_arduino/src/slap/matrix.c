@@ -1,13 +1,13 @@
 #include "matrix.h"
 
-Matrix slap_MatrixFromArray(int rows, int cols, double* data) {
+Matrix slap_MatrixFromArray(int rows, int cols, sfloat* data) {
   Matrix mat = {rows, cols, rows, 0, data, slap_DENSE};
   return mat;
 }
 
 Matrix slap_MatrixFromBuffer(int rows, int cols, void** buf) {
   // Create a matrix from the beginning of the buffer
-  double *data = (double*)*buf;
+  sfloat *data = (sfloat*)*buf;
   Matrix mat = {rows, cols, rows, 0, data, slap_DENSE};
 
   // Advance buffer by the number of bytes in the matrix

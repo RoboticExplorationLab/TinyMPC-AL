@@ -4,7 +4,7 @@
 // === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
 // IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
 // IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 71 (MORE MAY FAIL)
+// NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 65 (MORE MAY FAIL)
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
@@ -19,23 +19,23 @@
 #define H 0.1
 #define NSTATES 5
 #define NINPUTS 2
-#define NHORIZON 71
+#define NHORIZON 65
 
-double x0_data[NSTATES] = {1, -1, 0, 0, 0};
-double xg_data[NSTATES] = {0};
-double ug_data[NINPUTS] = {0};
-double Q_data[NSTATES * NSTATES] = {0};
-double R_data[NINPUTS * NINPUTS] = {0};
-double Qf_data[NSTATES * NSTATES] = {0};
-double umin_data[NINPUTS] = {-2.1, -1.1};
-double umax_data[NINPUTS] = {2.1, 1.1};
-double xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
-double xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
+sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};
+sfloat xg_data[NSTATES] = {0};
+sfloat ug_data[NINPUTS] = {0};
+sfloat Q_data[NSTATES * NSTATES] = {0};
+sfloat R_data[NINPUTS * NINPUTS] = {0};
+sfloat Qf_data[NSTATES * NSTATES] = {0};
+sfloat umin_data[NINPUTS] = {-2.1, -1.1};
+sfloat umax_data[NINPUTS] = {2.1, 1.1};
+sfloat xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
+sfloat xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
 
-// double umin_data[NINPUTS] = {-5, -2};
-// double umax_data[NINPUTS] = {5, 2};
-// double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-// double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
+// sfloat umin_data[NINPUTS] = {-5, -2};
+// sfloat umax_data[NINPUTS] = {5, 2};
+// sfloat xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
+// sfloat xmax_data[NSTATES] = {100, 100, 100, 100, 100};
 
 Matrix X[NHORIZON];
 Matrix U[NHORIZON - 1];
@@ -52,18 +52,18 @@ Matrix input_duals[NHORIZON - 1];
 Matrix state_duals[NHORIZON];
 
 void AbsLqrLtvTest() {
-  double X_data[NSTATES * NHORIZON] = {0};
-  double U_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  double d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  double P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  double p_data[NSTATES * NHORIZON] = {0};
-  double A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  double B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  double f_data[NSTATES * (NHORIZON - 1)] = {0};
-  double input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  double state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  double goal_dual_data[NSTATES] = {0};
+  sfloat X_data[NSTATES * NHORIZON] = {0};
+  sfloat U_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
+  sfloat p_data[NSTATES * NHORIZON] = {0};
+  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
+  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};
+  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
+  sfloat goal_dual_data[NSTATES] = {0};
 
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
@@ -72,19 +72,19 @@ void AbsLqrLtvTest() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
-  double* Xptr = X_data;
-  double* Xref_ptr = Xref_data;
-  double* Uptr = U_data;
-  double* Uref_ptr = Uref_data;
-  double* Kptr = K_data;
-  double* dptr = d_data;
-  double* Pptr = P_data;
-  double* pptr = p_data;
-  double* Aptr = A_data;
-  double* Bptr = B_data;
-  double* fptr = f_data;
-  double* udual_ptr = input_dual_data;
-  double* xdual_ptr = state_dual_data;
+  sfloat* Xptr = X_data;
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uptr = U_data;
+  sfloat* Uref_ptr = Uref_data;
+  sfloat* Kptr = K_data;
+  sfloat* dptr = d_data;
+  sfloat* Pptr = P_data;
+  sfloat* pptr = p_data;
+  sfloat* Aptr = A_data;
+  sfloat* Bptr = B_data;
+  sfloat* fptr = f_data;
+  sfloat* udual_ptr = input_dual_data;
+  sfloat* xdual_ptr = state_dual_data;
 
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
@@ -135,7 +135,7 @@ void AbsLqrLtvTest() {
   prob.ncstr_states = 2 * NSTATES;
   prob.ncstr_goal = 0;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
+  slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
@@ -159,13 +159,13 @@ void AbsLqrLtvTest() {
   // Compute and store A, B before solving
   tiny_UpdateHorizonJacobians(&model, prob);
 
-  solver.max_primal_iters = 50;
-  tiny_MpcLtv(X, U, &prob, &solver, model, 0);
+  solver.max_primal_iters = 10;
+  tiny_MpcLtv(X, U, &prob, &solver, model, 1);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_MatrixNormedDifference(X[k], Xref[k]));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
-    // tiny_Print(slap_Transpose(U[k]));
+    // tiny_Print(slap_Transpose(Xref[k]));
     // tiny_Print(model.B[k]);
   }
   // ========== Test ==========
@@ -178,7 +178,7 @@ void AbsLqrLtvTest() {
     }
   }
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
-    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.2);
+    TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.1);
   }
   // --------------------------
 }

@@ -47,7 +47,7 @@
  * @param[in] alpha Scaling factor on output
  * @param[in] beta Scaling factor on input
  */
-enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, double alpha, double beta);
+enum slap_ErrorCode slap_MatMulAdd(Matrix C, Matrix A, Matrix B, sfloat alpha, sfloat beta);
 
 /**
  * @brief Simple in-place matrix multiplication

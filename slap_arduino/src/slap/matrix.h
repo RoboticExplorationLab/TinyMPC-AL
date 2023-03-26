@@ -25,7 +25,7 @@ enum slap_MatrixType {
 };
 
 /**
- * @brief Represents a matrix of double-precision data
+ * @brief Represents a matrix of sfloat-precision data
  * @headerfile slap.h
  *
  * Simple wrapper around an arbitrary pointer to the underlying data.
@@ -38,7 +38,7 @@ typedef struct Matrix {
   uint16_t cols;      //!< number of columns
   uint16_t sy;        //!< column stride (distance between adjacent elements in the same row)
   bool is_transposed; //!< is transposed
-  double* data;       //!< pointer to the start of the data
+  sfloat* data;       //!< pointer to the start of the data
   enum slap_MatrixType mattype;  //!< type of matrix
 } Matrix;
 
@@ -55,11 +55,11 @@ typedef struct Matrix {
  *
  * ```c
  * // Stack-allocated memory
- * double data_stack[24];
+ * sfloat data_stack[24];
  * Matrix A = slap_MatrixFromArray(6, 4, data_stack);
  *
  * // Heap-allocated memory
- * double *data_heap = (double*)malloc(24 * sizeof(double));
+ * sfloat *data_heap = (sfloat*)malloc(24 * sizeof(sfloat));
  * Matrix B = slap_MatrixFromArray(6, 4, data_heap);
  * free(data_heap);
  * ```
@@ -70,7 +70,7 @@ typedef struct Matrix {
  *             @a rows * @a cols elements.
  * @return A new matrix
  */
-Matrix slap_MatrixFromArray(int rows, int cols, double* data);
+Matrix slap_MatrixFromArray(int rows, int cols, sfloat* data);
 
 /**
  * @brief Allocate a matrix from a memory buffer, advancing the buffer
@@ -80,7 +80,7 @@ Matrix slap_MatrixFromArray(int rows, int cols, double* data);
  *
  * # Example
  * ```c
- * void *buf = malloc(12 * sizeof(double));
+ * void *buf = malloc(12 * sizeof(sfloat));
  * void *buf_next = buf;
  * Matrix A = slap_MatrixFromBuffer(2, 3, &buf_start);
  * Matrix B = slap_MatrixFromBuffer(3, 2, &buf_start);
@@ -214,7 +214,7 @@ static inline bool slap_IsNull(Matrix mat) {
  * @brief Return the raw pointer stored by the matrix
  * @param mat Any matrix
  */
-static inline double *slap_GetData(Matrix mat) { return mat.data; }
+static inline sfloat *slap_GetData(Matrix mat) { return mat.data; }
 
 /**
  * @brief Return the type of the matrix
@@ -370,14 +370,14 @@ static inline bool slap_CheckInbounds(Matrix mat, int row, int col) {
  * The following gets a pointer to the 1st element in the 2nd column, and then
  * modifies it.
  * ```c
- * double *x = slap_GetElement(A, 0, 1);
+ * sfloat *x = slap_GetElement(A, 0, 1);
  * *x = 10;
  * ```
  *
  * To get the data directly, just de-reference the pointer at the call site:
  * The following reads the data in the 2nd element of the 1st column.
  * ```c
- * double y = *slap_GetElement(A, 1, 0);
+ * sfloat y = *slap_GetElement(A, 1, 0);
  * ```
  *
  * @param mat Matrix of nonzero size
@@ -385,7 +385,7 @@ static inline bool slap_CheckInbounds(Matrix mat, int row, int col) {
  * @param col Column index
  * @return A pointer to the element of the matrix. NULL for invalid input.
  */
-static inline double* slap_GetElement(Matrix mat, int row, int col) {
+static inline sfloat* slap_GetElement(Matrix mat, int row, int col) {
   return mat.data + slap_Cart2Index(mat, row, col);
 }
 
@@ -395,13 +395,13 @@ static inline double* slap_GetElement(Matrix mat, int row, int col) {
  * # Example
  * The following gets a pointer to the 1st element in the 2nd column.
  * ```c
- * const double *x = slap_GetElementConst(A, 0, 1);
+ * const sfloat *x = slap_GetElementConst(A, 0, 1);
  * ```
  *
  * To get the data directly, just de-reference the pointer at the call site:
  * The following reads the data in the 2nd element of the 1st column.
  * ```c
- * double y = *slap_GetElementConst(A, 1, 0);
+ * sfloat y = *slap_GetElementConst(A, 1, 0);
  * ```
  *
  * @param mat Matrix of nonzero size
@@ -409,7 +409,7 @@ static inline double* slap_GetElement(Matrix mat, int row, int col) {
  * @param col Column index
  * @return A pointer to the element of the matrix. NULL for invalid input.
  */
-static inline const double* slap_GetElementConst(const Matrix mat, int row, int col) {
+static inline const sfloat* slap_GetElementConst(const Matrix mat, int row, int col) {
   return mat.data + slap_Cart2Index(mat, row, col);
 }
 
@@ -433,7 +433,7 @@ static inline const double* slap_GetElementConst(const Matrix mat, int row, int 
  * @param col Column index
  * @param val Value to which the element should be set
  */
-static inline void slap_SetElement(Matrix mat, int row, int col, double val) {
+static inline void slap_SetElement(Matrix mat, int row, int col, sfloat val) {
   mat.data[slap_Cart2Index(mat, row, col)] = val;
 }
 

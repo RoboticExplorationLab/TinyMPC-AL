@@ -1,4 +1,5 @@
 #pragma once
+#include "slap/slap.h"
 
 double x_data[12] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
                      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};

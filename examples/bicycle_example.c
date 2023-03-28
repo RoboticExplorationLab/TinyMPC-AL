@@ -176,8 +176,8 @@ int main(void) {
     // 2. Update problem data with info
     // 3. Solve problem again
 
-    printf("\n=> k = %d\n", k);
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    // printf("\n=> k = %d\n", k);
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===
 
     slap_Copy(Xhrz[0], X[k]);
@@ -189,10 +189,15 @@ int main(void) {
 
     // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
     // this
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
 
     // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    if (slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol) {
+      printf("passed: slap_NormInf(U[0]) = %.4f < %.4f\n", slap_NormInf(Uhrz[0]), slap_NormInf(prob.u_max) + solver.cstr_tol);
+    }
+    else {
+      printf("failed: slap_NormInf(U[0]) = %.4f >= %.4f\n", slap_NormInf(Uhrz[0]), slap_NormInf(prob.u_max) + solver.cstr_tol);
+    }
 
     // === 2. Simulate dynamics using the first control solution ===
 
@@ -201,19 +206,34 @@ int main(void) {
     tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
   }
 
-  // // ========== Test ==========
-  // // Test state constraints
-  // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-  //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-  //     TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
-  //   }
-  // }
-  // // Test tracking performance
-  // for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-  //   TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
-  // }
-  // // --------------------------
+  // ========== Test ==========
+  // Test state constraints
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+    for (int i = 0; i < NSTATES; ++i) {
+      if (X[k].data[i] < xmax_data[i] + solver.cstr_tol) {
+        printf("passed: X[%d].data[%d] = %.4f < %.4f\n", k, i, X[k].data[i], xmax_data[i] + solver.cstr_tol);
+      }
+      else {
+        printf("failed: X[%d].data[%d] = %.4f >= %.4f\n", k, i, X[k].data[i], xmax_data[i] + solver.cstr_tol);
+      }
+      if (X[k].data[i] > xmin_data[i] - solver.cstr_tol) {
+        printf("passed: X[%d].data[%d] = %.4f > %.4f\n", k, i, X[k].data[i], xmin_data[i] - solver.cstr_tol);
+      }
+      else {
+        printf("failed: X[%d].data[%d] = %.4f <= %.4f\n", k, i, X[k].data[i], xmin_data[i] - solver.cstr_tol);
+      }
+    }
+  }
+  // Test tracking performance
+  for (int k = NSIM - NHORIZON - 4; k < NSIM - NHORIZON; ++k) {
+    if (slap_NormedDifference(X[k], Xref[k]) < 0.1) {
+      printf("passed: slap_NormedDifference(X[%d], Xref[%d]) = %.4f < 0.1\n", k, k, slap_NormedDifference(X[k], Xref[k]));
+    }
+    else {
+      printf("failed: slap_NormedDifference(X[%d], Xref[%d]) = %.4f >= 0.1\n", k, k, slap_NormedDifference(X[k], Xref[k]));
+    }
+  }
+  // --------------------------
   return 0;
 }
 

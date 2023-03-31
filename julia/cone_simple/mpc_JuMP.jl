@@ -1,9 +1,11 @@
-function mpc_JuMP(optimizer, params, x0, A, B, f)
+# Enable warm-starting
+function mpc_JuMP(optimizer, params, X, U, A, B, f; warm_start=true)
     Nh = params.N
     nx = params.nx
     nu = params.nu
     α_max = params.c_cone[3]
     NN = Nh*nx + (Nh-1)*nu
+    x0 .= X[1]
     
     inds = reshape(1:(nx+nu)*Nh,nx+nu,Nh)  
     xinds = [z[1:nx] for z in eachcol(inds)]
@@ -12,6 +14,15 @@ function mpc_JuMP(optimizer, params, x0, A, B, f)
     model = Model(optimizer)
     
     @variable(model, z[1:NN])  # z is all decision variables (X U)
+    if warm_start
+        z_ws = zeros(NN,1)
+        for j = 1:Nh-1
+            z_ws[xinds[j]] .= X[j]
+            z_ws[uinds[j]] .= U[j]
+        end
+        z_ws[xinds[Nh]] .= X[Nh]
+        set_start_value.(z, z_ws)
+    end
     
     P = zeros(NN, NN)
     q = zeros(NN, 1) 
@@ -44,5 +55,13 @@ function mpc_JuMP(optimizer, params, x0, A, B, f)
     
     optimize!(model)   
     termination_status(model) == INFEASIBLE && print("Other solver says INFEASIBLE\n")
+    if warm_start
+        for j = 1:Nh-1
+            X[j] .= value.(z_ws[xinds[j]]) 
+            U[j] .= value.(z_ws[uinds[j]]) 
+        end    
+        X[Nh] .= value.(z_ws[xinds[Nh]])
+    end
+    display(MOI.get(model, MOI.SolveTimeSec()))
     return value.(z[uinds[1]])[:]
 end

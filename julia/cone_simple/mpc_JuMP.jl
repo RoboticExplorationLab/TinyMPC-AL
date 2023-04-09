@@ -55,13 +55,11 @@ function mpc_JuMP(optimizer, params, X, U, A, B, f; warm_start=true)
     
     optimize!(model)   
     termination_status(model) == INFEASIBLE && print("Other solver says INFEASIBLE\n")
-    if warm_start
-        for j = 1:Nh-1
-            X[j] .= value.(z[xinds[j]]) 
-            U[j] .= value.(z[uinds[j]]) 
-        end    
-        X[Nh] .= value.(z[xinds[Nh]])
-    end
+    for j = 1:Nh-1
+        X[j] .= value.(z[xinds[j]]) 
+        U[j] .= value.(z[uinds[j]]) 
+    end    
+    X[Nh] .= value.(z[xinds[Nh]])
     # display(MOI.get(model, MOI.SolveTimeSec()))
     return value.(z[uinds[1]])[:]
 end
@@ -123,13 +121,11 @@ function trajopt_JuMP(optimizer, params, X, U, A, B, f; warm_start=true)
     
     optimize!(model)   
     termination_status(model) == INFEASIBLE && print("Other solver says INFEASIBLE\n")
-    if warm_start
-        for j = 1:Nh-1
-            X[j] .= value.(z[xinds[j]]) 
-            U[j] .= value.(z[uinds[j]]) 
-        end    
-        X[Nh] .= value.(z[xinds[Nh]])
-    end
+    for j = 1:Nh-1
+        X[j] .= value.(z[xinds[j]]) 
+        U[j] .= value.(z[uinds[j]]) 
+    end    
+    X[Nh] .= value.(z[xinds[Nh]])
     # display(MOI.get(model, MOI.SolveTimeSec()))
     return X
 end

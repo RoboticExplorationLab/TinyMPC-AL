@@ -37,7 +37,7 @@ function RD.discrete_dynamics!(model::Rocket, x_next, x, u, t, h)
         0.0 0.005 0.0;  
         0.0 0.0 0.005]
     f = [0.0, 0.0, -0.0122625, 0.0, 0.0, -0.4905]
-    x_next .= A*x + B*u + f*0
+    x_next .= A*x + B*u + f
     return nothing     
 end
 function RD.discrete_dynamics(model::Rocket, x, u, t, h)
@@ -102,7 +102,7 @@ end
 
 # previous iterate
 X = [deepcopy(x0) for i = 1:N]
-U = [zeros(nu) for k = 1:N-1]
+U = [ones(nu) for k = 1:N-1]
 # new iterate
 Xn = deepcopy(X)
 Un = deepcopy(U)
@@ -121,7 +121,7 @@ solver = ALTROSolver(prob)
 #     gradient_tolerance = 10.0,
 #     gradient_tolerance_intermediate = 1.0,
 
-#     expected_decrease_tolerance = 1e-4,
+#     expected_decrease_tolerance = 1e-2,
 #     iterations_inner = 300,
 #     dJ_counter_limit = 10,
 #     square_root = false,
@@ -174,6 +174,7 @@ solver = ALTROSolver(prob)
 #     show_summary = true, 
 #     verbose = 3)
 
+set_options!(solver, projected_newton = true)
 solve!(solver);
 X_altro = states(solver)
 U_altro = controls(solver)

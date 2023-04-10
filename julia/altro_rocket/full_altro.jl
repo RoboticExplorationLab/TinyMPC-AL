@@ -37,7 +37,7 @@ function RD.discrete_dynamics!(model::Rocket, x_next, x, u, t, h)
         0.0 0.005 0.0;  
         0.0 0.0 0.005]
     f = [0.0, 0.0, -0.0122625, 0.0, 0.0, -0.4905]
-    x_next .= A*x + B*u + f
+    x_next .= A*x + B*u + f*0
     return nothing     
 end
 function RD.discrete_dynamics(model::Rocket, x, u, t, h)
@@ -114,12 +114,12 @@ prob = Problem(model, obj, x0, tf, xf=xg, constraints=cons, N=N, U0=U)
 # rollout!(prob);
 
 solver = ALTROSolver(prob)
-# set_options!(solver, 
-#     constraint_tolerance = 1e-4,
-#     cost_tolerance = 1e-4,
-#     cost_tolerance_intermediate = 1e-1,
-#     gradient_tolerance = 10.0,
-#     gradient_tolerance_intermediate = 1.0,
+set_options!(solver, 
+    constraint_tolerance = 1e-4,
+    cost_tolerance = 1e-4,
+    cost_tolerance_intermediate = 1e-1,
+    gradient_tolerance = 10.0,
+    gradient_tolerance_intermediate = 1.0,
 
 #     expected_decrease_tolerance = 1e-2,
 #     iterations_inner = 300,
@@ -167,14 +167,14 @@ solver = ALTROSolver(prob)
 #     ρ_dual = 1.0e-8,   # regularization for multiplier projection 
 #     r_threshold = 1.1,    
 
-#     projected_newton = false,
+    projected_newton = false,
 #     reuse_jacobians = false,
 #     trim_stats = true,  # disable if you want to call methods after solve that add to history
 #     iterations = 1000,   # max number of iterations
 #     show_summary = true, 
-#     verbose = 3)
+    verbose = 3)
 
-set_options!(solver, projected_newton = true)
+set_options!(solver, projected_newton=false, verbose=3)
 solve!(solver);
 X_altro = states(solver)
 U_altro = controls(solver)

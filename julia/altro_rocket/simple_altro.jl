@@ -297,7 +297,7 @@ function discrete_dynamics(p::NamedTuple,x,u,k)
         0.0 0.005 0.0;  
         0.0 0.0 0.005]
     f = [0.0, 0.0, -0.0122625, 0.0, 0.0, -0.4905]
-    return A*x + B*u + f
+    return A*x + B*u + f*0
 end
 function ineq_con_x(p,x)
     [x-p.x_max;-x + p.x_min]

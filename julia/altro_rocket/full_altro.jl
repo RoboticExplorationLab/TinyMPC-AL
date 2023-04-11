@@ -116,13 +116,13 @@ prob = Problem(model, obj, x0, tf, xf=xg, constraints=cons, N=N, U0=U)
 solver = ALTROSolver(prob)
 set_options!(solver, 
     constraint_tolerance = 1e-4,
-    cost_tolerance = 1e-4,
+    cost_tolerance = 1e-2,
     cost_tolerance_intermediate = 1e-1,
     gradient_tolerance = 10.0,
     gradient_tolerance_intermediate = 1.0,
 
 #     expected_decrease_tolerance = 1e-2,
-#     iterations_inner = 300,
+    iterations_inner = 1,
 #     dJ_counter_limit = 10,
 #     square_root = false,
 #     line_search_lower_bound = 1e-8,

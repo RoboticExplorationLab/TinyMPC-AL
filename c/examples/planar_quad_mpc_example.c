@@ -16,27 +16,22 @@
 #include "tinympc/tinympc.h"
 
 
-#define H 0.1
+#define H 0.05
 #define NSTATES 6
 #define NINPUTS 2
-#define NHORIZON 21
-#define NSIM 101
+#define NHORIZON 10
+#define NSIM 201
 
 int main() {
 
-  sfloat g = 9.81; // m/s^2
-  sfloat m = 1.0; // kg
-  sfloat l = 0.3; // meters
-  sfloat J = 0.2 * m * l * l;
-
-  sfloat umin = 0.2 * m * g;
-  sfloat umax = 0.6 * m * g;
+  // sfloat g = 9.81; // m/s^2
+  // sfloat m = 1.0; // kg
 
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
-  model.nstates = 6;
-  model.ninputs = 2;
-  model.dt = 0.05; // seconds
+  model.nstates = NSTATES;
+  model.ninputs = NINPUTS;
+  model.dt = H;
 
   sfloat x0_data[NSTATES] = {0, 0, 0, 0, 0, 0};
   // sfloat xg_data[NSTATES] = {0};
@@ -54,20 +49,18 @@ int main() {
   sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
   sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
   sfloat goal_dual_data[NSTATES] = {0};
+  
   sfloat Q_data[NSTATES * NSTATES] = {0};
   sfloat R_data[NINPUTS * NINPUTS] = {0};
   sfloat Qf_data[NSTATES * NSTATES] = {0};
 
   // Put constraints on u, x4, x5
-  sfloat umin_data[NINPUTS] = {-2.1, -1.1};
-  sfloat umax_data[NINPUTS] = {2.1, 1.1};
-  sfloat xmin_data[NSTATES] = {-100, -100, -100, -4.0, -0.8};
-  sfloat xmax_data[NSTATES] = {100, 100, 100, 4.0, 0.8};
-
-  // sfloat umin_data[NINPUTS] = {-5, -2};
-  // sfloat umax_data[NINPUTS] = {5, 2};
-  // sfloat xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-  // sfloat xmax_data[NSTATES] = {100, 100, 100, 100, 100};
+  // sfloat umin_data[NINPUTS] = {0.2*m*g, 0.2*m*g};
+  // sfloat umax_data[NINPUTS] = {0.6*m*g, 0.6*m*g};
+  sfloat umin_data[NINPUTS] = {-99999, -99999};
+  sfloat umax_data[NINPUTS] = {99999, 99999};
+  sfloat xmin_data[NSTATES] = {-99999, 0, -99999, -99999, -99999, -99999};
+  sfloat xmax_data[NSTATES] = {99999, 99999, 99999, 99999, 99999, 99999};
 
   Matrix X[NSIM];
   Matrix Xref[NSIM];
@@ -103,6 +96,17 @@ int main() {
   sfloat* fptr = f_data;
   sfloat* udual_ptr = input_dual_data;
   sfloat* xdual_ptr = state_dual_data;
+
+
+  model.ninputs = NSTATES;
+  model.nstates = NINPUTS;
+  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  model.get_jacobians = tiny_Bicycle5dGetJacobians;
+  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
+  model.A = A;
+  model.B = B;
+  model.f = f;
+  slap_Copy(X[0], model.x0);
 
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
@@ -144,15 +148,6 @@ int main() {
     xdual_ptr += 2 * NSTATES;
   }
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
-  model.A = A;
-  model.B = B;
-  model.f = f;
-  slap_Copy(X[0], model.x0);
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;

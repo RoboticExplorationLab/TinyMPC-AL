@@ -9,7 +9,7 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
-#include "bicycle_5d.h"
+#include "planar_quadrotor.h"
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -133,8 +133,8 @@ int main() {
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
+  model.get_jacobians = tiny_PQuadGetJacobianA_Raw;
+  model.get_nonlinear_dynamics = tiny_PQuadNonlinearDynamics;
   model.A = A;
   model.B = B;
   model.f = f;

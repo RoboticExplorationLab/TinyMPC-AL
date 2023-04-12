@@ -9,7 +9,7 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
-#include "bicycle_5d.h"
+#include "planar_quadrotor.h"
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
@@ -33,7 +33,7 @@ int main() {
   model.ninputs = NINPUTS;
   model.dt = H;
 
-  sfloat x0_data[NSTATES] = {0, 0, 0, 0, 0, 0};
+  sfloat x0_data[NSTATES] = {1, 3, .5, 0, 0, 0};
   // sfloat xg_data[NSTATES] = {0};
   // sfloat ug_data[NINPUTS] = {0};
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};
@@ -63,6 +63,7 @@ int main() {
   sfloat xmax_data[NSTATES] = {99999, 99999, 99999, 99999, 99999, 99999};
 
   Matrix X[NSIM];
+
   Matrix Xref[NSIM];
   Matrix Uref[NSIM - 1];
   Matrix Xhrz[NHORIZON];
@@ -82,72 +83,41 @@ int main() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
-  sfloat* Xhrz_ptr = Xhrz_data;
-  sfloat* Xptr = X_data;
-  sfloat* Xref_ptr = Xref_data;
-  sfloat* Uhrz_ptr = Uhrz_data;
-  sfloat* Uref_ptr = Uref_data;
-  sfloat* Kptr = K_data;
-  sfloat* dptr = d_data;
-  sfloat* Pptr = P_data;
-  sfloat* pptr = p_data;
-  sfloat* Aptr = A_data;
-  sfloat* Bptr = B_data;
-  sfloat* fptr = f_data;
-  sfloat* udual_ptr = input_dual_data;
-  sfloat* xdual_ptr = state_dual_data;
-
-
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
+  model.get_jacobians = tiny_PQuadGetJacobians;
+  model.get_nonlinear_dynamics = tiny_PQuadNonlinearDynamics;
   model.A = A;
   model.B = B;
   model.f = f;
-  slap_Copy(X[0], model.x0);
+
+  X[0] = slap_MatrixFromArray(NSTATES, 1, x0_data);
 
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
-      Uref_ptr += NINPUTS;
+      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, &Uref_data[i*NINPUTS]);
     }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    Xref_ptr += NSTATES;
-    // tiny_Print(Xref[i]);
+    X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i*NSTATES]);
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, &Xref_data[i*NSTATES]);
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES * NSTATES;
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES * NINPUTS;
-      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
-      fptr += NSTATES;
-      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
+      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
+      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
+      f[i] = slap_MatrixFromArray(NSTATES, 1, f_data);
+      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_data);
       slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
-      Uhrz_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
-      udual_ptr += 2 * NINPUTS;
+      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, K_data);
+      d[i] = slap_MatrixFromArray(NINPUTS, 1, d_data);
+      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, input_dual_data);
     }
-    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
+    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_data);
     slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
-    Xhrz_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
-    xdual_ptr += 2 * NSTATES;
+    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, P_data);
+    p[i] = slap_MatrixFromArray(NSTATES, 1, p_data);
+    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, state_dual_data);
   }
-
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
@@ -182,8 +152,8 @@ int main() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    printf("\n=> k = %d\n", k);
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    // printf("\n=> k = %d\n", k);
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // === 1. Setup and solve MPC ===
 
     slap_Copy(Xhrz[0], X[k]);
@@ -195,7 +165,7 @@ int main() {
 
     // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
     // this
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
 
     // Test control constraints here (since we didn't save U)
     TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
@@ -204,7 +174,7 @@ int main() {
 
     // Clamping control would not effect since our solution is feasible
     tiny_ClampMatrix(&Uhrz[0], prob.u_min, prob.u_max);
-    tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
+    tiny_PQuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
   }
 
   // ========== Test ==========

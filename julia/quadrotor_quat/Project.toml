@@ -1,8 +1,12 @@
 [deps]
 BlockDiagonals = "0a1fb500-61f7-11e9-3c65-f5ef3456f9f0"
-ControlSystems = "a6e380b2-a6ca-5380-bf3e-84a91bcd477e"
+COSMO = "1e616198-aa4e-51ec-90a2-23f7fbd31d8d"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MeshCat = "283c5d60-a78f-5afe-a0af-af636b173e11"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 RobotZoo = "74be38bb-dcc2-4b9e-baf3-d6373cd95f10"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TrajOptPlots = "7770976a-8dee-4930-bf39-a1782fd21ce6"

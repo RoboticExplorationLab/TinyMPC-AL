@@ -286,11 +286,11 @@ function mpc!(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters=250,verbose=true,ρ=1
           return U[1]
       end
       if ρ > ρ_max
-          print("Our solver reachs MAX PENALTY\n")
+          print("MAX PENALTY\n")
           return U[1]
       end
   end
-  print("Our solver says INFEASIBLE and MAX ITER\n")
+  print("MAX ITER\n")
   return U[1]
 end
 

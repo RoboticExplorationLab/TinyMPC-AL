@@ -102,7 +102,7 @@ end
 
 # previous iterate
 X = [deepcopy(x0) for i = 1:N]
-U = [ones(nu) for k = 1:N-1]
+U = [[0; 0; 100] for k = 1:N-1]
 # new iterate
 Xn = deepcopy(X)
 Un = deepcopy(U)

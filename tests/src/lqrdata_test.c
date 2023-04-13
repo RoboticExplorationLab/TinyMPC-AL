@@ -47,35 +47,6 @@ sfloat penalty_mul = 1;
 int max_primal_iters = 100;
 int max_search_iters = 10;
 
-void LinearDiscreteModelTest() {
-  const sfloat tol = 1e-8;
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  model.nstates = NSTATES;
-  model.ninputs = NINPUTS;
-  model.dt = dt;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-
-  TEST(model.dt == dt);
-  TEST(model.A.rows == model.nstates);
-  TEST(model.A.cols == model.nstates);
-  TEST(SumOfSquaredError(A_data, model.A.data, model.nstates * model.nstates) <
-       tol);
-  TEST(model.B.rows == model.nstates);
-  TEST(model.B.cols == model.ninputs);
-  TEST(SumOfSquaredError(B_data, model.B.data, model.nstates * model.ninputs) <
-       tol);
-  TEST(model.f.rows == model.nstates);
-  TEST(model.f.cols == 1);
-  TEST(SumOfSquaredError(f_data, model.f.data, model.nstates) < tol);
-  TEST(model.x0.rows == model.nstates);
-  TEST(model.x0.cols == 1);
-  TEST(SumOfSquaredError(x0_data, model.x0.data, model.nstates) < tol);
-}
-
 void KnotPointTest() {
   const sfloat tol = 1e-8;
   tiny_KnotPoint z;
@@ -267,7 +238,6 @@ void ProblemDataTest() {
 }
 
 int main() {
-  LinearDiscreteModelTest();
   KnotPointTest();
   SolverTest();
   ProblemDataTest();

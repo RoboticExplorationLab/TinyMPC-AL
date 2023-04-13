@@ -1,13 +1,9 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "data/forward_pass_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/dynamics_lti.h"
+#include "tinympc/model_lti.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -22,7 +18,8 @@ sfloat f_data[NSTATES] = {0, 0, 0, 0};
 void ForwardPassTest() {
   const sfloat tol = 1e-8;
   tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
+  tiny_SetModelDims_Lti(&model, NSTATES, NINPUTS);
+  tiny_InitModelData_Lti(&model, A_data, B_data, f_data);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
   model.dt = 0.1;

@@ -13,11 +13,7 @@ typedef struct tiny_ProblemData {
   Matrix r;
   Matrix Qf;
   Matrix qf;
-  Matrix u_max;
-  Matrix u_min;
-  Matrix x_max;
-  Matrix x_min;
-  Matrix* X_ref;
+  Matrix* X_ref; 
   Matrix* U_ref;
   Matrix* K;
   Matrix* d;
@@ -29,12 +25,16 @@ typedef struct tiny_ProblemData {
   int data_size;
 } tiny_ProblemData;
 
-enum tiny_ErrorCode tiny_SetProblemDims(tiny_ProblemData* prob, const int nstates, 
-    const int ninputs, const int nhorizon);
+// Enable constraints here
+enum tiny_ErrorCode tiny_SetProblemDims(tiny_ProblemData* prob, 
+    const int nstates, const int ninputs, const int nhorizon, 
+    const int ncstr_states, const int ncstr_inputs, const int ncstr_goal);
+
+enum tiny_ErrorCode tiny_InitProblemData_Lti(tiny_ProblemData* prob, 
+    sfloat* mats, sfloat* data);
 
 enum tiny_ErrorCode tiny_AddInputLimitConstraints(tiny_ProblemData* prob, 
-    sfloat* umin, sfloat* umax);
+    const sfloat* umin, const sfloat* umax);
 
 enum tiny_ErrorCode tiny_AddStateLimitConstraints(tiny_ProblemData* prob, 
-    sfloat* xmin, sfloat* xmax);
-
+    const float* xmin, const sfloat* xmax);

@@ -29,7 +29,7 @@ endfunction()
 # add_subdirectory(data)
 
 # Add tests
-# add_my_test(lqrdata)
+add_my_test(lqrdata)
 # add_my_test(lqr_ineq_utils)
 # add_my_test(forward_pass)
 # add_my_test(cost)

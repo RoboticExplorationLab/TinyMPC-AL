@@ -41,11 +41,11 @@ add_library(tinympc
   # cost_lqr.h
   # cost_lqr.c
 
-  # dynamics_lti.h
-  # dynamics_lti.c
+  dynamics_lti.h
+  dynamics_lti.c
 
-  # dynamics_ltv.h
-  # dynamics_ltv.c
+  dynamics_ltv.h
+  dynamics_ltv.c
 
   # constraint_linear.h
   # constraint_linear.c

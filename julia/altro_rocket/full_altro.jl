@@ -37,7 +37,7 @@ function RD.discrete_dynamics!(model::Rocket, x_next, x, u, t, h)
         0.0 0.005 0.0;  
         0.0 0.0 0.005]
     f = [0.0, 0.0, -0.0122625, 0.0, 0.0, -0.4905]
-    x_next .= A*x + B*u + f*0
+    x_next .= A*x + B*u + f*1
     return nothing     
 end
 function RD.discrete_dynamics(model::Rocket, x, u, t, h)

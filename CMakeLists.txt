@@ -59,22 +59,22 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   FetchContent_MakeAvailable(slap)
 endif ()
 
-# Google Test
-if (TINY_BUILD_TESTS)
-  CPMAddPackage(
-      NAME googletest
-      GITHUB_REPOSITORY google/googletest
-      VERSION 1.13.0
-      DOWNLOAD_EXTRACT_TIMESTAMP
-      OPTIONS
-      "INSTALL_GTEST OFF"
-      "gtest_force_shared_crt ON"
-  )
-  add_library(gtest::gtest ALIAS gtest_main)
-  enable_testing()
-  include(GoogleTest)
-  include(CTest)
-endif ()
+# # Google Test
+# if (TINY_BUILD_TESTS)
+#   CPMAddPackage(
+#       NAME googletest
+#       GITHUB_REPOSITORY google/googletest
+#       VERSION 1.13.0
+#       DOWNLOAD_EXTRACT_TIMESTAMP
+#       OPTIONS
+#       "INSTALL_GTEST OFF"
+#       "gtest_force_shared_crt ON"
+#   )
+#   add_library(gtest::gtest ALIAS gtest_main)
+#   enable_testing()
+#   include(GoogleTest)
+#   include(CTest)
+# endif ()
 
 ##############################
 # Main build targets
@@ -118,7 +118,7 @@ add_subdirectory(src/tinympc)
 # Tests
 ##############################
 if (TINY_BUILD_TESTS)
-  add_subdirectory(test)
+  add_subdirectory(tests)
 endif()                 
 
 ##############################

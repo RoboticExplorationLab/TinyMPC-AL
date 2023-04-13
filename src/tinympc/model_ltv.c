@@ -18,7 +18,7 @@ enum tiny_ErrorCode tiny_SetModelDims_Ltv(tiny_LtvModel* model, const int nstate
   return TINY_NO_ERROR;
 }
 
-enum tiny_ErrorCode tiny_InitModelData_Ltv(tiny_LtvModel* model, 
+enum tiny_ErrorCode tiny_InitModelDataMatrix_Ltv(tiny_LtvModel* model, 
     Matrix* A, Matrix* B, Matrix* f) {
   SLAP_ASSERT(A != NULL && B != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
   "InitModelData: A and B must not be NULL");
@@ -27,6 +27,31 @@ enum tiny_ErrorCode tiny_InitModelData_Ltv(tiny_LtvModel* model,
   model->f = f;
   return TINY_NO_ERROR;
 }
+
+enum tiny_ErrorCode tiny_InitModelDataArray_Ltv(tiny_LtvModel* model, Matrix* A, 
+    Matrix* B, Matrix* f, sfloat* A_array, sfloat* B_array, sfloat* f_array) {
+  SLAP_ASSERT(A != NULL && B != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  "InitModelData: A and B must not be NULL");
+  SLAP_ASSERT(A_array != NULL && A_array != NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  "InitModelData: A and B must not be NULL");  
+  model->A = A;
+  model->B = B;
+  model->f = f;
+  sfloat* A_ptr = A_array;
+  sfloat* B_ptr = B_array;
+  sfloat* f_ptr = f_array;
+
+  for (int k = 0; k < model->nhorizon-1; ++k) {
+    model->A[k] = slap_MatrixFromArray(model->nstates, model->nstates, A_ptr);
+    A_ptr += model->nstates * model->nstates;
+    model->B[k] = slap_MatrixFromArray(model->nstates, model->ninputs, B_ptr);
+    B_ptr += model->nstates * model->ninputs;
+    model->f[k] = slap_MatrixFromArray(model->nstates, 1, f_ptr);
+    f_ptr += model->nstates;      
+  }
+
+  return TINY_NO_ERROR;
+  }
 
 enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, Matrix* mats,
     sfloat* data) {
@@ -40,13 +65,30 @@ enum tiny_ErrorCode tiny_InitModelMemory_Ltv(tiny_LtvModel* model, Matrix* mats,
   model->f = mat_ptr;
   
   sfloat* ptr = data;
-  for (int k = 0; k < model->nhorizon - 1; ++k) {
+  for (int k = 0; k < model->nhorizon-1; ++k) {
     model->A[k] = slap_MatrixFromArray(model->nstates, model->nstates, ptr);
     ptr += model->nstates * model->nstates;
     model->B[k] = slap_MatrixFromArray(model->nstates, model->ninputs, ptr);
     ptr += model->nstates * model->ninputs;
     model->f[k] = slap_MatrixFromArray(model->nstates, 1, ptr);
     ptr += model->nstates;      
+  }
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_FillModelMemory_Ltv(tiny_LtvModel* model, sfloat* A_data, 
+sfloat* B_data, sfloat* f_data) {
+  sfloat* A_ptr = A_data;
+  sfloat* B_ptr = B_data;
+  sfloat* f_ptr = f_data;
+
+  for (int k = 0; k < model->nhorizon-1; ++k) {
+    model->A[k] = slap_MatrixFromArray(model->nstates, model->nstates, A_ptr);
+    A_ptr += model->nstates * model->nstates;
+    model->B[k] = slap_MatrixFromArray(model->nstates, model->ninputs, B_ptr);
+    B_ptr += model->nstates * model->ninputs;
+    model->f[k] = slap_MatrixFromArray(model->nstates, 1, f_ptr);
+    f_ptr += model->nstates;      
   }
   return TINY_NO_ERROR;
 }

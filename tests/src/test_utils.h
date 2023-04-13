@@ -1,9 +1,16 @@
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <math.h>
 #include "slap/slap.h"
-// #include "riccati/riccati_solver.h"
-sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, int len);
 
-// void DiscretesfloatIntegratorDynamics(sfloat h, sfloat dim, Matrix* A,
-// Matrix* B);
+sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, const int len);
 
-// RiccatiSolver* sfloatIntegratorProblem();
+sfloat SumOfSquaredErrorMatrices(const sfloat* x, Matrix* Y, const int num);
+
+#ifdef __cplusplus
+}
+#endif

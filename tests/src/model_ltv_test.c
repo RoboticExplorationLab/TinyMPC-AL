@@ -1,3 +1,4 @@
+#include "simpletest.h"
 #include "test_utils.h"
 #include "tinympc/model_ltv.h"
 #include "tinympc/utils.h"
@@ -19,60 +20,114 @@ void tiny_SetModelDims_Ltv_Test() {
   // TEST(tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON) == TINY_SLAP_ERROR);
 }
 
-void tiny_InitModelData_Ltv_Test() {
+void tiny_InitModelDataArray_Ltv_Test() {
   const sfloat tol = 1e-8;
-  const int NSTATES = 1;
-  const int NINPUTS = 1;
-  const int NHORIZON = 2;
-  sfloat A_data[] = {1, 0};  
-  sfloat B_data[] = {1, 2};        
-  sfloat f_data[] = {4, 5};                  
+  const int NSTATES = 2;
+  const int NINPUTS = 2;
+  const int NHORIZON = 3;
+  sfloat A_data[] = {1, 2, 3, 4, 5, 6, 7, 8};  
+  sfloat B_data[] = {1.1, 2.2, 1.3, 2.3};        
+  sfloat f_data[] = {2.1, 1.2, 3.3, 1.3};     
+  Matrix A[NHORIZON-1];
+  Matrix B[NHORIZON-1];     
+  Matrix f[NHORIZON-1];        
   tiny_LtvModel model;
   tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON);
-  tiny_InitModelData_Ltv(&model, A_data, B_data, f_data);
+  tiny_InitModelDataArray_Ltv(&model, A, B, f, A_data, B_data, f_data);
+  for (int k = 0; k < NHORIZON-1; ++k) {
+    TEST(model.A[k].rows == model.nstates);
+    TEST(model.A[k].cols == model.nstates);
+
+    TEST(model.B[k].rows == model.nstates);
+    TEST(model.B[k].cols == model.ninputs);
+
+    TEST(model.f[k].rows == model.nstates);
+    TEST(model.f[k].cols == 1);
+
+  }
+  TEST(SumOfSquaredErrorMatrices(A_data, model.A, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(B_data, model.B, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(f_data, model.f, NHORIZON-1) < tol);
+}
+
+void tiny_InitModelDataMatrix_Ltv_Test() {
+  const sfloat tol = 1e-8;
+  const int NSTATES = 2;
+  const int NINPUTS = 2;
+  const int NHORIZON = 3;
+  sfloat A_data[] = {1, 2, 3, 4, 5, 6, 7, 8};  
+  sfloat B_data[] = {1.1, 2.2, 1.3, 2.3};        
+  sfloat f_data[] = {2.1, 1.2, 3.3, 1.3};     
+  Matrix A[NHORIZON-1];
+  Matrix B[NHORIZON-1];     
+  Matrix f[NHORIZON-1];        
+  tiny_LtvModel model;
+  tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON);
+
+  sfloat* A_ptr = A_data;
+  sfloat* B_ptr = B_data;
+  sfloat* f_ptr = f_data;
+
+  for (int k = 0; k < model.nhorizon-1; ++k) {
+    A[k] = slap_MatrixFromArray(model.nstates, model.nstates, A_ptr);
+    A_ptr += model.nstates * model.nstates;
+    B[k] = slap_MatrixFromArray(model.nstates, model.ninputs, B_ptr);
+    B_ptr += model.nstates * model.ninputs;
+    f[k] = slap_MatrixFromArray(model.nstates, 1, f_ptr);
+    f_ptr += model.nstates;      
+  }  
+
+  tiny_InitModelDataMatrix_Ltv(&model, A, B, f);
 
   for (int k = 0; k < NHORIZON-1; ++k) {
     TEST(model.A[k].rows == model.nstates);
     TEST(model.A[k].cols == model.nstates);
-    TEST(SumOfSquaredError(A_data[k], model.A[k].data, model.nstates * model.nstates) <
-        tol);
+
     TEST(model.B[k].rows == model.nstates);
     TEST(model.B[k].cols == model.ninputs);
-    TEST(SumOfSquaredError(B_data[k], model.B[k].data, model.nstates * model.ninputs) <
-        tol);
+
     TEST(model.f[k].rows == model.nstates);
     TEST(model.f[k].cols == 1);
-    TEST(SumOfSquaredError(f_data[k], model.f[k].data, model.nstates) < tol);
+
   }
+  TEST(SumOfSquaredErrorMatrices(A_data, model.A, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(B_data, model.B, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(f_data, model.f, NHORIZON-1) < tol);
 }
 
-// void tiny_InitModelMemory_Ltv_Test() {
-//   const sfloat tol = 1e-8;
-//   const int NSTATES = 2;
-//   const int NINPUTS = 1;
-//   sfloat A_data[] = {1, 0, 1, 1};  
-//   sfloat B_data[] = {1, 2};        
-//   sfloat f_data[2] = {4, 5};                  
-//   tiny_LtvModel model;
-//   tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS);
-//   sfloat data[model.data_size];
-//   tiny_InitModelMemory_Ltv(&model, data);
-//   model.A.data = (sfloat[]){1, 0, 1, 1};  // not pretty but work
-//   model.B.data = B_data;
-//   model.f.data = (sfloat[]){4, 5};
+void tiny_InitModelMemory_Ltv_Test() {
+  const sfloat tol = 1e-8;
+  const int NSTATES = 2;
+  const int NINPUTS = 2;
+  const int NHORIZON = 3;
+  sfloat A_data[] = {1, 2, 3, 4, 5, 6, 7, 8};  
+  sfloat B_data[] = {1.1, 2.2, 1.3, 2.3};        
+  sfloat f_data[] = {2.1, 1.2, 3.3, 1.3};  
+                    
+  tiny_LtvModel model;
+  tiny_SetModelDims_Ltv(&model, NSTATES, NINPUTS, NHORIZON);
+  sfloat data[model.data_size];  // data
+  Matrix mats[(NHORIZON-1)*3];  // array of matrices
+  tiny_InitModelMemory_Ltv(&model, mats, data);
 
-//   TEST(model.A.rows == model.nstates);
-//   TEST(model.A.cols == model.nstates);
-//   TEST(SumOfSquaredError(A_data, model.A.data, model.nstates * model.nstates) <
-//        tol);
-//   TEST(model.B.rows == model.nstates);
-//   TEST(model.B.cols == model.ninputs);
-//   TEST(SumOfSquaredError(B_data, model.B.data, model.nstates * model.ninputs) <
-//        tol);
-//   TEST(model.f.rows == model.nstates);
-//   TEST(model.f.cols == 1);
-//   TEST(SumOfSquaredError(f_data, model.f.data, model.nstates) < tol);
-// }
+  // just for testing, use UpdateJacobian istead
+  tiny_FillModelMemory_Ltv(&model, A_data, B_data, f_data);  
+
+  for (int k = 0; k < NHORIZON-1; ++k) {
+    TEST(model.A[k].rows == model.nstates);
+    TEST(model.A[k].cols == model.nstates);
+
+    TEST(model.B[k].rows == model.nstates);
+    TEST(model.B[k].cols == model.ninputs);
+
+    TEST(model.f[k].rows == model.nstates);
+    TEST(model.f[k].cols == 1);
+
+  }
+  TEST(SumOfSquaredErrorMatrices(A_data, model.A, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(B_data, model.B, NHORIZON-1) < tol);
+  TEST(SumOfSquaredErrorMatrices(f_data, model.f, NHORIZON-1) < tol);
+}
 
 void tiny_SetModelJacFunc_Ltv_Test() {
   int NSTATES = 2;
@@ -96,8 +151,9 @@ void tiny_SetModelNonlinear_Ltv_Test() {
 
 int main() {
   tiny_SetModelDims_Ltv_Test();
-  // tiny_InitModelData_Ltv_Test();
-  // tiny_InitModelMemory_Ltv_Test();
+  tiny_InitModelDataArray_Ltv_Test();
+  tiny_InitModelDataMatrix_Ltv_Test();
+  tiny_InitModelMemory_Ltv_Test();
   tiny_SetModelJacFunc_Ltv_Test();
   tiny_SetModelNonlinear_Ltv_Test();
   PrintTestResult();

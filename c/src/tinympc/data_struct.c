@@ -79,5 +79,6 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .input_duals = NULL,
       .state_duals = NULL,
       .goal_dual = kNullMat,
+      
   };
 }

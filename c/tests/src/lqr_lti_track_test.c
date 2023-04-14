@@ -101,7 +101,7 @@ void LqrLtiTest() {
 
   solver.reg = 1e-8;
   solver.penalty_mul = 10;
-  solver.max_primal_iters = 1;
+  solver.max_outer_iters = 1;
 
   sfloat G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,

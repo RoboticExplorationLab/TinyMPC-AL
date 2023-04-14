@@ -15,47 +15,44 @@
 #include "slap/slap.h"
 #include "tinympc/tinympc.h"
 
-#define H 0.1
-#define NSTATES 5
-#define NINPUTS 2
-#define NHORIZON 21
-#define NSIM 101
+#define H 0.1         // dt
+#define NSTATES 5     // no. of states
+#define NINPUTS 2     // no. of controls
+#define NHORIZON 20   // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM 101      // simulation steps (fixed with reference data)
 
 int main() {
-  sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};
-  // sfloat xg_data[NSTATES] = {0};
-  // sfloat ug_data[NINPUTS] = {0};
-  sfloat Xhrz_data[NSTATES * NHORIZON] = {0};
-  sfloat X_data[NSTATES * NSIM] = {0};
+  // ===== Created data =====
+  sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};  // initial state
+  // sfloat xg_data[NSTATES] = {0};  // goal state if needed
+  // sfloat ug_data[NINPUTS] = {0};   // goal input if needed
+  sfloat Xhrz_data[NSTATES * NHORIZON] = {0};   // save X for one horizon
+  sfloat X_data[NSTATES * NSIM] = {0};          // save X for the whole run
   sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
-  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};
-  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};
-  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};
-  sfloat p_data[NSTATES * NHORIZON] = {0};
-  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};
-  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};
-  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};
-  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  // sfloat goal_dual_data[NSTATES] = {0};
-  sfloat Q_data[NSTATES * NSTATES] = {0};
-  sfloat R_data[NINPUTS * NINPUTS] = {0};
-  sfloat Qf_data[NSTATES * NSTATES] = {0};
+  sfloat K_data[NINPUTS * NSTATES * (NHORIZON - 1)] = {0};  // feedback gain
+  sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};            // feedforward gain
+  sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};      // cost-to-go func
+  sfloat p_data[NSTATES * NHORIZON] = {0};                  // cost-to-go func
+  sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};  // A in model
+  sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};  // B in model
+  sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};            // f in model 
+  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};   // dual vars
+  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};       // dual vars
+  // sfloat goal_dual_data[NSTATES] = {0};                      // dual vars
+  sfloat Q_data[NSTATES * NSTATES] = {0};                   // Q matrix in obj
+  sfloat R_data[NINPUTS * NINPUTS] = {0};                   // R matrix in obj
+  sfloat Qf_data[NSTATES * NSTATES] = {0};                  // Qf matrix in obj
 
   // Put constraints on u, x4, x5
-  sfloat Acstr_input_data[2*NINPUTS*NINPUTS] = {0};
-  sfloat Acstr_state_data[2*NSTATES*NSTATES] = {0};
+  sfloat Acstr_input_data[2*NINPUTS*NINPUTS] = {0};         // A1*u <= b1
+  sfloat Acstr_state_data[2*NSTATES*NSTATES] = {0};         // A2*x <= b2
   // [u_max, -u_min]
-  sfloat bcstr_input_data[2*NINPUTS] = {2.1, 1.1, 2.1, 1.1};
+  sfloat bcstr_input_data[2*NINPUTS] = {2.0, 0.9, 2.0, 0.9};  
   // [x_max, -x_min]
-  sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.0, 0.8, 
-                                        100, 100, 100, 4.0, 0.8};
+  sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.1, 0.7, 
+                                        100, 100, 100, 4.1, 0.7};
 
-  // sfloat umin_data[NINPUTS] = {-5, -2};
-  // sfloat umax_data[NINPUTS] = {5, 2};
-  // sfloat xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
-  // sfloat xmax_data[NSTATES] = {100, 100, 100, 100, 100};
-
+  // ===== Created matrices =====
   Matrix X[NSIM];
   Matrix Xref[NSIM];
   Matrix Uref[NSIM - 1];
@@ -71,6 +68,7 @@ int main() {
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
+  // ===== Created tinyMPC struct =====
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
@@ -78,11 +76,12 @@ int main() {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
+  // ===== Fill in the struct =====
   sfloat* Xhrz_ptr = Xhrz_data;
   sfloat* Xptr = X_data;
-  sfloat* Xref_ptr = Xref_data;
+  sfloat* Xref_ptr = Xref_data;  // Xref defined inside data folder
   sfloat* Uhrz_ptr = Uhrz_data;
-  sfloat* Uref_ptr = Uref_data;
+  sfloat* Uref_ptr = Uref_data;  // Uref defined inside data folder
   sfloat* Kptr = K_data;
   sfloat* dptr = d_data;
   sfloat* Pptr = P_data;
@@ -136,8 +135,9 @@ int main() {
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians = tiny_Bicycle5dGetJacobians;
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
+  model.get_jacobians = tiny_Bicycle5dGetJacobians;  // have analytical functions to compute Jacobians, or you can assign manually for each time step
+  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;  // have dynamics
+  
   model.A = A;
   model.B = B;
   model.f = f;
@@ -181,28 +181,31 @@ int main() {
   prob.input_duals = input_duals;
   prob.state_duals = state_duals;
 
-  solver.max_primal_iters = 10;  // Often takes less than 5
-  int temp_size = NSTATES * (NSTATES + NSTATES + 2)
+  solver.max_outer_iters = 10;  // Often takes less than 5
+  int temp_size = 2*NSTATES * (2*NSTATES + 2*NSTATES + 2)
                   + (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];
-  // Absolute formulation
+  sfloat temp_data[temp_size];  // temporary data, should not be changed
+  
+  // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
     printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+
     // === 1. Setup and solve MPC ===
 
-    slap_Copy(Xhrz[0], X[k]);
-    // Update A, B within horizon
+    slap_Copy(Xhrz[0], X[k]);  // update current measurement
+    
+    // Update A, B within horizon (as we have Jacobians function)
     tiny_UpdateHorizonJacobians(&model, prob);
+
     // Update reference
     prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
 
-    // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
-    // this
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1, temp_data);
+    // Solve optimization problem using Augmented Lagrangian TVLQR
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
 
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
@@ -213,12 +216,12 @@ int main() {
 
   // ========== Test ==========
   // Test state constraints
-  // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-  //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-  //     TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
-  //   }
-  // }
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
+      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+    }
+  }
   // Test tracking performance
   for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
     TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);

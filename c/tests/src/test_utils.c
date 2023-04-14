@@ -14,6 +14,18 @@ sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, int len) {
   return sqrt(err);
 }
 
+sfloat SumOfSquaredErrorMatrices(const sfloat* x, Matrix* Y, const int num) {
+  sfloat err = 0;
+  int k = 0;
+  for (int i = 0; i < num; ++i) {
+    for (int j = 0; j < Y[i].cols*Y[i].rows; ++j) {
+      sfloat diff = x[k++] - Y[i].data[j];
+      err += diff * diff;
+    }
+  }
+  return sqrt(err);
+}
+
 // void DiscretesfloatIntegratorDynamics(sfloat h, sfloat dim, Matrix* A,
 // Matrix* B) {
 //   int nstates = 2 * dim;

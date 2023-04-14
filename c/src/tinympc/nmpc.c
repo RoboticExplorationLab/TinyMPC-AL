@@ -316,7 +316,7 @@ enum slap_ErrorCode tiny_AugmentedLagrangianLqr(Matrix* X, Matrix* U,
 
   sfloat norm_d_max = 0.0;
   sfloat cstr_violation = 0.0;
-  for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
+  for (int iter = 0; iter < solver->max_outer_iters; ++iter) {
     tiny_ConstrainedBackwardPassLti(prob, model, *solver, X, U, &G_temp,
                                     &ineq_temp);
     tiny_ForwardPassLti(X, U, *prob, model);

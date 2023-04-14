@@ -128,7 +128,7 @@ void MpcLtiTest() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_primal_iters = 10;
+  solver.max_outer_iters = 10;
   tiny_MpcLti(X, U, &prob, &solver, model, 0);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {

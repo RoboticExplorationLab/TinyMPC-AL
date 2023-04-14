@@ -55,7 +55,7 @@ typedef struct {
   sfloat penalty;
   sfloat penalty_max;
   sfloat penalty_mul;
-  int max_primal_iters;
+  int max_outer_iters;
   int max_search_iters;
   sfloat riccati_tol;
   sfloat cstr_tol;

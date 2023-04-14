@@ -31,10 +31,10 @@ sfloat Qf_data[NSTATES * NSTATES] = {0};
 sfloat Acstr_input_data[2*NINPUTS*NINPUTS] = {0};
 sfloat Acstr_state_data[2*NSTATES*NSTATES] = {0};
 // [u_max, -u_min]
-sfloat bcstr_input_data[2*NINPUTS] = {2.1, 1.1, 2.1, 1.1};
+sfloat bcstr_input_data[2*NINPUTS] = {2.0, 0.9, 2.0, 0.9};
 // [x_max, -x_min]
-sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.0, 0.8, 
-                                      100, 100, 100, 4.0, 0.8};
+sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.0, 0.55, 
+                                      100, 100, 100, 4.0, 0.55};
 
 // sfloat umin_data[NINPUTS] = {-5, -2};
 // sfloat umax_data[NINPUTS] = {5, 2};
@@ -145,15 +145,15 @@ void AbsLqrLtvTest() {
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 10e-1);
   prob.Acstr_state = slap_MatrixFromArray(2*NSTATES, NSTATES, Acstr_state_data);
-  Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, prob.ninputs, prob.ninputs);
-  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, prob.ninputs, 0,
-                                           prob.ninputs, prob.ninputs);
+  Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0,
+                                           NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);  
   prob.Acstr_input = slap_MatrixFromArray(2*NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, prob.ninputs, prob.ninputs);
-  lower_half = slap_CreateSubMatrix(prob.Acstr_input, prob.ninputs, 0,
-                                           prob.ninputs, prob.ninputs);
+  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  lower_half = slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0,
+                                           NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
   prob.bcstr_state = slap_MatrixFromArray(2*NSTATES, 1, bcstr_state_data);
@@ -173,27 +173,30 @@ void AbsLqrLtvTest() {
   // Compute and store A, B before solving
   tiny_UpdateHorizonJacobians(&model, prob);
 
-  solver.max_primal_iters = 1;
-  int temp_size = NSTATES * (NSTATES + NSTATES + 2)
+  solver.max_outer_iters = 10;
+  int temp_size = 2*NSTATES * (2*NSTATES + 2*NSTATES + 2)
                   + (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
   sfloat temp_data[temp_size];  
   tiny_MpcLtv(X, U, &prob, &solver, model, 1, temp_data);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(slap_Transpose(Xref[k]));
     // tiny_Print(model.B[k]);
   }
   // ========== Test ==========
-  // for (int k = 0; k < NHORIZON - 1; ++k) {
-  //   // tiny_Print(X[k]);
-  //   TEST(slap_NormInf(U[k]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
-  //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
-  //     TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
-  //   }
-  // }
+  for (int k = 0; k < NHORIZON - 1; ++k) {
+    tiny_Print(U[k]);
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
+      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+    }
+    for (int i = 0; i < NINPUTS; ++i) {
+      TEST(U[k].data[i] > -bcstr_input_data[i] - solver.cstr_tol);
+      TEST(U[k].data[i] < bcstr_input_data[i] + solver.cstr_tol);
+    }
+  }
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
     TEST(SumOfSquaredError(X[k].data, Xref[k].data, NSTATES) < 0.1);
   }

@@ -181,8 +181,7 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
                         // (prob->ncstr_states + prob->ncstr_states + 2)];
   Matrix ineq_temp = slap_MatrixFromArray(
       prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
-      &temp_data[prob->ncstr_states *
-                        (prob->ncstr_states + prob->ncstr_states + 2)]);
+      &temp_data[(n + m) * (n + m + 1)]);
 
   Matrix ineq_input =
       slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_inputs, 1);
@@ -202,7 +201,7 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
                         (prob->ncstr_states + prob->ncstr_states + 2)]);
 
   sfloat cstr_violation = 0.0;
-  for (int iter = 0; iter < solver->max_primal_iters; ++iter) {
+  for (int iter = 0; iter < solver->max_outer_iters; ++iter) {
     if (verbose > 1) printf("backward pass\n");
     tiny_ConstrainedBackwardPassLtv(prob, *solver, model, X, U, &Q_temp,
                                     &ineq_temp);

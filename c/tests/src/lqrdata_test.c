@@ -44,7 +44,7 @@ sfloat reg_min = 1;
 sfloat reg_max = 100;
 sfloat penalty_max = 1e5;
 sfloat penalty_mul = 1;
-int max_primal_iters = 100;
+int max_outer_iters = 100;
 int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
@@ -124,7 +124,7 @@ void SolverTest() {
   solver.reg_max = reg_max;
   solver.penalty_max = penalty_max;
   solver.penalty_mul = penalty_mul;
-  solver.max_primal_iters = max_primal_iters;
+  solver.max_outer_iters = max_outer_iters;
   solver.max_search_iters = max_search_iters;
 
   TEST(solver.reg == reg);
@@ -132,7 +132,7 @@ void SolverTest() {
   TEST(solver.reg_min == reg_min);
   TEST(solver.penalty_max == penalty_max);
   TEST(solver.penalty_mul == penalty_mul);
-  TEST(solver.max_primal_iters == max_primal_iters);
+  TEST(solver.max_outer_iters == max_outer_iters);
   TEST(solver.max_search_iters == max_search_iters);
 }
 

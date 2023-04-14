@@ -146,7 +146,7 @@ int main() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_primal_iters = 10;  // Often takes less than 5
+  solver.max_outer_iters = 10;  // Often takes less than 5
 
   // Absolute formulation
   // Warm-starting since horizon data is reused

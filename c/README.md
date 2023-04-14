@@ -43,3 +43,42 @@ because the later one ignores all metadata.
 - Augmented Lagrangian LQR/TVLQR and MPC.
 - Successful unit and integration testing.
 - Experiments on sfloat integrator, planar quadrotor and bicycle model.
+
+## Optimal Control Problem
+
+- Check [the report](tinyMPC_Report.pdf) for full derivation.
+
+- Check `examples/bicycle_example.c` to see how to use the library (not so good
+API yet).
+
+- There are almost no local variables created inside a function (all defined by user before solve).
+
+- Temporary data should not be modified unless you know exactly what you want to do.
+
+*Workflow:*
+
+1. Define all necessary array and convert them to `Matrix`.
+
+2. Define necessary struct: `model`, `problem_data`, `solver`.
+
+3. Assign data to struct.
+
+4. Solve the problem.
+
+*Constraints:*
+
+- Inequality constraints will be identically applied to all timestep, in the form: $Ax \leq b$. For example, input bound:
+
+$ A = \begin{bmatrix}
+  I \\
+  -I
+\end{bmatrix}$
+
+$ b = \begin{bmatrix}
+  \text{u max} \\
+  -\text{u min}
+\end{bmatrix}$
+
+- Equality constraint is goal constraint.
+
+- Enable/disable constraints by setting, e.g.,  `prob.ncstr_inputs` to `2*NINPUTS` or `0`

@@ -43,7 +43,7 @@ void tiny_InitSolver(tiny_Solver* solver) {
       .penalty = 1,
       .penalty_max = 1e8,
       .penalty_mul = 10,
-      .max_primal_iters = 50,
+      .max_outer_iters = 50,
       .max_search_iters = 5,
       .riccati_tol = 1e-1,
       .cstr_tol = 1e-4,

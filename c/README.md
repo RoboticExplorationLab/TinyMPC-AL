@@ -55,6 +55,8 @@ API yet).
 
 - Temporary data should not be modified unless you know exactly what you want to do.
 
+- If you have a LTV system, you'd better derive the formulas to compute A(t), B(t), f(t). We use `Symbolics.jl` to derive it analytically and convert to C code.
+
 *Workflow:*
 
 1. Define all necessary array and convert them to `Matrix`.

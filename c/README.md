@@ -77,4 +77,4 @@ $ b = [umax; -umin]$
 
 - Equality constraint is goal constraint.
 
-- Enable/disable constraints by setting, e.g.,  `prob.ncstr_inputs` to `2*NINPUTS` or `0`
+- Enable/disable constraints by setting, e.g.,  `prob.ncstr_inputs` to `1` or `0`

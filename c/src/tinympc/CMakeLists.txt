@@ -9,17 +9,14 @@
 # endif ()
 
 add_library(tinympc
-  # constrained_ilqr.h
-  # constrained_ilqr.c
-
   lqr_lti.h
   lqr_lti.c
 
   lqr_ltv.h
   lqr_ltv.c
 
-  # mpc_lti.h
-  # mpc_lti.c
+  mpc_lti.h
+  mpc_lti.c
 
   mpc_ltv.h
   mpc_ltv.c

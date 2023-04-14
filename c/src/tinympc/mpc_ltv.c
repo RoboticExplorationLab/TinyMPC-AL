@@ -7,6 +7,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
+
   tiny_ExpandTerminalCost(&(prob->P[N - 1]), &(prob->p[N - 1]), *prob);
 
   Matrix Qxx = slap_CreateSubMatrix(*Q_temp, 0, 0, n, n);
@@ -20,30 +21,17 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
   // NOTE: Assumes m <= n
   Matrix Quu_temp = slap_Reshape(prob->P[N - 1], m, m);
 
-  Matrix ineq_input =
-      slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_inputs, 1);
-  Matrix ineq_input2 =
-      slap_CreateSubMatrix(*ineq_temp, 0, 1, prob->ncstr_inputs, 1);
-  Matrix mask_input = slap_CreateSubMatrix(*ineq_temp, 0, 2, prob->ncstr_inputs,
-                                           prob->ncstr_inputs);
-  Matrix ineq_input_jac = slap_CreateSubMatrix(
-      *ineq_temp, 0, prob->ncstr_inputs + 2, prob->ncstr_inputs, prob->ninputs);
-  Matrix ineq_input_jac2 = slap_CreateSubMatrix(
-      *ineq_temp, 0, prob->ncstr_inputs + 2 + prob->ninputs, prob->ncstr_inputs,
-      prob->ninputs);
+  Matrix ineq_input = slap_CreateSubMatrix(*ineq_temp, 0, 0, 2*m, 1);
+  Matrix ineq_input2 = slap_CreateSubMatrix(*ineq_temp, 0, 1, 2*m, 1);
+  Matrix mask_input = slap_CreateSubMatrix(*ineq_temp, 0, 2, 2*m, 2*m);
+  Matrix ineq_input_jac = slap_CreateSubMatrix(*ineq_temp, 0, 2*m + 2, 2*m, m);
+  Matrix ineq_input_jac2 = slap_CreateSubMatrix(*ineq_temp, 0, 2*m + 2 + m, 2*m, m);
 
-  Matrix ineq_state =
-      slap_CreateSubMatrix(*ineq_temp, 0, 0, prob->ncstr_states, 1);
-  Matrix ineq_state2 =
-      slap_CreateSubMatrix(*ineq_temp, 0, 1, prob->ncstr_states, 1);
-  Matrix mask_state = slap_CreateSubMatrix(*ineq_temp, 0, 2, prob->ncstr_states,
-                                           prob->ncstr_states);
-  Matrix ineq_state_jac = slap_CreateSubMatrix(
-      *ineq_temp, 0, prob->ncstr_states + 2, prob->ncstr_states, prob->nstates);
-  Matrix ineq_state_jac2 = slap_CreateSubMatrix(
-      *ineq_temp, 0, prob->ncstr_states + 2 + prob->nstates, prob->ncstr_states,
-      prob->nstates);
-
+  Matrix ineq_state = slap_CreateSubMatrix(*ineq_temp, 0, 0, 2*n, 1);
+  Matrix ineq_state2 = slap_CreateSubMatrix(*ineq_temp, 0, 1, 2*n, 1);
+  Matrix mask_state = slap_CreateSubMatrix(*ineq_temp, 0, 2, 2*n, 2*n);
+  Matrix ineq_state_jac = slap_CreateSubMatrix(*ineq_temp, 0, 2*n + 2, 2*n, n);
+  Matrix ineq_state_jac2 = slap_CreateSubMatrix(*ineq_temp, 0, 2*n + 2 + n, 2*n, n);
 
   // ========= Goal constraints ==========
   if (prob->ncstr_goal > 0) {
@@ -56,7 +44,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
     slap_MatMulAdd(prob->P[N - 1], slap_Transpose(Qxx), Qxx, solver.penalty,
                   1);  // P[N]  += ρ*H'H
   }
-
+  slap_PrintMatrix(prob->goal_dual);
   //========= State constraints at end ==========
   if (prob->ncstr_states > 0) {
     tiny_IneqStates(&ineq_state, *prob, X[N - 1]);  // ineq_state size = 2*NINPUTS
@@ -171,34 +159,32 @@ enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
+
   for (int k = 0; k < N - 1; ++k) {
     tiny_DynamicsLtv(&(X[k + 1]), X[k], U[k], model, k);
   }
+
   // sfloat temp_data[(n + m) * (n + m + 1)];
   Matrix Q_temp = slap_MatrixFromArray(n + m, n + m + 1, temp_data);
 
-  // sfloat ineq_temp_data[prob->ncstr_states *
-                        // (prob->ncstr_states + prob->ncstr_states + 2)];
+  // sfloat ineq_temp_data[2*n *
+                        // (2*n + 2*n + 2)];
   Matrix ineq_temp = slap_MatrixFromArray(
-      prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
+      2*n, 2*n + 2 * n + 2,
       &temp_data[(n + m) * (n + m + 1)]);
 
   Matrix ineq_input =
-      slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_inputs, 1);
+      slap_CreateSubMatrix(ineq_temp, 0, 0, 2*m, 1);
   Matrix new_input_duals =
-      slap_CreateSubMatrix(ineq_temp, 0, 1, prob->ncstr_inputs, 1);
-  Matrix mask_input = slap_CreateSubMatrix(ineq_temp, 0, 2, prob->ncstr_inputs,
-                                           prob->ncstr_inputs);
+      slap_CreateSubMatrix(ineq_temp, 0, 1, 2*m, 1);
+  Matrix mask_input = slap_CreateSubMatrix(ineq_temp, 0, 2, 2*m, 2*m);
 
-  Matrix ineq_state =
-      slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_states, 1);
-  Matrix new_state_duals =
-      slap_CreateSubMatrix(ineq_temp, 0, 1, prob->ncstr_states, 1);
-  Matrix mask_state = slap_CreateSubMatrix(ineq_temp, 0, 2, prob->ncstr_states,
-                                           prob->ncstr_states);
+  Matrix ineq_state = slap_CreateSubMatrix(ineq_temp, 0, 0, 2*n, 1);
+  Matrix new_state_duals = slap_CreateSubMatrix(ineq_temp, 0, 1, 2*n, 1);
+  Matrix mask_state = slap_CreateSubMatrix(ineq_temp, 0, 2, 2*n, 2*n);
 
-  Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, &temp_data[prob->ncstr_states *
-                        (prob->ncstr_states + prob->ncstr_states + 2)]);
+  Matrix eq_goal = slap_MatrixFromArray(n, 1, 
+    &temp_data[2*n * (2*n + 2*n + 2)]);
 
   sfloat cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_outer_iters; ++iter) {

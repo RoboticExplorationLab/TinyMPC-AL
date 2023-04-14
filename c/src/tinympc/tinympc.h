@@ -12,7 +12,7 @@ extern "C" {
 #include "cost_lqr.h"
 #include "constraint_linear.h"
 #include "dynamics_lti.h"
-// #include "mpc_lti.h"
+#include "mpc_lti.h"
 #include "lqr_lti.h"
 #include "dynamics_ltv.h"
 #include "mpc_ltv.h"

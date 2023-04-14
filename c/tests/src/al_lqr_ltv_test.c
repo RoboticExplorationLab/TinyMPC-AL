@@ -135,9 +135,9 @@ void AbsLqrLtvTest() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2 * NINPUTS;
-  prob.ncstr_states = 2 * NSTATES;
-  prob.ncstr_goal = 0;
+  prob.ncstr_inputs = 0;
+  prob.ncstr_states = 0;
+  prob.ncstr_goal = 1;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
@@ -177,17 +177,17 @@ void AbsLqrLtvTest() {
   int temp_size = 2*NSTATES * (2*NSTATES + 2*NSTATES + 2)
                   + (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
   sfloat temp_data[temp_size];  
-  tiny_MpcLtv(X, U, &prob, &solver, model, 1, temp_data);
+  tiny_MpcLtv(X, U, &prob, &solver, model, 0, temp_data);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(slap_Transpose(Xref[k]));
     // tiny_Print(model.B[k]);
   }
   // ========== Test ==========
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    tiny_Print(U[k]);
+    // tiny_Print(U[k]);
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);

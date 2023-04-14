@@ -69,15 +69,9 @@ API yet).
 
 - Inequality constraints will be identically applied to all timestep, in the form: $Ax \leq b$. For example, input bound:
 
-$ A = \begin{bmatrix}
-  I \\
-  -I
-\end{bmatrix}$
+$ A = [I; -I]$
 
-$ b = \begin{bmatrix}
-  \text{u max} \\
-  -\text{u min}
-\end{bmatrix}$
+$ b = [umax; -umin]$
 
 - Equality constraint is goal constraint.
 

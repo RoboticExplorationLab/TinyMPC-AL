@@ -9,4 +9,4 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLtv(
 
 enum slap_ErrorCode tiny_MpcLtv(Matrix* X, Matrix* U, tiny_ProblemData* prob,
                                 tiny_Solver* solver, const tiny_LtvModel model,
-                                const int verbose);
+                                const int verbose, sfloat* temp_data);

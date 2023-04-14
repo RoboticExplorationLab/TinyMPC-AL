@@ -13,5 +13,5 @@ function(add_example name)
 endfunction()
 
 add_example(bicycle bicycle_5d.h bicycle_5d.c)
-add_example(planar_quad_mpc planar_quadrotor.h planar_quadrotor.c)
-add_example(slap)
+# add_example(planar_quad_mpc planar_quadrotor.h planar_quadrotor.c)
+# add_example(slap)

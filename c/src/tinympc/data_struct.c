@@ -64,10 +64,6 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .r = kNullMat,
       .Qf = kNullMat,
       .qf = kNullMat,
-      .u_max = kNullMat,
-      .u_min = kNullMat,
-      .x_max = kNullMat,
-      .x_min = kNullMat,
       .X_ref = NULL,
       .U_ref = NULL,
       .dt = 0.0,
@@ -79,6 +75,9 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .input_duals = NULL,
       .state_duals = NULL,
       .goal_dual = kNullMat,
-      
+      .Acstr_state = kNullMat,
+      .bcstr_state = kNullMat,
+      .Acstr_input = kNullMat,
+      .bcstr_input = kNullMat,
   };
 }

@@ -163,21 +163,22 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
 
 enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
                                 tiny_Solver* solver, const tiny_LtiModel model,
-                                const int verbose) {
+                                const int verbose, sfloat* temp_data) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;
   for (int k = 0; k < N - 1; ++k) {
     tiny_DynamicsLti(&(X[k + 1]), X[k], U[k], model);
   }
-  sfloat G_temp_data[(n + m) * (n + m + 1)];
-  Matrix Q_temp = slap_MatrixFromArray(n + m, n + m + 1, G_temp_data);
+  // sfloat temp_data[(n + m) * (n + m + 1)];
+  Matrix Q_temp = slap_MatrixFromArray(n + m, n + m + 1, temp_data);
 
-  sfloat ineq_temp_data[prob->ncstr_states *
-                        (prob->ncstr_states + prob->ncstr_states + 2)];
+  // sfloat ineq_temp_data[prob->ncstr_states *
+                        // (prob->ncstr_states + prob->ncstr_states + 2)];
   Matrix ineq_temp = slap_MatrixFromArray(
       prob->ncstr_states, prob->ncstr_states + 2 * prob->nstates + 2,
-      ineq_temp_data);
+      &temp_data[prob->ncstr_states *
+                        (prob->ncstr_states + prob->ncstr_states + 2)]);
 
   Matrix ineq_input =
       slap_CreateSubMatrix(ineq_temp, 0, 0, prob->ncstr_inputs, 1);
@@ -193,7 +194,8 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
   Matrix mask_state = slap_CreateSubMatrix(ineq_temp, 0, 2, prob->ncstr_states,
                                            prob->ncstr_states);
 
-  Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, ineq_temp_data);
+  Matrix eq_goal = slap_MatrixFromArray(prob->ncstr_goal, 1, &temp_data[prob->ncstr_states *
+                        (prob->ncstr_states + prob->ncstr_states + 2)]);
 
   sfloat cstr_violation = 0.0;
   for (int iter = 0; iter < solver->max_primal_iters; ++iter) {

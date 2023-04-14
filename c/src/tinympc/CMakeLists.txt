@@ -18,8 +18,8 @@ add_library(tinympc
   lqr_ltv.h
   lqr_ltv.c
 
-  mpc_lti.h
-  mpc_lti.c
+  # mpc_lti.h
+  # mpc_lti.c
 
   mpc_ltv.h
   mpc_ltv.c

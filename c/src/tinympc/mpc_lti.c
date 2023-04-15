@@ -195,13 +195,6 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
     if (verbose > 1) printf("forward pass\n");
     tiny_ForwardPassLti(X, U, *prob, model);
 
-    if (verbose > 0) {
-      printf("iter     J           ΔJ         reg         ρ\n");
-      printf("--------------------------------------------------\n");
-      printf("%3d   %10.3e  %9.2e  %9.2e   %9.2e\n", iter, 0.0, 0.0,
-             solver->reg, solver->penalty);
-    }
-
     if (verbose > 1) printf("update duals and penalty\n");
 
     // For linear systems, only 1 iteration
@@ -262,8 +255,14 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
       slap_MatrixAddition(prob->goal_dual, prob->goal_dual, eq_goal,
                           -solver->penalty);
     }
-
-    if (verbose > 0) printf("convio: %.6f \n\n", cstr_violation);
+    if (verbose > 0) {
+      if (iter == 0) {
+        printf("iter     J           ΔJ         convio        reg         ρ\n");
+        printf("-----------------------------------------------------------\n");
+      }
+      printf("%3d   %10.3e  %9.2e  %9.2e %10.1e  %8.1e\n", iter, 0.0, 0.0, 
+             cstr_violation, solver->reg, solver->penalty);
+    }
     if (cstr_violation < solver->cstr_tol) {
       if (verbose > 0) printf("SUCCESS!\n");
       solver->penalty = 1;  // reset penalty for next MPC
@@ -271,5 +270,6 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
     }
     solver->penalty = solver->penalty * solver->penalty_mul;
   }
+  solver->penalty = 1;  // reset penalty for next MPC
   return SLAP_NO_ERROR;
 }

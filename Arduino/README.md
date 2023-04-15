@@ -10,7 +10,7 @@ E.g, `home/Arduino/libraries`. Arduino IDE will recognize them as libraries
 thanks to `library.properties` file.
 
 3. Open one of the examples, choose a Teensy board, compile and upload it to
-your platform. Open monitor window to see the result.
+your platform. Open Serial Monitor to see the result.
 
 ## Bicycle examples
 

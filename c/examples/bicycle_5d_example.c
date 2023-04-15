@@ -18,7 +18,7 @@
 #define H 0.1        // dt
 #define NSTATES 5    // no. of states
 #define NINPUTS 2    // no. of controls
-#define NHORIZON 20  // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 101     // simulation steps (fixed with reference data)
 
 int main() {
@@ -152,7 +152,7 @@ int main() {
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 1;
   prob.ncstr_states = 1;
-  prob.ncstr_goal = 0; 
+
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
@@ -163,19 +163,18 @@ int main() {
   prob.Acstr_state =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, prob.ninputs, prob.ninputs);
-  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, prob.ninputs, 0,
-                                           prob.ninputs, prob.ninputs);
+      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0,
+                                           NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
   prob.Acstr_input =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
   upper_half =
-      slap_CreateSubMatrix(prob.Acstr_input, 0, 0, prob.ninputs, prob.ninputs);
-  lower_half = slap_CreateSubMatrix(prob.Acstr_input, prob.ninputs, 0,
-                                    prob.ninputs, prob.ninputs);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
+      slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  lower_half = slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0,
+                                    NINPUTS, NINPUTS);
+
   prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
   prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
 
@@ -227,13 +226,13 @@ int main() {
   // Test state constraints
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     for (int i = 0; i < NSTATES; ++i) {
-      // TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-      // TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
+      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
     }
   }
   // Test tracking performance
   for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-    // TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
+    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
   }
   // --------------------------
 

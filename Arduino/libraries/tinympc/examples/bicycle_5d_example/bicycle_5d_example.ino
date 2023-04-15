@@ -1,29 +1,42 @@
-// MPC
-// Scenerio: Drive bicycle to track references with constraints.
-// Check trajopt at test/al_lqr_test/al_lqr_ltv_test.c
+//    __  _             __  _______  ______
+//   / /_(_)___  __  __/  |/  / __ \/ ____/
+//  / __/ / __ \/ / / / /|_/ / /_/ / /     
+// / /_/ / / / / /_/ / /  / / ____/ /___   
+// \__/_/_/ /_/\__, /_/  /_/_/    \____/   
+//            /____/                                 
 
-// === BETTER TURN OFF GOAL_CONSTRAINT IN PROJECT CMAKELISTS.TXT TO PASS ===
-// IF BOX CONSTRAINTS OFF, CAN HANDLE GOAL CONSTRAINT
-// IF BOX CONSTRAINTS ON, UNLIKELY TO HANDLE GOAL CONSTRAINT
-// DON"T WORRY ABOUT GRADIENT VANISHING/EXPLOSION SINCE SMALL MPC HORIZON
-// GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
-// TODO: Let user choose constraints, compile options with #IFDEF
+// This example run MPC in setup() once because it tracks a fixed smooth trajectory.
 
-#include "bicycle_3d.h"
-#include "data/bicycle3d_track.h"
-#include "simpletest.h"
-#include "slap/slap.h"
-#include "tinympc/tinympc.h"
+#include <Wire.h>
+#include <elapsedMillis.h>
+#include <stdlib.h>
+
+#include "slap_arduino.h"
+#include "tinympc_arduino.h"
+#include "bicycle_5d.h"
+#include "data/lqr_ltv_data.h"
 
 #define H 0.1        // dt
-#define NSTATES 3    // no. of states
+#define NSTATES 5    // no. of states
 #define NINPUTS 2    // no. of controls
 #define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 100   // simulation steps (fixed with reference data)
+#define NSIM 101   // simulation steps (fixed with reference data)
 
-int main() {
+#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
+
+uint64_t run_time = 0;      /* For benchmark */
+uint64_t max_run_time = 0;
+char bufferTxSer[100];      /* For serial printing */
+
+void setup() {
+  Serial.begin(115200);
+  while(!Serial) {}
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.println("=============");
+  Serial.println("Start problem");
+  // put your setup code here, to run once:
   // ===== Created data =====
-  sfloat x0_data[NSTATES] = {-1, -1, 0.2};  // initial state
+  sfloat x0_data[NSTATES] = {1, -1, 0.1, 0, 0};  // initial state (off-track)
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
   sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
@@ -40,14 +53,14 @@ int main() {
   sfloat R_data[NINPUTS * NINPUTS] = {0};   // R matrix in obj
   sfloat Qf_data[NSTATES * NSTATES] = {0};  // Qf matrix in obj
 
-  // Put constraints on u, x4, x5
-  sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
-  sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
+  // Put constraints on u and x
+  sfloat Acstr_input_data[2*NINPUTS*NINPUTS] = {0};         // A1*u <= b1
+  sfloat Acstr_state_data[2*NSTATES*NSTATES] = {0};         // A2*x <= b2
   // [u_max, -u_min]
-  sfloat bcstr_input_data[2 * NINPUTS] = {1.5, 0.6, 1.5, 0.6};
+  sfloat bcstr_input_data[2*NINPUTS] = {2.2, 0.9, 2.2, 0.9};  
   // [x_max, -x_min]
-  sfloat bcstr_state_data[2 * NSTATES] = {100, 100, 100,
-                                          100, 100, 100};
+  sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.2, 0.7, 
+                                        100, 100, 100, 4.2, 0.7};
 
   // ===== Created matrices =====
   Matrix X[NSIM];
@@ -76,9 +89,9 @@ int main() {
   // ===== Fill in the struct =====
   sfloat* Xhrz_ptr = Xhrz_data;
   sfloat* Xptr = X_data;
-  sfloat* Xref_ptr = X_ref_data;  // Xref defined inside data folder
+  sfloat* Xref_ptr = Xref_data;  // Xref defined inside data folder
   sfloat* Uhrz_ptr = Uhrz_data;
-  sfloat* Uref_ptr = U_ref_data;  // Uref defined inside data folder
+  sfloat* Uref_ptr = Uref_data;  // Uref defined inside data folder
   sfloat* Kptr = K_data;
   sfloat* dptr = d_data;
   sfloat* Pptr = P_data;
@@ -133,11 +146,11 @@ int main() {
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
   model.get_jacobians =
-      tiny_Bicycle3dGetJacobians;  // have analytical functions to compute
+      tiny_Bicycle5dGetJacobians;  // have analytical functions to compute
                                    // Jacobians, or you can assign manually for
                                    // each time step
   model.get_nonlinear_dynamics =
-      tiny_Bicycle3dNonlinearDynamics;  // have dynamics
+      tiny_Bicycle5dNonlinearDynamics;  // have dynamics
 
   model.A = A;
   model.B = B;
@@ -186,19 +199,25 @@ int main() {
   prob.input_duals = input_duals;
   prob.state_duals = state_duals;
 
-  solver.max_outer_iters = 6;  // Often takes less than 5
-  solver.cstr_tol = 1e-3;
+  solver.max_outer_iters = 5;  // Often takes less than 5
+  solver.cstr_tol = 1e-2; 
+
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
   sfloat temp_data[temp_size];  // temporary data, should not be changed
-
+  srand(1);  // random seed
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    printf("\n=> k = %d\n", k);
+    sprintf(bufferTxSer, "k = %d", k);
+    Serial.println(bufferTxSer);
     // === 1. Setup and solve MPC ===
-
+    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise 1% of current X
+    X[k].data[1] += X[k].data[1] * NOISE(1);
+    X[k].data[2] += X[k].data[2] * NOISE(1);
+    X[k].data[3] += X[k].data[3] * NOISE(1);
+    X[k].data[4] += X[k].data[4] * NOISE(1);
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
 
     // Update A, B within horizon (as we have Jacobians function)
@@ -208,33 +227,31 @@ int main() {
     prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
 
+    run_time = micros();
+    
     // Solve optimization problem using Augmented Lagrangian TVLQR
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1, temp_data);
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
 
-    // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    run_time = (micros() - run_time);   
+    sprintf(bufferTxSer, "  MPC run time: %.3f (ms)", ((float)run_time)/1000);
+    Serial.println(bufferTxSer);
+    max_run_time < run_time? max_run_time = run_time: 0;
 
     // === 2. Simulate dynamics using the first control solution ===
-    tiny_Bicycle3dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
-    // tiny_DynamicsLtv(&X[k + 1], X[k], Uhrz[0], model, 0);
+    tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
 
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-  }
+    // tiny_ShiftFill(Uhrz, NHORIZON - 1);  // doesn't matter
 
-  // ========== Test ==========
-  // Test state constraints
-  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
-    }
+    sprintf(bufferTxSer, "  ||ex[%d]|| = %.4f", k, slap_NormedDifference(X[k], Xref[k]));
+    Serial.println(bufferTxSer);
   }
-  // Test tracking performance
-  for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
-  }
-  // --------------------------
+  sprintf(bufferTxSer, "\nMPC max run time: %.3f (ms)", ((float)max_run_time)/1000);
+  Serial.println(bufferTxSer);
+  Serial.println("End of problem");
+  Serial.println("==============");
+}
 
-  PrintTestResult();
-  return TestResult();
+void loop() {
+  // put your main code here, to run repeatedly:
+
 }

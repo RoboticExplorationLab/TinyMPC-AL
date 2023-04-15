@@ -1,6 +1,6 @@
 #pragma once
 
-#include <slap/slap.h>
+#include <slap_arduino.h>
 
 sfloat X_ref_data[300] = {
   0.0,0.0,0.0,

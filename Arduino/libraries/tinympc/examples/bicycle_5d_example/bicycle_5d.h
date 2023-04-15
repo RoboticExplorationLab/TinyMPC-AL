@@ -6,7 +6,7 @@
 
 #include <math.h>
 
-#include <slap/slap.h>
+#include <slap_arduino.h>
 
 //========================================
 // Bicycle model parameters

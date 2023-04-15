@@ -1,6 +1,6 @@
 #pragma once
 
-#include <slap/slap.h>
+#include <slap_arduino.h>
 
 sfloat Xref_data[505] = {
     6.648348050471847e-14,  4.5250180555692077e-14, 1.86938036935997e-14,

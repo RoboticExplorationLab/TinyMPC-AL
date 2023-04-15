@@ -23,11 +23,11 @@
 
 int main() {
   // ===== Created data =====
-  sfloat x0_data[NSTATES] = {0, 0, 0, 0, 0};          // initial state
-  sfloat xg1_data[NSTATES] = {5, 0, 3.14 / 2, 0, 0};  // first goal
-  sfloat xg2_data[NSTATES] = {5, 5, -3.14, 0, 0};     // second goal
-  sfloat xg3_data[NSTATES] = {0, 5, -3.14 / 2, 0,
-                              0};  // third goal, then go back to initial
+  sfloat x0_data[NSTATES] = {5, 0, 0, 0, 0};          // initial state
+  // sfloat xg1_data[NSTATES] = {5, 0, 3.14 / 2, 0, 0};  // first goal
+  // sfloat xg2_data[NSTATES] = {5, 5, -3.14, 0, 0};     // second goal
+  // sfloat xg3_data[NSTATES] = {0, 5, -3.14 / 2, 0,
+  //                             0};  // third goal, then go back to initial
 
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES] = {0};                // save current X
@@ -155,11 +155,11 @@ int main() {
   prob.ncstr_goal = 0;
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
+  slap_SetIdentity(prob.Q, 100e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 10e-1);
+  slap_SetIdentity(prob.Qf, 100e-1);
 
   // Fill in constraints (A in LHS)
   prob.Acstr_state =
@@ -204,12 +204,8 @@ int main() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   int i16iterSP = 0;
-  for (int step = 0; step < 50; ++step) {
+  for (int step = 0; step < 1; ++step) {
     printf("\n=> step = %d\n", step);
-    tiny_Print(slap_Transpose(X));
-    tiny_Print(slap_Transpose(Uhrz[0]));
-    printf("ex = %.4f\n", slap_NormedDifference(X, Xref[0]));
-
     // === 1. Setup and solve MPC ===
 
     slap_Copy(Xhrz[0], X);  // update current measurement
@@ -234,24 +230,41 @@ int main() {
     // } else {
     //     i16iterSP = 0;
     // }
-    shift_fill()
-
-        prob.X_ref = Xref;
+    for (int k = 0; k < NHORIZON; ++k) {
+      Xref[k].data[0] = 5*cos(2*3.14/100*(k + i16iterSP));
+      Xref[k].data[1] = 5*sin(2*3.14/100*(k + i16iterSP));
+      Xref[k].data[2] = 2*3.14/100*(k + i16iterSP);
+    }
+    if (i16iterSP < 100-NHORIZON) {
+        i16iterSP++;
+    } else {
+        i16iterSP = 0;
+    }
+    prob.X_ref = Xref;
     prob.U_ref = Uref;
-
+    
+    tiny_Print(slap_Transpose(Xref[0]));
+    printf("ex = %.4f\n", slap_NormedDifference(X, Xref[0]));
     // Update A, B within horizon (as we have Jacobians function)
     tiny_UpdateHorizonJacobians(&model, prob);
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
 
+    tiny_Print(slap_Transpose(Uhrz[0]));
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
 
     // === 2. Simulate dynamics using the first control solution ===
-    tiny_Bicycle5dNonlinearDynamics(&X, Xhrz[0], Uhrz[0]);
+    tiny_DynamicsLtv(&X, Xhrz[0], Uhrz[0], model, 0);
+    // tiny_Bicycle5dNonlinearDynamics(&X, Xhrz[0], Uhrz[0]);
+    // tiny_ForwardPassLtv(Xh)
   }
-
+  for (int k = 0; k < NHORIZON; ++k) {
+    tiny_Print(slap_Transpose(Xhrz[k]));
+    tiny_Print(slap_Transpose(Xref[k]));
+    printf("ex = %.4f\n", slap_NormedDifference(Xhrz[k], Xref[k]));
+  }
   // ========== Test ==========
   // Test state constraints
   // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {

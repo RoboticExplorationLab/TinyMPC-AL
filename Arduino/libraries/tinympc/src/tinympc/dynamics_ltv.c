@@ -15,7 +15,7 @@ enum slap_ErrorCode tiny_ForwardPassLtv(Matrix* X, Matrix* U,
   int N = prob.nhorizon;
   for (int k = 0; k < N - 1; ++k) {
     // Control input: u = - d - K*x
-    slap_Copy(U[k], prob.d[k]);               // u[k] = -d[k]
+    slap_Copy(U[k], prob.d[k]);                     // u[k] = -d[k]
     slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);  // u[k] -= K[k] * x[k]
     // Next state: x = A*x + B*u + f
     tiny_DynamicsLtv(&X[k + 1], X[k], U[k], model, k);
@@ -25,8 +25,10 @@ enum slap_ErrorCode tiny_ForwardPassLtv(Matrix* X, Matrix* U,
 
 void tiny_UpdateHorizonJacobians(tiny_LtvModel* model, tiny_ProblemData prob) {
   for (int i = 0; i < prob.nhorizon - 1; ++i) {
+    // get A and B
     model->get_jacobians(&(model->A[i]), &(model->B[i]), prob.X_ref[i],
                          prob.U_ref[i]);
+    // get f = x1 - Ax - Bu
     if (model->get_nonlinear_dynamics != NULL) {
       model->get_nonlinear_dynamics(&(model->f[i]), prob.X_ref[i],
                                     prob.U_ref[i]);

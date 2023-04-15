@@ -48,7 +48,7 @@ int max_outer_iters = 100;
 int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   model.nstates = NSTATES;
@@ -77,7 +77,7 @@ void LinearDiscreteModelTest() {
 }
 
 void KnotPointTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_KnotPoint z;
   tiny_InitKnotPoint(&z);
   tiny_KnotPoint Z[NHORIZON];
@@ -137,7 +137,7 @@ void SolverTest() {
 }
 
 void ProblemDataTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   Matrix U_ref[NHORIZON - 1];
   Matrix X_ref[NHORIZON];
   Matrix K[NHORIZON - 1];

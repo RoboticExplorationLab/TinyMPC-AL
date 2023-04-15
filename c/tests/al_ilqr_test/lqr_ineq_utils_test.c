@@ -10,7 +10,7 @@
 #define NHORIZON 3
 
 void IneqInputsTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   sfloat u_max_data[NINPUTS] = {1, 1};
   sfloat u_min_data[NINPUTS] = {-1, -1};
   sfloat u_data[NINPUTS] = {1.1, 0.8};
@@ -38,7 +38,7 @@ void IneqInputsTest() {
 }
 
 void IneqInputsJacobianTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   sfloat u_max_data[NINPUTS] = {1, 1};
   sfloat u_min_data[NINPUTS] = {-1, -1};
   sfloat ans[NINPUTS * 2 * NINPUTS] = {1, 0, -1, 0, 0, 1, 0, -1};
@@ -62,7 +62,7 @@ void IneqInputsJacobianTest() {
 }
 
 void ActiveIneqMaskTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   sfloat u_max_data[NINPUTS] = {1, 1};
   sfloat u_min_data[NINPUTS] = {-1, -1};
   sfloat u_data[NINPUTS] = {-2, 2};

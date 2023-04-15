@@ -48,3 +48,7 @@ void tiny_Clamps(sfloat* arr, const sfloat* min, const sfloat* max,
 void tiny_Clamp(sfloat* arr, const sfloat min, const sfloat max, const int N);
 
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max);
+
+void tiny_ShiftFill(Matrix* mats, const int length);
+
+void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length);

@@ -143,3 +143,17 @@ void tiny_Clamp(sfloat* arr, const sfloat min, const sfloat max, const int N) {
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max) {
   tiny_Clamps(mat->data, min.data, max.data, (mat->rows) * (mat->cols));
 }
+
+void tiny_ShiftFill(Matrix* mats, const int length) {
+  for (int k = 0; k < length - 1; ++k) {
+    slap_Copy(mats[k], mats[k + 1]);
+  }
+  slap_Copy(mats[length - 1], mats[length - 2]);
+}
+
+void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length) {
+  for (int k = 0; k < length - 1; ++k) {
+    slap_Copy(mats[k], mats[k + 1]);
+  }
+  slap_CopyFromArray(mats[length - 1], x);
+}

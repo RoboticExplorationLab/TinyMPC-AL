@@ -55,7 +55,7 @@ enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Quu\Qux
 
     // Cost-to-Go Hessian: P = Qxx + K'Quu*K - K'Qux - Qux'K
-    slap_Copy(prob->P[k], Qxx);                            // P = Qxx
+    slap_Copy(prob->P[k], Qxx);                                  // P = Qxx
     slap_MatMulAdd(Qxu, slap_Transpose(prob->K[k]), Quu, 1, 0);  // Qxu = K'Quu
     slap_MatMulAdd(prob->P[k], Qxu, prob->K[k], 1, 1);           // P += K'Quu*K
     slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Qux, -2,
@@ -64,7 +64,7 @@ enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
     //                1);  // P -= Qux'K
 
     // Cost-to-Go Gradient: p = Qx + K'Quu*d - K'Qu - Qux'd
-    slap_Copy(prob->p[k], Qx);                    // p = Qx
+    slap_Copy(prob->p[k], Qx);                          // p = Qx
     slap_MatMulAdd(prob->p[k], Qxu, prob->d[k], 1, 1);  // p += K'Quu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Qu, -1,
                    1);  // p -= K'Qu

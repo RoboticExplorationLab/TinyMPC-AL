@@ -18,7 +18,7 @@ sfloat SumOfSquaredErrorMatrices(const sfloat* x, Matrix* Y, const int num) {
   sfloat err = 0;
   int k = 0;
   for (int i = 0; i < num; ++i) {
-    for (int j = 0; j < Y[i].cols*Y[i].rows; ++j) {
+    for (int j = 0; j < Y[i].cols * Y[i].rows; ++j) {
       sfloat diff = x[k++] - Y[i].data[j];
       err += diff * diff;
     }

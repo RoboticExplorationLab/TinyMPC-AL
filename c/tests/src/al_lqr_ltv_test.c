@@ -19,7 +19,7 @@
 #define H 0.1
 #define NSTATES 5
 #define NINPUTS 2
-#define NHORIZON 65
+#define NHORIZON 60
 
 sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};
 sfloat xg_data[NSTATES] = {0};
@@ -28,13 +28,13 @@ sfloat Q_data[NSTATES * NSTATES] = {0};
 sfloat R_data[NINPUTS * NINPUTS] = {0};
 sfloat Qf_data[NSTATES * NSTATES] = {0};
 // Put constraints on u, x4, x5
-sfloat Acstr_input_data[2*NINPUTS*NINPUTS] = {0};
-sfloat Acstr_state_data[2*NSTATES*NSTATES] = {0};
+sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};
+sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};
 // [u_max, -u_min]
-sfloat bcstr_input_data[2*NINPUTS] = {2.0, 0.9, 2.0, 0.9};
+sfloat bcstr_input_data[2 * NINPUTS] = {2.0, 0.9, 2.0, 0.9};
 // [x_max, -x_min]
-sfloat bcstr_state_data[2*NSTATES] = {100, 100, 100, 4.0, 0.55, 
-                                      100, 100, 100, 4.0, 0.55};
+sfloat bcstr_state_data[2 * NSTATES] = {100, 100, 100, 4.0, 0.55,
+                                        100, 100, 100, 4.0, 0.55};
 
 // sfloat umin_data[NINPUTS] = {-5, -2};
 // sfloat umax_data[NINPUTS] = {5, 2};
@@ -135,29 +135,32 @@ void AbsLqrLtvTest() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 0;
-  prob.ncstr_states = 0;
-  prob.ncstr_goal = 1;
+  prob.ncstr_inputs = 1;
+  prob.ncstr_states = 1;
+  prob.ncstr_goal = 0;
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 10e-1);
-  prob.Acstr_state = slap_MatrixFromArray(2*NSTATES, NSTATES, Acstr_state_data);
-  Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
-  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0,
-                                           NSTATES, NSTATES);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);  
-  prob.Acstr_input = slap_MatrixFromArray(2*NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
-  lower_half = slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0,
-                                           NINPUTS, NINPUTS);
+  prob.Acstr_state =
+      slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
+  Matrix upper_half =
+      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+  Matrix lower_half =
+      slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.bcstr_state = slap_MatrixFromArray(2*NSTATES, 1, bcstr_state_data);
-  prob.bcstr_input = slap_MatrixFromArray(2*NINPUTS, 1, bcstr_input_data);
+  prob.Acstr_input =
+      slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
+  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  lower_half =
+      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
+  slap_SetIdentity(upper_half, 1);
+  slap_SetIdentity(lower_half, -1);
+  prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -173,10 +176,11 @@ void AbsLqrLtvTest() {
   // Compute and store A, B before solving
   tiny_UpdateHorizonJacobians(&model, prob);
 
+  solver.cstr_tol = 1e-3;
   solver.max_outer_iters = 10;
-  int temp_size = 2*NSTATES * (2*NSTATES + 2*NSTATES + 2)
-                  + (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];  
+  int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
+                  (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
+  sfloat temp_data[temp_size];
   tiny_MpcLtv(X, U, &prob, &solver, model, 0, temp_data);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
@@ -204,6 +208,7 @@ void AbsLqrLtvTest() {
 }
 
 int main() {
+  printf("=== AL LQR LTV Test ===\n");
   AbsLqrLtvTest();
   PrintTestResult();
   return TestResult();

@@ -101,7 +101,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Guu\Gux
 
     // Cost-to-Go Hessian: P = Gxx + K'Guu*K - K'Gux - Gux'K
-    slap_Copy(prob->P[k], Gxx);                            // P = Gxx
+    slap_Copy(prob->P[k], Gxx);                                  // P = Gxx
     slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);  // Gxu = K'Guu
     slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);           // P += K'Guu*K
     slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -2,
@@ -110,7 +110,7 @@ enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
     //                1);  // P -= Gux'K
 
     // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
-    slap_Copy(prob->p[k], Gx);                    // p = Gx
+    slap_Copy(prob->p[k], Gx);                          // p = Gx
     slap_MatMulAdd(prob->p[k], Gxu, prob->d[k], 1, 1);  // p += K'Guu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Gu, -1,
                    1);  // p -= K'Gu
@@ -255,7 +255,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     slap_CholeskySolve(Quu_temp, prob->K[k]);  // K = Guu\Gux
 
     // Cost-to-Go Hessian: P = Gxx + K'Guu*K - K'Gux - Gux'K
-    slap_Copy(prob->P[k], Gxx);                            // P = Gxx
+    slap_Copy(prob->P[k], Gxx);                                  // P = Gxx
     slap_MatMulAdd(Gxu, slap_Transpose(prob->K[k]), Guu, 1, 0);  // Gxu = K'Guu
     slap_MatMulAdd(prob->P[k], Gxu, prob->K[k], 1, 1);           // P += K'Guu*K
     slap_MatMulAdd(prob->P[k], slap_Transpose(prob->K[k]), Gux, -2,
@@ -264,7 +264,7 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     //                1);  // P -= Gux'K
 
     // Cost-to-Go Gradient: p = Gx + K'Guu*d - K'Gu - Gux'd
-    slap_Copy(prob->p[k], Gx);                    // p = Gx
+    slap_Copy(prob->p[k], Gx);                          // p = Gx
     slap_MatMulAdd(prob->p[k], Gxu, prob->d[k], 1, 1);  // p += K'Guu*d
     slap_MatMulAdd(prob->p[k], slap_Transpose(prob->K[k]), Gu, -1,
                    1);  // p -= K'Gu

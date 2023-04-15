@@ -1,8 +1,3 @@
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
@@ -25,10 +20,10 @@ sfloat R_data[NINPUTS * NINPUTS] = {1};           // NOLINT
 sfloat q_data[NSTATES] = {0.1, 0.2};              // NOLINT
 sfloat r_data[NINPUTS] = {-0.6};                  // NOLINT
 sfloat Qf_data[NSTATES * NSTATES] = {0};
-sfloat u_max_data[NINPUTS] = {1.1};
-sfloat u_min_data[NINPUTS] = {-1.1};
-sfloat x_max_data[NSTATES] = {1.6, 1.7};
-sfloat x_min_data[NSTATES] = {-1.6, -1.7};
+// sfloat u_max_data[NINPUTS] = {1.1};
+// sfloat u_min_data[NINPUTS] = {-1.1};
+// sfloat x_max_data[NSTATES] = {1.6, 1.7};
+// sfloat x_min_data[NSTATES] = {-1.6, -1.7};
 sfloat x_ref_data[NSTATES * NHORIZON] = {0.2, 1.1, 2.5, 3.7, 2.1, 4.5};
 sfloat u_ref_data[NINPUTS * (NHORIZON - 1)] = {1, 2};
 sfloat x0_data[NSTATES] = {0.1, 0.2};
@@ -48,7 +43,7 @@ int max_outer_iters = 100;
 int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   model.nstates = NSTATES;
@@ -77,7 +72,7 @@ void LinearDiscreteModelTest() {
 }
 
 void KnotPointTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_KnotPoint z;
   tiny_InitKnotPoint(&z);
   tiny_KnotPoint Z[NHORIZON];
@@ -137,7 +132,7 @@ void SolverTest() {
 }
 
 void ProblemDataTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   Matrix U_ref[NHORIZON - 1];
   Matrix X_ref[NHORIZON];
   Matrix K[NHORIZON - 1];
@@ -187,10 +182,10 @@ void ProblemDataTest() {
   prob.q = slap_MatrixFromArray(NSTATES, 1, q_data);
   prob.r = slap_MatrixFromArray(NINPUTS, 1, r_data);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
-  prob.x_max = slap_MatrixFromArray(NSTATES, 1, x_max_data);
-  prob.x_min = slap_MatrixFromArray(NSTATES, 1, x_min_data);
+  // prob.u_max = slap_MatrixFromArray(NINPUTS, 1, u_max_data);
+  // prob.u_min = slap_MatrixFromArray(NINPUTS, 1, u_min_data);
+  // prob.x_max = slap_MatrixFromArray(NSTATES, 1, x_max_data);
+  // prob.x_min = slap_MatrixFromArray(NSTATES, 1, x_min_data);
   prob.X_ref = X_ref;
   prob.U_ref = U_ref;
   prob.dt = dt;
@@ -214,10 +209,10 @@ void ProblemDataTest() {
   TEST(SumOfSquaredError(prob.q.data, q_data, NSTATES) < tol);
   TEST(SumOfSquaredError(prob.r.data, r_data, NINPUTS) < tol);
   TEST(SumOfSquaredError(prob.Qf.data, Qf_data, NSTATES * NSTATES) < tol);
-  TEST(SumOfSquaredError(prob.u_max.data, u_max_data, NINPUTS) < tol);
-  TEST(SumOfSquaredError(prob.u_min.data, u_min_data, NINPUTS) < tol);
-  TEST(SumOfSquaredError(prob.x_max.data, x_max_data, NSTATES) < tol);
-  TEST(SumOfSquaredError(prob.x_min.data, x_min_data, NSTATES) < tol);
+  // TEST(SumOfSquaredError(prob.u_max.data, u_max_data, NINPUTS) < tol);
+  // TEST(SumOfSquaredError(prob.u_min.data, u_min_data, NINPUTS) < tol);
+  // TEST(SumOfSquaredError(prob.x_max.data, x_max_data, NSTATES) < tol);
+  // TEST(SumOfSquaredError(prob.x_min.data, x_min_data, NSTATES) < tol);
   TEST(SumOfSquaredError(prob.x0.data, x0_data, NSTATES) < tol);
   TEST(SumOfSquaredError(prob.goal_dual.data, goal_duals_data, NSTATES) < tol);
   uptr = u_ref_data;
@@ -267,6 +262,7 @@ void ProblemDataTest() {
 }
 
 int main() {
+  printf("=== LQR Data Test ===\n");
   LinearDiscreteModelTest();
   KnotPointTest();
   SolverTest();

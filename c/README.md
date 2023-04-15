@@ -70,10 +70,7 @@ API yet).
 *Constraints:*
 
 - Inequality constraints will be identically applied to all timestep, in the form: $Ax \leq b$. For example, input bound:
-
-$ A = [I; -I]$
-
-$ b = [umax; -umin]$
+$ A = [I; -I]$, $ b = [umax; -umin]$
 
 - Equality constraint is goal constraint.
 

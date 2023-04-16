@@ -24,6 +24,11 @@
   }
 
 //========================================
+// Return length of an array
+//========================================
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+//========================================
 // Read data from file
 //========================================
 int tiny_ReadData(const char* filename, sfloat* des, const int size,

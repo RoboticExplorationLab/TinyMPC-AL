@@ -5,7 +5,8 @@
 // \__/_/_/ /_/\__, /_/  /_/_/    \____/   
 //            /____/                                 
 
-// This example run MPC in loop() but will stop after finishing the reference trajectory
+// This example run MPC in loop() but will stop after finishing the reference trajectory.
+// Better: use Timer/Interupt to call the controller
 
 #include <Wire.h>
 #include <elapsedMillis.h>

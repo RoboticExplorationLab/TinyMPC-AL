@@ -9,6 +9,8 @@
 // GREATER NHORIZON, GREATER ITERATION, GREATER CHANCE OF EXPLOSION
 // TODO: Let user choose constraints, compile options with #IFDEF
 
+#include <stdlib.h>
+
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
@@ -20,6 +22,8 @@
 #define NINPUTS 2    // no. of controls
 #define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 101     // simulation steps (fixed with reference data)
+
+#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
 
 int main() {
   // ===== Created data =====
@@ -77,59 +81,30 @@ int main() {
   tiny_InitSolver(&solver);
 
   // ===== Fill in the struct =====
-  sfloat* Xhrz_ptr = Xhrz_data;
-  sfloat* Xptr = X_data;
-  sfloat* Xref_ptr = Xref_data;  // Xref defined inside data folder
-  sfloat* Uhrz_ptr = Uhrz_data;
-  sfloat* Uref_ptr = Uref_data;  // Uref defined inside data folder
-  sfloat* Kptr = K_data;
-  sfloat* dptr = d_data;
-  sfloat* Pptr = P_data;
-  sfloat* pptr = p_data;
-  sfloat* Aptr = A_data;
-  sfloat* Bptr = B_data;
-  sfloat* fptr = f_data;
-  sfloat* udual_ptr = input_dual_data;
-  sfloat* xdual_ptr = state_dual_data;
-  
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
-      Uref_ptr += NINPUTS;
+      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, &Uref_data[i * NINPUTS]);
     }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    Xref_ptr += NSTATES;
+    X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, &Xref_data[i * NSTATES]);
     // tiny_Print(Xref[i]);
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, Aptr);
-      Aptr += NSTATES * NSTATES;
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, Bptr);
-      Bptr += NSTATES * NINPUTS;
-      f[i] = slap_MatrixFromArray(NSTATES, 1, fptr);
-      fptr += NSTATES;
-      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, Uhrz_ptr);
+      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, &A_data[i * NSTATES * NSTATES]);
+      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, &B_data[i * NSTATES * NINPUTS]);
+      f[i] = slap_MatrixFromArray(NSTATES, 1, &f_data[i* NSTATES]);
+      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, &Uhrz_data[i * NINPUTS]);
       slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
-      Uhrz_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
-      udual_ptr += 2 * NINPUTS;
+      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, &K_data[i * NINPUTS * NSTATES]);
+      d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
+      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, &input_dual_data[i * 2 * NINPUTS]);
     }
-    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, Xhrz_ptr);
+    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
     slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
-    Xhrz_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
-    xdual_ptr += 2 * NSTATES;
+    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
+    p[i] = slap_MatrixFromArray(NSTATES, 1, &p_data[i * NSTATES]);
+    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
   }
 
   model.ninputs = NSTATES;
@@ -150,15 +125,17 @@ int main() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 1;
-  prob.ncstr_states = 1;
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1e-1);
+  slap_SetIdentity(prob.Q, 10e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 10e-1);
+
+  // Set up constraints
+  prob.ncstr_inputs = 0;
+  prob.ncstr_states = 0;
 
   prob.Acstr_state =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
@@ -189,10 +166,13 @@ int main() {
   prob.state_duals = state_duals;
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
-  solver.max_outer_iters = 10;  // Often takes less than 5
+  solver.max_outer_iters = 5;  // Often takes less than 5
+  solver.cstr_tol = 1e-2; 
+
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];  // temporary data, should not be changed
+  sfloat temp_data[temp_size] = {0};  // temporary data, should not be changed
+  srand(1);  // random seed
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
@@ -202,15 +182,19 @@ int main() {
     printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
 
     // === 1. Setup and solve MPC ===
-
+    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise 1% of current X
+    X[k].data[1] += X[k].data[1] * NOISE(1);
+    X[k].data[2] += X[k].data[2] * NOISE(1);
+    X[k].data[3] += X[k].data[3] * NOISE(1);
+    X[k].data[4] += X[k].data[4] * NOISE(1);
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
-
-    // Update A, B within horizon (as we have Jacobians function)
-    tiny_UpdateHorizonJacobians(&model, prob);
 
     // Update reference
     prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
+
+    // Update A, B within horizon (as we have Jacobians function)
+    tiny_UpdateHorizonJacobians(&model, prob);
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
@@ -232,7 +216,7 @@ int main() {
   }
   // Test tracking performance
   for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.1);
+    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.2);
   }
   // --------------------------
 

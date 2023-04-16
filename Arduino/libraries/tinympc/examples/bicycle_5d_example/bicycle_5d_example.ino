@@ -16,11 +16,11 @@
 #include "bicycle_5d.h"
 #include "data/lqr_ltv_data.h"
 
-#define H 0.1        // dt
-#define NSTATES 5    // no. of states
-#define NINPUTS 2    // no. of controls
-#define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 101   // simulation steps (fixed with reference data)
+#define H         0.1       // dt
+#define NSTATES   5         // no. of states
+#define NINPUTS   2         // no. of controls
+#define NHORIZON  10        // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM      101       // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
 
@@ -34,7 +34,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.println("=============");
   Serial.println("Start problem");
-  // put your setup code here, to run once:
+
   // ===== Created data =====
   sfloat x0_data[NSTATES] = {1, -1, 0.1, 0, 0};  // initial state (off-track)
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
@@ -160,8 +160,6 @@ void setup() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 1;
-  prob.ncstr_states = 1;
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 10e-1);
@@ -169,6 +167,10 @@ void setup() {
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 10e-1);
+
+  // Set up constraints
+  prob.ncstr_inputs = 1;
+  prob.ncstr_states = 1;
 
   prob.Acstr_state =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
@@ -199,21 +201,23 @@ void setup() {
   prob.input_duals = input_duals;
   prob.state_duals = state_duals;
 
-  solver.max_outer_iters = 5;  // Often takes less than 5
-  solver.cstr_tol = 1e-2; 
+  solver.max_outer_iters = 2;   // Often takes less than 5, even still work fine with 2
+  solver.cstr_tol = 1e-2;       // AL convergence tolerance (on constraints)
 
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];  // temporary data, should not be changed
+  sfloat temp_data[temp_size] = {0};  // temporary data, should not be changed
   srand(1);  // random seed
+
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
+  // Put this into loop() when you have a unlimited reference/real-world system
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     sprintf(bufferTxSer, "k = %d", k);
     Serial.println(bufferTxSer);
     // === 1. Setup and solve MPC ===
-    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise 1% of current X
+    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise within 1% of current X
     X[k].data[1] += X[k].data[1] * NOISE(1);
     X[k].data[2] += X[k].data[2] * NOISE(1);
     X[k].data[3] += X[k].data[3] * NOISE(1);
@@ -242,6 +246,7 @@ void setup() {
 
     // tiny_ShiftFill(Uhrz, NHORIZON - 1);  // doesn't matter
 
+    // Print norm of tracking error
     sprintf(bufferTxSer, "  ||ex[%d]|| = %.4f", k, slap_NormedDifference(X[k], Xref[k]));
     Serial.println(bufferTxSer);
   }

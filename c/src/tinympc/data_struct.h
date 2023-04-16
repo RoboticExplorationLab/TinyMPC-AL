@@ -1,6 +1,7 @@
 #pragma once
 
 #include "slap/slap.h"
+#include "utils.h"
 
 #define kNullMat  \
   ((Matrix){      \

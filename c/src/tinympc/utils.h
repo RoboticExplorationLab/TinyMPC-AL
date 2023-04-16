@@ -13,8 +13,14 @@
 //========================================
 #define tiny_Print(mat)        \
   {                            \
-    printf("\n%s = \n", #mat); \
+    printf("%s = \n", #mat); \
     slap_PrintMatrix(mat);     \
+  }
+
+#define tiny_PrintT(mat)        \
+  {                            \
+    printf("%s = \n", #mat); \
+    slap_PrintMatrix(slap_Transpose(mat));     \
   }
 
 //========================================

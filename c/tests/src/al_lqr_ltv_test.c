@@ -180,7 +180,7 @@ void AbsLqrLtvTest() {
   solver.max_outer_iters = 10;
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];
+  sfloat temp_data[temp_size] = {0};
   tiny_MpcLtv(X, U, &prob, &solver, model, 0, temp_data);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {

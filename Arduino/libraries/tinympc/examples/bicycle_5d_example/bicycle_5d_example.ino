@@ -206,7 +206,8 @@ void setup() {
 
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size] = {0};  // temporary data, should not be changed
+  sfloat temp_data[temp_size];
+memset(temp_data, 0, sizeof(temp_data));  // temporary data, should not be changed
   srand(1);  // random seed
 
   // ===== Absolute formulation =====

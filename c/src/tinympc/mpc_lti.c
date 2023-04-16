@@ -260,7 +260,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
         printf("iter     J           ΔJ         convio        reg         ρ\n");
         printf("-----------------------------------------------------------\n");
       }
-      printf("%3d   %10.3e  %9.2e  %9.2e %10.1e  %8.1e\n", iter, 0.0, 0.0, 
+      printf("%3d   %10.3e  %9.2e  %9.2e %10.1e  %8.1e\n", iter, 0.0, 0.0,
              cstr_violation, solver->reg, solver->penalty);
     }
     if (cstr_violation < solver->cstr_tol) {

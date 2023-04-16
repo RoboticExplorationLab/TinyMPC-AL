@@ -23,7 +23,7 @@
 #define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 101     // simulation steps (fixed with reference data)
 
-#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
+#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
 
 int main() {
   // ===== Created data =====
@@ -42,7 +42,7 @@ int main() {
   sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};            // f in model
   sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
   sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
-  sfloat goal_dual_data[NSTATES] = {0};                      // dual vars
+  sfloat goal_dual_data[NSTATES] = {0};                        // dual vars
   sfloat Q_data[NSTATES * NSTATES] = {0};   // Q matrix in obj
   sfloat R_data[NINPUTS * NINPUTS] = {0};   // R matrix in obj
   sfloat Qf_data[NSTATES * NSTATES] = {0};  // Qf matrix in obj
@@ -91,20 +91,26 @@ int main() {
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES, &A_data[i * NSTATES * NSTATES]);
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS, &B_data[i * NSTATES * NINPUTS]);
-      f[i] = slap_MatrixFromArray(NSTATES, 1, &f_data[i* NSTATES]);
+      A[i] = slap_MatrixFromArray(NSTATES, NSTATES,
+                                  &A_data[i * NSTATES * NSTATES]);
+      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS,
+                                  &B_data[i * NSTATES * NINPUTS]);
+      f[i] = slap_MatrixFromArray(NSTATES, 1, &f_data[i * NSTATES]);
       Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, &Uhrz_data[i * NINPUTS]);
       slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, &K_data[i * NINPUTS * NSTATES]);
+      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES,
+                                  &K_data[i * NINPUTS * NSTATES]);
       d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, &input_dual_data[i * 2 * NINPUTS]);
+      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
+                                            &input_dual_data[i * 2 * NINPUTS]);
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
     slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
+    P[i] =
+        slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
     p[i] = slap_MatrixFromArray(NSTATES, 1, &p_data[i * NSTATES]);
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
+    state_duals[i] =
+        slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
   }
 
   model.ninputs = NSTATES;
@@ -141,16 +147,15 @@ int main() {
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
       slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
-  Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0,
-                                           NSTATES, NSTATES);
+  Matrix lower_half =
+      slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
   prob.Acstr_input =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half =
-      slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
-  lower_half = slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0,
-                                    NINPUTS, NINPUTS);
+  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  lower_half =
+      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
 
   prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
   prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
@@ -167,12 +172,14 @@ int main() {
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_outer_iters = 5;  // Often takes less than 5
-  solver.cstr_tol = 1e-2; 
+  solver.cstr_tol = 1e-2;
 
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size] = {0};  // temporary data, should not be changed
-  srand(1);  // random seed
+  sfloat temp_data[temp_size];
+  memset(temp_data, 0,
+         sizeof(temp_data));  // temporary data, should not be changed
+  srand(1);                   // random seed
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused

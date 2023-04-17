@@ -1,10 +1,11 @@
 // Test LQR
 // Scenerio: Drive sfloat integrator to arbitrary goal state.
 
+#include "tinympc/lqr_lti.h"
+
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tinympc/lqr_lti.h"
 #include "tinympc/data_struct.h"
 #include "tinympc/utils.h"
 
@@ -98,8 +99,6 @@ void LqrLtiTest() {
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 1000 * 1e-1);
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -110,7 +109,7 @@ void LqrLtiTest() {
 
   solver.reg = 1e-8;
   solver.penalty_mul = 10;
-  solver.max_primal_iters = 1;
+  solver.max_outer_iters = 1;
 
   sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
@@ -127,6 +126,7 @@ void LqrLtiTest() {
 }
 
 int main() {
+  printf("=== LQR LTI Test ===\n");
   LqrLtiTest();
   PrintTestResult();
   return TestResult();

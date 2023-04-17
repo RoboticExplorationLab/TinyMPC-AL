@@ -1,6 +1,7 @@
 #pragma once
 
 #include "slap/slap.h"
+#include "utils.h"
 
 #define kNullMat  \
   ((Matrix){      \
@@ -55,7 +56,7 @@ typedef struct {
   sfloat penalty;
   sfloat penalty_max;
   sfloat penalty_mul;
-  int max_primal_iters;
+  int max_outer_iters;
   int max_search_iters;
   sfloat riccati_tol;
   sfloat cstr_tol;
@@ -76,10 +77,6 @@ typedef struct tiny_ProblemData {
   Matrix r;
   Matrix Qf;
   Matrix qf;
-  Matrix u_max;
-  Matrix u_min;
-  Matrix x_max;
-  Matrix x_min;
   Matrix* X_ref;
   Matrix* U_ref;
   sfloat dt;
@@ -91,6 +88,10 @@ typedef struct tiny_ProblemData {
   Matrix* input_duals;
   Matrix* state_duals;
   Matrix goal_dual;
+  Matrix Acstr_state;
+  Matrix bcstr_state;
+  Matrix Acstr_input;
+  Matrix bcstr_input;
   // int data_size;
 } tiny_ProblemData;
 

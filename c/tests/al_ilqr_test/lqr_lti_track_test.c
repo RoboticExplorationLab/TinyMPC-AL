@@ -102,7 +102,7 @@ void LqrLtiTest() {
 
   solver.reg = 1e-8;
   solver.penalty_mul = 10;
-  solver.max_primal_iters = 1;
+  solver.max_outer_iters = 1;
 
   // Initial rollout
   for (int k = 0; k < NHORIZON - 1; ++k) {

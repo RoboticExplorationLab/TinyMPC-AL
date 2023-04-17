@@ -11,11 +11,22 @@
 //========================================
 // Print matrix with its name (dummy)
 //========================================
-#define tiny_Print(mat)        \
-  {                            \
-    printf("\n%s = \n", #mat); \
-    slap_PrintMatrix(mat);     \
+#define tiny_Print(mat)      \
+  {                          \
+    printf("%s = \n", #mat); \
+    slap_PrintMatrix(mat);   \
   }
+
+#define tiny_PrintT(mat)                   \
+  {                                        \
+    printf("%s = \n", #mat);               \
+    slap_PrintMatrix(slap_Transpose(mat)); \
+  }
+
+//========================================
+// Return length of an array
+//========================================
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 //========================================
 // Read data from file
@@ -48,3 +59,7 @@ void tiny_Clamps(sfloat* arr, const sfloat* min, const sfloat* max,
 void tiny_Clamp(sfloat* arr, const sfloat min, const sfloat max, const int N);
 
 void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max);
+
+void tiny_ShiftFill(Matrix* mats, const int length);
+
+void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length);

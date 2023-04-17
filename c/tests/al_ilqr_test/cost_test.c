@@ -30,7 +30,7 @@ sfloat ans_gradxf[NSTATES] = {-0.04999999999999993, -0.050000000000000044, 0.0,
                               0.0};
 
 void AddCostTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   sfloat cost = 0;
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
@@ -74,7 +74,7 @@ void AddCostTest() {
 }
 
 void ExpandCostTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
   sfloat* uptr = u_ref_data;

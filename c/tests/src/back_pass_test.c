@@ -32,7 +32,7 @@ void BackPassTest() {
   sfloat Qf_data[NSTATES * NSTATES] = {0};
   sfloat umin_data[NINPUTS] = {-2, -2};
   sfloat umax_data[NINPUTS] = {2, 2};
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -110,6 +110,7 @@ void BackPassTest() {
 }
 
 int main() {
+  printf("=== Backward Pass Test ===\n");
   BackPassTest();
   PrintTestResult();
   return TestResult();

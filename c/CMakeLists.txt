@@ -36,7 +36,7 @@ option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
 option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 
 # Floating point precision
-set(SLAP_FLOAT double CACHE STRING "Floating point precision for slap (float,double).")
+set(SLAP_FLOAT float CACHE STRING "Floating point precision for slap (float,double).")
 
 # Build examples
 option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
@@ -95,18 +95,18 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU")
 endif()  
 
 # TODO: Future options to optimize library for specific use of constraints
-option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
-if (SET_GOAL_CONSTRAINT)
-  add_definitions(-DGOAL_CONSTRAINT)
-endif()
-option(SET_INPUT_CONSTRAINT "Set input constraints" ON)
-if (SET_INPUT_CONSTRAINT)
-  add_definitions(-DINPUT_CONSTRAINT)
-endif()
-option(SET_STATE_CONSTRAINT "Set state constraints" ON)
-if (SET_STATE_CONSTRAINT)
-  add_definitions(-DSTATE_CONSTRAINT)
-endif()
+# option(SET_GOAL_CONSTRAINT "Set goal constraint" OFF)
+# if (SET_GOAL_CONSTRAINT)
+#   add_definitions(-DGOAL_CONSTRAINT)
+# endif()
+# option(SET_INPUT_CONSTRAINT "Set input constraints" ON)
+# if (SET_INPUT_CONSTRAINT)
+#   add_definitions(-DINPUT_CONSTRAINT)
+# endif()
+# option(SET_STATE_CONSTRAINT "Set state constraints" ON)
+# if (SET_STATE_CONSTRAINT)
+#   add_definitions(-DSTATE_CONSTRAINT)
+# endif()
 
 # Make all includes relative to src/ directory
 include_directories(${PROJECT_SOURCE_DIR}/src)

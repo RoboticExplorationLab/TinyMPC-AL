@@ -44,11 +44,11 @@ sfloat reg_min = 1;
 sfloat reg_max = 100;
 sfloat penalty_max = 1e5;
 sfloat penalty_mul = 1;
-int max_primal_iters = 100;
+int max_outer_iters = 100;
 int max_search_iters = 10;
 
 void LinearDiscreteModelTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   model.nstates = NSTATES;
@@ -77,7 +77,7 @@ void LinearDiscreteModelTest() {
 }
 
 void KnotPointTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_KnotPoint z;
   tiny_InitKnotPoint(&z);
   tiny_KnotPoint Z[NHORIZON];
@@ -124,7 +124,7 @@ void SolverTest() {
   solver.reg_max = reg_max;
   solver.penalty_max = penalty_max;
   solver.penalty_mul = penalty_mul;
-  solver.max_primal_iters = max_primal_iters;
+  solver.max_outer_iters = max_outer_iters;
   solver.max_search_iters = max_search_iters;
 
   TEST(solver.reg == reg);
@@ -132,12 +132,12 @@ void SolverTest() {
   TEST(solver.reg_min == reg_min);
   TEST(solver.penalty_max == penalty_max);
   TEST(solver.penalty_mul == penalty_mul);
-  TEST(solver.max_primal_iters == max_primal_iters);
+  TEST(solver.max_outer_iters == max_outer_iters);
   TEST(solver.max_search_iters == max_search_iters);
 }
 
 void ProblemDataTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   Matrix U_ref[NHORIZON - 1];
   Matrix X_ref[NHORIZON];
   Matrix K[NHORIZON - 1];

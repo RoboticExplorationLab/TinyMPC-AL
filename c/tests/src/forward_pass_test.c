@@ -20,7 +20,7 @@ sfloat f_data[NSTATES] = {0, 0, 0, 0};
 // sfloat x0_data[NSTATES] = {5,7,2,-1.4};
 
 void ForwardPassTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
@@ -105,6 +105,7 @@ void ForwardPassTest() {
 }
 
 int main() {
+  printf("=== Forward Pass Test ===\n");
   ForwardPassTest();
   PrintTestResult();
   return TestResult();

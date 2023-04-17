@@ -13,7 +13,7 @@
 #define H 0.1
 #define NSTATES 5
 #define NINPUTS 2
-#define NHORIZON 81
+#define NHORIZON 51
 // NO GRADIENT VANISHING/EXPLOSION WHEN NHORIZON = 101
 
 sfloat x0_data[NSTATES] = {1, -1, 0, 0, 0};
@@ -263,6 +263,7 @@ void AbsLqrLtvTest() {
 }
 
 int main() {
+  printf("=== LQR LTV Tracking Test ===\n");
   DeltaLqrLtvTest();
   AbsLqrLtvTest();
   PrintTestResult();

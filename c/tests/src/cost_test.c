@@ -29,7 +29,7 @@ sfloat ans_gradu[NINPUTS] = {0.21, -0.14};
 sfloat ans_gradxf[NSTATES] = {-0.6, -0.65, -0.65, 2.15};
 
 void AddCostTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   sfloat cost = 0;
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
@@ -73,7 +73,7 @@ void AddCostTest() {
 }
 
 void ExpandCostTest() {
-  const sfloat tol = 1e-8;
+  const sfloat tol = 1e-6;
   Matrix U_ref[NHORIZON];
   Matrix X_ref[NHORIZON];
   sfloat* uptr = u_ref_data;
@@ -123,6 +123,7 @@ void ExpandCostTest() {
 }
 
 int main() {
+  printf("=== Cost Test ===\n");
   AddCostTest();
   ExpandCostTest();
   PrintTestResult();

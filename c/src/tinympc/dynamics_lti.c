@@ -16,7 +16,7 @@ enum slap_ErrorCode tiny_ForwardPassLti(Matrix* X, Matrix* U,
   for (int k = 0; k < N - 1; ++k) {
     // delta_x and delta_u over previous X, U
     // Control input: u = uf - d - K*(x - xf)
-    slap_Copy(U[k], prob.d[k]);               // u[k] = d[k]
+    slap_Copy(U[k], prob.d[k]);                     // u[k] = d[k]
     slap_MatMulAdd(U[k], prob.K[k], X[k], -1, -1);  // u[k] += K[k] * x[k]
     // Next state: x = A*x + B*u + f
     tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);

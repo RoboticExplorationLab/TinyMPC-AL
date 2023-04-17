@@ -9,9 +9,6 @@
 # endif ()
 
 add_library(tinympc
-  # constrained_ilqr.h
-  # constrained_ilqr.c
-
   lqr_lti.h
   lqr_lti.c
 

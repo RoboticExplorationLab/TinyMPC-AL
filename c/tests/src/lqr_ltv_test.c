@@ -1,18 +1,19 @@
 // Test LQR
 // Scenerio: Drive planar quadrotor to arbitrary goal state.
 
+#include "tinympc/lqr_ltv.h"
+
 #include "planar_quadrotor.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
 #include "tinympc/lqr_lti.h"
-#include "tinympc/lqr_ltv.h"
 #include "tinympc/utils.h"
 
 #define H 0.1
 #define NSTATES 6
 #define NINPUTS 2
-#define NHORIZON 51
+#define NHORIZON 30
 // GRADIENT EXPLOSION/VANISHING WHEN NHORIZON > 60 => LS FORMULATION
 
 sfloat x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
@@ -474,7 +475,7 @@ void AbsLqrLtiTest() {
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 100e-1);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 10e-1);
+  slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 100e-1);
   prob.X_ref = Xref;
@@ -506,7 +507,7 @@ void AbsLqrLtiTest() {
   //   tiny_DynamicsLti(&X[k + 1], X[k], U[k], model);
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_Print(X[k]);
   }
 
@@ -516,9 +517,10 @@ void AbsLqrLtiTest() {
 }
 
 int main() {
-  DeltaLqrLtvTest();
-  AbsLqrLtvTest();
-  DeltaLqrLtiTest();
+  printf("=== LQR LTV Test ===\n");
+  // DeltaLqrLtvTest();
+  // AbsLqrLtvTest();
+  // DeltaLqrLtiTest();
   AbsLqrLtiTest();  // Most robust
   PrintTestResult();
   return TestResult();

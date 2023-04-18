@@ -1,5 +1,7 @@
 #pragma once
 
+#include <slap/slap.h>
+
 sfloat x_data[12] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
                      1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
 

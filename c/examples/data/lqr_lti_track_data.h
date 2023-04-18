@@ -1,5 +1,7 @@
 #pragma once
 
+#include <slap/slap.h>
+
 sfloat Xref_data[204] = {5.0,
                          7.0,
                          2.0,

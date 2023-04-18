@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "slap/slap.h"
+#include <slap/slap.h>
 
 //========================================
 // Bicycle model parameters

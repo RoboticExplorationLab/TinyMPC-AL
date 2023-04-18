@@ -1,3 +1,5 @@
+# -------------------THIS IS ALL ALTRO-------------------------------
+# This enables goal equality constraints, state and input ineq constraints.
 function stage_cost(p::NamedTuple, x, u, k)
     dx = x - p.Xref[k]
     du = u - p.Uref[k]
@@ -15,6 +17,16 @@ end
 function term_cost_expansion(p::NamedTuple)
     dx = -p.Xref[p.N]
     return p.Qf, p.Qf * dx
+end
+function conic_cost_expansion(p::NamedTuple, u, λc, ρ, k)
+    Uc = cone_u(params, u)
+    λhat = 1 * λc # already updated
+    # λhat = 1*projection(λc - Uc*cone_scale*ρ)
+    ∇c = cone_u_jac(p, u)
+    G = -∇c' * ∇projection(λhat) * projection(λhat)
+    # H = ∇c'*∇projection(λhat)'*∇projection(λhat)*∇c*ρ
+    H = ∇c' * (∇projection(λhat)' * ∇projection(λhat) + ∇²projection(λhat, projection(λhat))) * ∇c * ρ
+    return (G - H * params.Uref[k]), H
 end
 function backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
     """LQR backward pass with AL. This !function update its parameters
@@ -112,6 +124,13 @@ function trajectory_AL_cost(params, X, U, μ, μx, ρ, λ, λc)
             mask = eval_mask(μx[k], hxv)
             J += dot(μx[k], hxv) + 0.5 * ρ * hxv' * mask * hxv
         end
+        if params.ncu_cone > 0
+            # AL terms for cone
+            Uc = cone_u(params, U[k])
+            λhat = 1 * projection(λc[k] - Uc * cone_scale * ρ)
+            J += (0.5 / ρ) * (λhat' * λhat - λc[k]' * λc[k])
+        end
+
     end
     if params.ncx > 0
         # AL terms for state constraint at last time step
@@ -154,7 +173,7 @@ function eval_mask(μv, huv)
     end
     mask
 end
-function solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=50, max_inner_iters=10, verbose=true, ρ=1, ρ_max=1e8, ϕ=10)
+function tiny_solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=50, max_inner_iters=10, verbose=true, ρ=1, ρ_max=1e8, ϕ=10)
 
     # first check the sizes of everything
     # @assert length(X) == params.N
@@ -277,17 +296,190 @@ end
 function ineq_con_u(p, u)
     [u - p.u_max; -u + p.u_min]
 end
+function cone_u(p, u)
+    [p.A_cone * u; p.c_cone' * u]
+end
+function cone_u_jac(p, u)
+    J = zeros(p.nu, p.nu)
+    J[1:end-1, 1:end] .= p.A_cone
+    J[end, 1:end] .= p.c_cone
+    return J
+end
 function ineq_con_u_jac(params, u)
     ForwardDiff.jacobian(_u -> ineq_con_u(params, _u), u)  # lazy way
 end
 function ineq_con_x_jac(p, x)
     ForwardDiff.jacobian(_x -> ineq_con_x(p, _x), x)  # lazy way
 end
+function projection(x)
+    # assumes x is stacked [v; s] such that ||v||₂ ≤ s
+    n = length(x)
+    v = view(x, 1:n-1)
+    s = x[end]
+    a = norm(v)
+    if a <= -s          # below the cone 
+        return zero(x)
+    elseif a <= s       # in the cone
+        return x
+    elseif a >= abs(s)  # outside the cone 
+        return 0.5 * (1 + s / a) * [v; a]
+    else
+        throw(ErrorException("Invalid second-order cone projection"))  # Nan
+    end
+end
+function ∇projection(x)
+    n = length(x)
+    J = zeros(eltype(x), n, n)
+    s = x[end]
+    v = view(x, 1:n-1)
+    a = norm(v)
+    if a <= -s
+        return J  # zeros
+    elseif a <= s
+        J .= I(n)
+        return J  # identity
+    elseif a >= abs(s)
+        c = 0.5 * (1 + s / a)
+
+        # dvdv ok!
+        for i = 1:n-1, j = 1:n-1
+            J[i, j] = -0.5 * s / a^3 * v[i] * v[j]
+            if i == j
+                J[i, j] += c
+            end
+        end
+
+        # dvds ok!
+        for i = 1:n-1
+            J[i, n] = 0.5 * v[i] / a
+        end
+
+        # dsdv ok!
+        for i = 1:n-1
+            J[n, i] = ((-0.5 * s / a^2) + c / a) * v[i]
+        end
+        J[n, n] = 0.5  # ok
+        return J
+    else
+        error("Invalid second-order cone projection.")
+    end
+    return J
+end
+function ∇projection(x)
+    n = length(x)
+    v = view(x, 1:n-1)
+    s = x[end]
+    a = norm(v)
+    J = zeros(n, n)
+    if a <= -s                               # below cone
+        J .*= 0
+    elseif a <= s                            # in cone
+        J .*= 0
+        for i = 1:n
+            J[i, i] = 1.0
+        end
+    elseif a >= abs(s)                       # outside cone
+        # scalar
+        c = 0.5 * (1 + s / a)
+
+        # dvdv = dbdv * v' + c * oneunit(SMatrix{n-1,n-1,T})
+        for i = 1:n-1, j = 1:n-1
+            J[i, j] = -0.5 * s / a^3 * v[i] * v[j]
+            if i == j
+                J[i, j] += c
+            end
+        end
+
+        # dvds
+        for i = 1:n-1
+            J[i, n] = 0.5 * v[i] / a
+        end
+
+        # ds
+        for i = 1:n-1
+            J[n, i] = ((-0.5 * s / a^2) + c / a) * v[i]
+        end
+        J[n, n] = 0.5
+    else
+        throw(ErrorException("Invalid second-order cone projection"))
+    end
+    return J
+end
+function ∇²projection(x, b)
+    # x is lamda_bar, b is projection(lambda_bar)
+    n = length(x)
+    hess = zeros(eltype(x), n, n)
+    v = view(x, 1:n-1)
+    bv = view(b, 1:n-1)
+
+    # @assert size(hess) == (n+1,n+1)
+    s = x[end]
+    bs = b[end]
+    a = norm(v)
+    vbv = dot(v, bv)
+
+    if a <= -s
+        return hess .= 0
+    elseif a <= s
+        return hess .= 0
+    elseif a > abs(s)
+        # Original equations from chain rule
+        # dvdv = -s/norm(v)^2/norm(v)*(I - (v*v')/(v'v))*bv*v' + 
+        #     s/norm(v)*((v*(v'bv))/(v'v)^2 * 2v' - (I*(v'bv) + v*bv')/(v'v)) + 
+        #     bs/norm(v)*(I - (v*v')/(v'v))
+        # dvds = 1/norm(v)*(I - (v*v')/(v'v))*bv;
+        # # display(dvds)
+        # # display(dvdv)
+        # hess[1:n-1,1:n-1] .= dvdv*0.5
+        # hess[1:n-1,n] .= dvds*0.5
+        # hess[n:n,1:n-1] .= 0.5*dvds'
+        # hess[n,n] = 0
+        # return hess
+
+        # The following is just an unrolled version of the above
+        n = n - 1
+        dvdv = view(hess, 1:n, 1:n)
+        dvds = view(hess, 1:n, n + 1)
+        dsdv = view(hess, n + 1, 1:n)
+        @inbounds for i = 1:n
+            hi = 0
+            @inbounds for j = 1:n
+                Hij = -v[i] * v[j] / a^2
+                if i == j
+                    Hij += 1
+                end
+                hi += Hij * bv[j]
+            end
+            dvds[i] = hi / 2a
+            dsdv[i] = dvds[i]
+            @inbounds for j = 1:i
+                vij = v[i] * v[j]
+                H1 = hi * v[j] * (-s / a^3)
+                H2 = vij * (2 * vbv) / a^4 - v[i] * bv[j] / a^2
+                H3 = -vij / a^2
+                if i == j
+                    H2 -= vbv / a^2
+                    H3 += 1
+                end
+                H2 *= s / a
+                H3 *= bs / a
+                dvdv[i, j] = (H1 + H2 + H3) / 2
+                dvdv[j, i] = dvdv[i, j]
+            end
+        end
+        hess[end, end] = 0
+        return hess
+    else
+        throw(ErrorException("Invalid second-order cone projection"))
+    end
+end
+
 function mat_from_vec(X::Vector{Vector{Float64}})::Matrix
     # convert a vector of vectors to a matrix 
     Xm = hcat(X...)
     return Xm
 end
+
 function shift_fill(U::Vector)
     N = length(U)
     for k = 1:N-1
@@ -295,103 +487,3 @@ function shift_fill(U::Vector)
     end
     U[N] .= U[N-1]
 end
-function discrete_dynamics(params::NamedTuple,x,u,k)
-    A = [1.0 0.0 0.0 0.05 0.0 0.0; 
-        0.0 1.0 0.0 0.0 0.05 0.0; 
-        0.0 0.0 1.0 0.0 0.0 0.05; 
-        0.0 0.0 0.0 1.0 0.0 0.0; 
-        0.0 0.0 0.0 0.0 1.0 0.0; 
-        0.0 0.0 0.0 0.0 0.0 1.0]
-    B = [0.000125 0.0 0.0; 
-        0.0 0.000125 0.0;
-        0.0 0.0 0.000125; 
-        0.005 0.0 0.0; 
-        0.0 0.005 0.0; 
-        0.0 0.0 0.005]
-    f = [0.0, 0.0, -0.0122625, 0.0, 0.0, -0.4905]
-    return A*x + B*u + f
-end
-
-function main()
-    nx = 6
-    nu = 3
-    N = 101
-    dt = 0.1
-    t_vec = dt*(0:N-1)
-    x0 = [4, 2, 20, -3, 2, -5.0]
-    xg = [0,0,0,0,0,0.0]
-    Xref = [deepcopy(xg) for i = 1:N]
-    Uref = [zeros(nu) for i = 1:N-1]
-
-    Q = 1e-2*Diagonal([1,1,1,1.0,1,1])
-    R = 1e-1*Diagonal([1,1,1])
-    Qf = 1000*Q
-
-    u_min = -170*ones(nu)
-    u_max =  170*ones(nu)
-
-    # state is x y v θ
-    x_min = [-2,-2,-2,-2]
-    x_max = [6,8,3,2]
-
-    ncx = 2*nx*0
-    ncu = 2*nu
-    ncg = 1
-    ncu_cone = nu; 
-
-    params = (
-        nx = nx,
-        nu = nu,
-        ncx = ncx,
-        ncu = ncu,
-        ncg = ncg,
-        ncu_cone = ncu_cone,
-        A_cone = A_cone,
-        c_cone = c_cone,
-        N = N,
-        Q = Q,
-        R = R,
-        Qf = Qf,
-        u_min = u_min,
-        u_max = u_max,
-        x_min = x_min,
-        x_max = x_max,
-        Xref = Xref,
-        Uref = Uref,
-        dt = dt,
-        mc = 1.0,
-        mp = 0.2,
-        l = 0.5,
-        g = 9.81,
-    );
-
-    # previous iterate
-    X = [deepcopy(x0) for i = 1:N]
-    U = [mass * gravity for k = 1:N-1]
-
-    # new iterate
-    Xn = deepcopy(X)
-    Un = deepcopy(U)
-
-    P = [zeros(nx,nx) for i = 1:N]   # cost to go quadratic term
-    p = [zeros(nx) for i = 1:N]      # cost to go linear term
-    d = [zeros(nu) for i = 1:N-1]    # feedforward control
-    K = [zeros(nu,nx) for i = 1:N-1] # feedback gain
-    Xhist = solve!(params,X,U,P,p,K,d,Xn,Un;atol=1e-1,max_iters = 15,verbose = true,ρ = 1e0, ϕ = 10.0);
-    function mat_from_vec(X::Vector{Vector{Float64}})::Matrix
-        # convert a vector of vectors to a matrix 
-        Xm = hcat(X...)
-        return Xm 
-    end
-    Xsim_m = mat_from_vec(Xn)
-    Usim_m = mat_from_vec(Un)
-    using Plots
-    display(plot(t_vec,Xsim_m',label = ["x₁" "x₂" "x₃" "ẋ₁" "ẋ₂" "ẋ₃"],
-                title = "State History",
-                xlabel = "time (s)", ylabel = "x"))
-    display(plot(t_vec[1:end-1],Usim_m',label = ["u₁" "u₂" "u₃"],
-                title = "Input History",
-                xlabel = "time (s)", ylabel = "u"))
-end
-
-main()

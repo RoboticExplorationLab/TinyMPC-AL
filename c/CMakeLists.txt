@@ -36,7 +36,7 @@ option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
 option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 
 # Floating point precision
-set(SLAP_FLOAT float CACHE STRING "Floating point precision for slap (float,double).")
+set(SLAP_FLOAT double CACHE STRING "Floating point precision for slap (float,double).")
 
 # Build examples
 option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)

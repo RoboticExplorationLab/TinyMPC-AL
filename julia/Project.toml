@@ -1,8 +1,0 @@
-[deps]
-Altro = "5dcf52e5-e2fb-48e0-b826-96f46d2e3e73"
-BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-RobotZoo = "74be38bb-dcc2-4b9e-baf3-d6373cd95f10"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-TrajectoryOptimization = "c79d492b-0548-5874-b488-5a62c1d9d0ca"

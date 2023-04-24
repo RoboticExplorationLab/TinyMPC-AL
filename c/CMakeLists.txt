@@ -45,7 +45,7 @@ option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
 option(TINY_VECTORIZE "Compile with -march=native" OFF)
 
 # Build with extra information for profiling
-option(TINY_PROFILE "Compile with -pg" OFF)
+option(TINY_PROFILE "Compile with -pg" ON)
 
 ##############################
 # Dependencies
@@ -92,7 +92,7 @@ if (NOT WIN32)
     add_compile_options(-march=native)
   endif()
   if (TINY_PROFILE)
-    add_compile_option(-pd)
+    add_compile_options(-pd)
   endif()
 endif()
 

@@ -44,6 +44,9 @@ option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
 # Build with -march=native
 option(TINY_VECTORIZE "Compile with -march=native" OFF)
 
+# Build with extra information for profiling
+option(TINY_PROFILE "Compile with -pg" ON)
+
 ##############################
 # Dependencies
 ##############################
@@ -87,6 +90,9 @@ if (NOT WIN32)
   #                     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs)
   if (TINY_VECTORIZE)
     add_compile_options(-march=native)
+  endif()
+  if (TINY_PROFILE)
+    add_compile_options(-pd)
   endif()
 endif()
 

@@ -1,5 +1,5 @@
 // MPC
-// Scenerio: 
+// Scenerio: drive the Crazyflie quadrotor from a state to the origin
 // 
 
 #include <stdlib.h>

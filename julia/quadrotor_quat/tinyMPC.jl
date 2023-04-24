@@ -181,7 +181,7 @@ function eval_mask(μv,huv)
   end
   mask
 end
-function mpc!(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters=250,verbose=true,ρ=1,ρ_max=1e8,ϕ=10)
+function mpc!(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters=250,max_inner_iters=10,verbose=true,ρ=1,ρ_max=1e8,ϕ=10)
   
   # first check the sizes of everything
   # @assert length(X) == params.N
@@ -217,7 +217,7 @@ function mpc!(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters=250,verbose=true,ρ=1
           if verbose 
             @show ΔJ
           end
-          if 0.0 <= abs(ΔJ) <= 1.0 
+          if 0.0 <= abs(ΔJ) <= 1e-2 
             break
           end
           # reg = reg*10.0

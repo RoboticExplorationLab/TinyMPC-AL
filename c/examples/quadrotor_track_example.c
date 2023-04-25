@@ -13,7 +13,7 @@
 #define H 0.02        // dt
 #define NSTATES 12    // no. of states (error state)
 #define NINPUTS 4     // no. of controls
-#define NHORIZON 15   // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NHORIZON 14   // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 400       // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
@@ -21,8 +21,6 @@
 int main() {
   // ===== Created data =====
   sfloat x0_data[NSTATES] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
-  // sfloat xg_data[NSTATES] = {0};  // goal state if needed
-  // sfloat ug_data[NINPUTS] = {0};   // goal input if needed
   sfloat ug_data[NINPUTS] = {0.5, .5, .5, .5};   // goal input if needed
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
@@ -197,7 +195,7 @@ int main() {
 
     // === 1. Setup and solve MPC ===
     for (int j = 0; j < NSTATES; ++j) {
-      X[k].data[j] += X[k].data[j] * NOISE(2);
+      X[k].data[j] += X[k].data[j] * NOISE(1);
     }
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
 
@@ -211,7 +209,7 @@ int main() {
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
     // tiny_PrintT(Uhrz[0]);
-    
+
     // Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
     // tiny_PrintT(pos);
 

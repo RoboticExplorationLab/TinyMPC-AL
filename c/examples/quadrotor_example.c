@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #include "quadrotor.h"
-// #include "data/lqr_ltv_data.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "tinympc/tinympc.h"
@@ -13,7 +12,7 @@
 #define H 0.02        // dt
 #define NSTATES 12    // no. of states (error state)
 #define NINPUTS 4     // no. of controls
-#define NHORIZON 15   // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NHORIZON 11   // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 230       // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
@@ -197,10 +196,6 @@ int main() {
       X[k].data[j] += X[k].data[j] * NOISE(2);
     }
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
-
-    // Update reference
-    // prob.X_ref = &Xref[k];
-    // prob.U_ref = &Uref[k];
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLti(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);

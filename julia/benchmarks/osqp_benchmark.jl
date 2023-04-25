@@ -1,3 +1,5 @@
+## Rocket Landing Example OSQP Benchmark
+
 using SparseArrays, OSQP
 
 # Utility function

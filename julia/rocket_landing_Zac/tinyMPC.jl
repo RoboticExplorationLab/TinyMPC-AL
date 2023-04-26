@@ -58,6 +58,7 @@ function backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
 
     Qu_bkwdpass = [zeros(nu) for i=1:N]
     Quu_bkwdpass = [zeros(nu,nu) for i=1:N]
+    Qux_bkwdpass = [zeros(nu,nx) for i=1:N]
     # iterate from N-1 to 1 backwards
     for k = (N-1):(-1):1
         # dynamics jacobians (linear) (still give the same A, B, f)
@@ -121,10 +122,11 @@ function backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
 
         Qu_bkwdpass[k] = Su
         Quu_bkwdpass[k] = Suu
+        Qux_bkwdpass[k] = Sux_reg
     end
     # @show d
     # @show K
-    return Qu_bkwdpass, Quu_bkwdpass, d
+    return Qu_bkwdpass, Quu_bkwdpass, Qux_bkwdpass, d
 end
 function trajectory_AL_cost(params, X, U, μ, μx, ρ, λ, λc)
     # Evaluate merit function
@@ -250,12 +252,24 @@ function tiny_solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=250,
     for iter = 1:max_iters
         J = 0
         α = 1
+        Qux = 0
+        Quu = 0
+        Qu = 0
         # Riccati solve
         for i = 1:max_inner_iters
-            Qu, Quu, d = backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
+            Qu, Quu, Qux, d = backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
             J, ΔJ, α = forward_pass!(params, reg, X, U, K, d, Qu, Quu, ΔJ, Xn, Un, μ, μx, ρ, λ, λc)
             update_reg(reg, α)
-            
+
+            if verbose
+                if rem(iter - 1, 10) == 0
+                    @printf "iter     J           ΔJ        |d|         α        reg         ρ\n"
+                    @printf "---------------------------------------------------------------------\n"
+                end
+                @printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
+                    iter, J, ΔJ, 0, α, reg, ρ)
+            end
+    
             # if ΔJ < 1e-1  # coarse tolerance
             max_AL_grad = 0.0
             for k = 1:N-1
@@ -263,22 +277,16 @@ function tiny_solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=250,
                     max_AL_grad = d[k]'*Qu[k] + 0.5*d[k]'*Quu[k]*d[k]
                 end
             end
+
             if max_AL_grad < 1e-3 # can be coarse tolerance
                 # @show ForwardDiff.gradient(du -> trajectory_AL_cost(params, X, du, μ, μx, ρ, λ, λc), U)
                 @show max_AL_grad
                 break
             end
+
+
         end
         reg = reg_min
-
-        if verbose
-            if rem(iter - 1, 10) == 0
-                @printf "iter     J           ΔJ        |d|         α        reg         ρ\n"
-                @printf "---------------------------------------------------------------------\n"
-            end
-            @printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
-                iter, J, ΔJ, 0, α, reg, ρ)
-        end
 
         # AL update and  check constraint violation
         convio = 0.0
@@ -331,8 +339,41 @@ function tiny_solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=250,
             @show convio
         end
         if convio < atol  # if terminal condition with contraint violation
-            print("Our solver says SUCCESS\n")
-            return Un[1]
+            # Print KKT conditions at all time steps
+            max_stationarity = 0.0
+            primal_feas = true
+            max_dual_feas = 0.0
+            max_complementarity = 0.0
+            for k = 1:N-1
+                # Stationarity
+                if norm(Quu[k]*U[k] + Qux[k]*X[k] + Qu[k]) > max_stationarity
+                    max_stationarity = norm(Quu[k]*U[k] + Qux[k]*X[k] + Qu[k])
+                end
+                # Primal Feasibility
+                # @show ineq_con_u(params, U[k])
+                if ineq_con_u(params, U[k]) > zeros(3)
+                    primal_feas = false
+                end
+                # Dual Feasibility
+                # @show params.μx[k]
+                if norm(params.μx[k]) > max_dual_feas
+                    max_dual_feas = norm(params.μx[k])
+                end
+                # @show λ
+
+                # Complementarity:
+                hxv = ineq_con_x(params,X[k])
+                if params.μx[k]'*hxv > max_complementarity
+                    max_complementarity = params.μx[k]'*hxv
+                end
+                # @show params.μx[k]'*hxv
+            end
+            if primal_feas && max_dual_feas < 1e-3 && max_complementarity < 1e-3
+                return Un[1]
+            else
+                @show max_stationarity
+                print("Our solver says SUCCESS\n")
+            end
         end
         if ρ > ρ_max
             print("MAX PENALTY\n")

@@ -124,7 +124,7 @@ function backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
     end
     # @show d
     # @show K
-    return Qu_bkwdpass, Quu_bkwdpass
+    return Qu_bkwdpass, Quu_bkwdpass, d
 end
 function trajectory_AL_cost(params, X, U, μ, μx, ρ, λ, λc)
     # Evaluate merit function
@@ -252,12 +252,20 @@ function tiny_solve!(params, X, U, P, p, K, d, Xn, Un; atol=1e-3, max_iters=250,
         α = 1
         # Riccati solve
         for i = 1:max_inner_iters
-            Qu, Quu = backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
+            Qu, Quu, d = backward_pass!(params, X, U, P, p, d, K, reg, μ, μx, ρ, λ, λc)
             J, ΔJ, α = forward_pass!(params, reg, X, U, K, d, Qu, Quu, ΔJ, Xn, Un, μ, μx, ρ, λ, λc)
             update_reg(reg, α)
             
-            if ΔJ < 1e-1  # coarse tolerance
-                @show ForwardDiff.gradient(du -> trajectory_AL_cost(params, X, du, μ, μx, ρ, λ, λc), U)
+            # if ΔJ < 1e-1  # coarse tolerance
+            max_AL_grad = 0.0
+            for k = 1:N-1
+                if abs(d[k]'*Qu[k] + 0.5*d[k]'*Quu[k]*d[k]) >= max_AL_grad
+                    max_AL_grad = d[k]'*Qu[k] + 0.5*d[k]'*Quu[k]*d[k]
+                end
+            end
+            if max_AL_grad < 1e-3 # can be coarse tolerance
+                # @show ForwardDiff.gradient(du -> trajectory_AL_cost(params, X, du, μ, μx, ρ, λ, λc), U)
+                @show max_AL_grad
                 break
             end
         end

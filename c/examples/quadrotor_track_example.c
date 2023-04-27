@@ -3,6 +3,7 @@
 // 
 
 #include <stdlib.h>
+#include "time.h"
 
 #include "quadrotor.h"
 #include "data/quadrotor_fig8.h"
@@ -10,18 +11,17 @@
 #include "slap/slap.h"
 #include "tinympc/tinympc.h"
 
+// Macro variables
 #define H 0.02        // dt
 #define NSTATES 12    // no. of states (error state)
 #define NINPUTS 4     // no. of controls
-#define NHORIZON 14   // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 400       // simulation steps (fixed with reference data)
-
-#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
+#define NHORIZON 11   // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM 200       // simulation steps (fixed with reference data)
 
 int main() {
   // ===== Created data =====
-  sfloat x0_data[NSTATES] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
-  sfloat ug_data[NINPUTS] = {0.5, .5, .5, .5};   // goal input if needed
+  sfloat x0_data[NSTATES] = {0, 1, 0, 0.1, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
+  sfloat ug_data[NINPUTS] = {0., 0., 0., 0.};   // goal input if needed
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
   sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
@@ -187,7 +187,7 @@ int main() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    printf("\n=> k = %d\n", k);
+    // printf("\n=> k = %d\n", k);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
     Matrix pos_ref = slap_CreateSubMatrix(Xref[k], 0, 0, 3, 1);
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
@@ -203,11 +203,22 @@ int main() {
     prob.X_ref = &Xref[k];
     prob.U_ref = &Uref[k];
 
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLti(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
+    // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
+    // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC; // milliseconds
+    printf("%f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    // for (int i = 0; i < NINPUTS; ++i) {
+    //   TEST(Uhrz[0].data[i] < bcstr_input_data[i] + solver.cstr_tol);
+    //   TEST(Uhrz[0].data[i] > -bcstr_input_data[i] - solver.cstr_tol);
+    // }
     // tiny_PrintT(Uhrz[0]);
 
     // Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
@@ -217,6 +228,7 @@ int main() {
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
     tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
     // tiny_DynamicsLti(&X[k + 1], X[k], Uref[k], model);
+    tiny_ShiftFill(Uhrz, ARRAY_SIZE(Uhrz));
   }
 
   // ========== Test ==========

@@ -6,6 +6,7 @@
 #include "test_utils.h"
 #include "tinympc/mpc_lti.h"
 #include "tinympc/utils.h"
+#include <time.h>
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -113,8 +114,8 @@ void MpcLtiTest() {
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
   prob.ncstr_inputs = 1;
-  prob.ncstr_states = 1;
-  prob.ncstr_goal = 1;
+  prob.ncstr_states = 0;
+  prob.ncstr_goal = 0;
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(prob.Q, 1e-1);
@@ -159,12 +160,19 @@ void MpcLtiTest() {
   sfloat temp_data[temp_size];
   memset(temp_data, 0,
          sizeof(temp_data));  // temporary data, should not be changed
-
+  
+  clock_t start, end;
+  double cpu_time_used;
+  start = clock();
   tiny_MpcLti(X, U, &prob, &solver, model, 0, temp_data);
+  end = clock();
+  cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+  // printf("time: %f\n", cpu_time_used);
 
   // ========== Test ==========
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(U[k]);
+    // tiny_PrintT(U[k]);
+    // tiny_PrintT(X[k+1]);
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);

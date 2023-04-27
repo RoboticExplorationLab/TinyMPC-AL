@@ -3,26 +3,28 @@
 // 
 
 #include <stdlib.h>
+#include "time.h"
 
 #include "quadrotor.h"
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "tinympc/tinympc.h"
 
+// Macro variables
 #define H 0.02        // dt
 #define NSTATES 12    // no. of states (error state)
 #define NINPUTS 4     // no. of controls
-#define NHORIZON 11   // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 230       // simulation steps (fixed with reference data)
+#define NHORIZON 21   // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM 100       // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
 
 int main() {
   // ===== Created data =====
-  sfloat x0_data[NSTATES] = {-1, 1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
-  sfloat xg_data[NSTATES] = {0};  // goal state if needed
+  sfloat x0_data[NSTATES] = {-0.5, 0.5, -0.5, 0.1, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
+  sfloat xg_data[NSTATES] = {0.0};  // goal state if needed
   // sfloat ug_data[NINPUTS] = {0};   // goal input if needed
-  sfloat ug_data[NINPUTS] = {0.5, .5, .5, .5};   // goal input if needed
+  sfloat ug_data[NINPUTS] = {0, 0, 0, 0.0};   // goal input if needed
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
   sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
@@ -130,12 +132,13 @@ int main() {
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   // slap_SetIdentity(prob.Q, 1000e-1);
-  sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1};
+  sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1.0};
   slap_SetDiagonal(prob.Q, Qdiag, NSTATES);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e0);
+  slap_SetIdentity(prob.R, 1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_Copy(prob.Qf, prob.Q);
+  slap_ScaleByConst(prob.Qf, 1);
 
   // Set up constraints
   prob.ncstr_inputs = 1;
@@ -161,7 +164,6 @@ int main() {
   slap_SetConst(prob.bcstr_state, 100.0);  // x_max = -x_min = 100
   prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   slap_SetConst(prob.bcstr_input, 0.5);  // u_max = -u_min = 0.5
-  tiny_PrintT(prob.bcstr_input);
 
   prob.X_ref = Xref;
   prob.U_ref = Uref;
@@ -175,7 +177,7 @@ int main() {
   prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_outer_iters = 5;  // Often takes less than 5
-  solver.cstr_tol = 1e-3;
+  solver.cstr_tol = 1e-4;
 
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
@@ -184,33 +186,54 @@ int main() {
          sizeof(temp_data));  // temporary data, should not be changed
   srand(1);                   // random seed
 
+  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
+  Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
+                                       Q_temp_data);
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
-  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-    printf("\n=> k = %d\n", k);
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+  slap_Copy(Xhrz[0], X[0]);  // update current measurement
+  for (int k = 0; k < 20; ++k) {
+    // printf("\n=> k = %d\n", k);
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
 
     // === 1. Setup and solve MPC ===
-    for (int j = 0; j < NSTATES; ++j) {
-      X[k].data[j] += X[k].data[j] * NOISE(2);
-    }
-    slap_Copy(Xhrz[0], X[k]);  // update current measurement
+    // for (int j = 0; j < NSTATES; ++j) {
+    //   X[k].data[j] += X[k].data[j] * NOISE(0);
+    // }
+    // slap_Copy(Xhrz[0], X[k]);  // update current measurement
 
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_MpcLti(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
+    // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
+    // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("%f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
     // tiny_PrintT(Uhrz[0]);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
-    tiny_PrintT(pos);
+    // tiny_PrintT(pos);
     // === 2. Simulate dynamics using the first control solution ===
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
-    tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
+    // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
     // tiny_DynamicsLti(&X[k + 1], X[k], Uref[k], model);
   }
 
+  for (int k = 0; k < NHORIZON - 1; ++k) {
+    // printf("\nk = %d\n", k);
+    // tiny_PrintT(Uhrz[k]);
+    // tiny_PrintT(Xhrz[k+1]);
+    // tiny_Print(P[k]);
+    // tiny_PrintT(Uref[k]);
+    // tiny_PrintT(Xref[k+1])
+  }
+  
   // ========== Test ==========
   // Test state constraints
   // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
@@ -224,7 +247,12 @@ int main() {
   //   TEST(slap_NormedDifference(X[k], Xref[k]) < 0.2);
   // }
   // --------------------------
-
+  // tiny_Print(model.A);
+  // tiny_Print(model.B);
+  // tiny_Print(model.f);
+  // tiny_Print(prob.Q);
+  // tiny_Print(prob.R);
+  // tiny_Print(prob.Qf);
   PrintTestResult();
   return TestResult();
 }

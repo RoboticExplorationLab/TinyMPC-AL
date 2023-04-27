@@ -63,7 +63,7 @@ function backward_pass!(params,X,U,P,p,d,K,reg,μ,μx,ρ,λ,λc)
       f = discrete_dynamics(params,zeros(params.nx),zeros(params.nu),k)
 
       Sxx,Sx,Suu,Su = stage_cost_expansion(params,k)
-
+      
       Sx += A' * (P[k+1]*f + p[k+1]) 
       Su += B' * (P[k+1]*f + p[k+1]) 
       Sxx += A'*(P[k+1])*A
@@ -211,13 +211,13 @@ function mpc!(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters=250,max_inner_iters=1
   for iter = 1:max_iters      
       α = 1.0
 
-      for i = 1:10
+      for i = 1:1
           ΔJ = backward_pass!(params,X,U,P,p,d,K,reg,μ,μx,ρ,λ,λc)
           J, ΔJ = forward_pass!(params,X,U,K,d,ΔJ,Xn,Un,μ,μx,ρ,λ,λc)
           if verbose 
             @show ΔJ
           end
-          if 0.0 <= abs(ΔJ) <= 1e-4 
+          if 0.0 <= abs(ΔJ) <= 1 
             break
           end
           # reg = reg*10.0

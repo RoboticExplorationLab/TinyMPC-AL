@@ -189,11 +189,13 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
   sfloat cstr_violation = 0.0;
 
   for (int iter = 0; iter < solver->max_outer_iters; ++iter) {
-    if (verbose > 1) printf("backward pass\n");
-    tiny_ConstrainedBackwardPassLti(prob, *solver, model, X, U, &Q_temp,
-                                    &ineq_temp);
-    if (verbose > 1) printf("forward pass\n");
-    tiny_ForwardPassLti(X, U, *prob, model);
+    for (int k = 0; k < 1; ++k) {
+      if (verbose > 1) printf("backward pass\n");
+      tiny_ConstrainedBackwardPassLti(prob, *solver, model, X, U, &Q_temp,
+                                      &ineq_temp);
+      if (verbose > 1) printf("forward pass\n");
+      tiny_ForwardPassLti(X, U, *prob, model);
+    }
 
     if (verbose > 1) printf("update duals and penalty\n");
 

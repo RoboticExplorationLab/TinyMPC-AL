@@ -1,5 +1,5 @@
 # Enable warm-starting
-function mpc_JuMP(optimizer, params, X, U, A, B, f; warm_start=true)
+function mpc_JuMP!(optimizer, params, X, U, A, B, f; warm_start=true)
     Nh = params.N
     nx = params.nx
     nu = params.nu
@@ -71,7 +71,7 @@ function mpc_JuMP(optimizer, params, X, U, A, B, f; warm_start=true)
         @constraint(model, z[xinds[N]] .== zeros(nx))
     end    
   
-    optimize!(model)   
+    @time optimize!(model)   
     # termination_status(model) == INFEASIBLE && print("Other solver says INFEASIBLE\n")
     for j = 1:Nh-1
         X[j] .= value.(z[xinds[j]]) 

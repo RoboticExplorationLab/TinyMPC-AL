@@ -29,6 +29,11 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 //========================================
+// Return a random noise from percentage
+//========================================
+#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
+
+//========================================
 // Read data from file
 //========================================
 int tiny_ReadData(const char* filename, sfloat* des, const int size,

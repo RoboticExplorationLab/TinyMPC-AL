@@ -1,5 +1,6 @@
 // Test LQR
-// Scenerio: Drive sfloat integrator to arbitrary goal state.
+// Scenerio: Drive double integrator to arbitrary goal state.
+// This one is absolutely correct
 
 #include "tinympc/lqr_lti.h"
 
@@ -11,7 +12,7 @@
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 51
+#define NHORIZON 100
 // U, X, Psln
 void LqrLtiTest() {
   sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
@@ -31,8 +32,6 @@ void LqrLtiTest() {
   sfloat Q_data[NSTATES * NSTATES] = {0};
   sfloat R_data[NINPUTS * NINPUTS] = {0};
   sfloat Qf_data[NSTATES * NSTATES] = {0};
-  sfloat umin_data[NINPUTS] = {-2, -2};
-  sfloat umax_data[NINPUTS] = {2, 2};
 
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
@@ -92,13 +91,14 @@ void LqrLtiTest() {
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
+
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1e-1);
+  slap_SetIdentity(prob.Q, 1.0);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e-1);
+  slap_SetIdentity(prob.R, 1.0);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 1000 * 1e-1);
+  slap_SetIdentity(prob.Qf, 1000.0);
+
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -108,20 +108,23 @@ void LqrLtiTest() {
   prob.p = p;
 
   solver.reg = 1e-8;
-  solver.penalty_mul = 10;
-  solver.max_outer_iters = 1;
+  solver.max_outer_iters = 10;
 
   sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
   Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
                                        Q_temp_data);
+
   tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
   tiny_ForwardPassLti(X, U, prob, model);
 
-  // tiny_AugmentedLagrangianLqr(X, U, prob, model, solver, 1);
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(U[k]);
+    // printf("\nk = \n", k);
+    // tiny_Print(p[k]);
+    // tiny_PrintT(Xref[k]);
+    // tiny_PrintT(U[k]);
+    // tiny_PrintT(X[k]);
   }
-  // tiny_Print(X[NHORIZON-1]);
+  tiny_Print(X[NHORIZON-1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 

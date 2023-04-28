@@ -236,7 +236,7 @@ function iLQR(params,X,U,P,p,K,d,Xn,Un;atol=1e-3,max_iters = 250,verbose = true,
                 @printf "---------------------------------------------------------------------\n"
             end
             @printf("%3d   %10.3e  %9.2e  %9.2e  %6.4f   %9.2e   %9.2e\n",
-              iter, J, ΔJ, dmax, α, reg,ρ)
+              iter, J, ΔJ, dmax, α, reg, ρ)
         end
         if (α > 0) & (dmax<atol)
             # check convio

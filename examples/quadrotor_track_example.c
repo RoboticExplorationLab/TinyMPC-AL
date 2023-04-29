@@ -190,7 +190,7 @@ int main() {
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
     Matrix pos_ref = slap_CreateSubMatrix(Xref[k], 0, 0, 3, 1);
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(pos, pos_ref));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(pos, pos_ref));
 
     // === 1. Setup and solve MPC ===
     for (int j = 0; j < NSTATES; ++j) {
@@ -211,7 +211,7 @@ int main() {
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
     cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC; // ms
-    printf("%f\n", cpu_time_used);
+    printf("solve time: %f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
     // for (int i = 0; i < NINPUTS; ++i) {

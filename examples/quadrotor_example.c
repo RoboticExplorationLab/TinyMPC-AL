@@ -195,7 +195,7 @@ int main() {
   slap_Copy(Xhrz[0], X[0]);  // update current measurement
   for (int k = 0; k < 20; ++k) {
     // printf("\n=> k = %d\n", k);
-    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
 
     // === 1. Setup and solve MPC ===
     // for (int j = 0; j < NSTATES; ++j) {
@@ -212,7 +212,7 @@ int main() {
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
     cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC;  // ms
-    printf("%f\n", cpu_time_used);
+    printf("solve time: %f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);

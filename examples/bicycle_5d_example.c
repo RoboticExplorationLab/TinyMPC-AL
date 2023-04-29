@@ -158,7 +158,7 @@ int main() {
       slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  
+
   prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
   prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
 

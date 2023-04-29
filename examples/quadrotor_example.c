@@ -1,30 +1,31 @@
 // MPC
 // Scenerio: drive the Crazyflie quadrotor from a state to the origin
-// 
+//
 
 #include <stdlib.h>
-#include "time.h"
 
 #include "quadrotor.h"
 #include "simpletest.h"
 #include "slap/slap.h"
+#include "time.h"
 #include "tinympc/tinympc.h"
 
 // Macro variables
-#define H 0.02        // dt
-#define NSTATES 12    // no. of states (error state)
-#define NINPUTS 4     // no. of controls
-#define NHORIZON 21   // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 100       // simulation steps (fixed with reference data)
+#define H 0.02       // dt
+#define NSTATES 12   // no. of states (error state)
+#define NINPUTS 4    // no. of controls
+#define NHORIZON 21  // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM 100     // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
 
 int main() {
   // ===== Created data =====
-  sfloat x0_data[NSTATES] = {-0.5, 0.5, -0.5, 0.1, 0, 0, 0, 0, 0, 0, 0, 0};  // initial state
+  sfloat x0_data[NSTATES] = {-0.5, 0.5, -0.5, 0.1, 0, 0,
+                             0,    0,   0,    0,   0, 0};  // initial state
   sfloat xg_data[NSTATES] = {0.0};  // goal state if needed
   // sfloat ug_data[NINPUTS] = {0};   // goal input if needed
-  sfloat ug_data[NINPUTS] = {0, 0, 0, 0.0};   // goal input if needed
+  sfloat ug_data[NINPUTS] = {0, 0, 0, 0.0};    // goal input if needed
   sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
   sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
   sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
@@ -32,27 +33,43 @@ int main() {
   sfloat d_data[NINPUTS * (NHORIZON - 1)] = {0};            // feedforward gain
   sfloat P_data[NSTATES * NSTATES * (NHORIZON)] = {0};      // cost-to-go func
   sfloat p_data[NSTATES * NHORIZON] = {0};                  // cost-to-go func
-  sfloat A_data[NSTATES*NSTATES] = {
-    1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,-0.003924f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,-0.392400f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.003924f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,0.392400f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.020000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,0.020000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,0.000000f,0.020000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,0.000000f,0.000000f,
-    0.000000f,-0.000013f,0.000000f,0.010000f,0.000000f,0.000000f,0.000000f,-0.001962f,0.000000f,1.000000f,0.000000f,0.000000f,
-    0.000013f,0.000000f,0.000000f,0.000000f,0.010000f,0.000000f,0.001962f,0.000000f,0.000000f,0.000000f,1.000000f,0.000000f,
-    0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,0.010000f,0.000000f,0.000000f,0.000000f,0.000000f,0.000000f,1.000000f,
+  sfloat A_data[NSTATES * NSTATES] = {
+      1.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 1.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  1.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, -0.003924f, 0.000000f, 1.000000f, 0.000000f, 0.000000f,
+      0.000000f, -0.392400f, 0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.003924f, 0.000000f,  0.000000f, 0.000000f, 1.000000f, 0.000000f,
+      0.392400f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 1.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.020000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      1.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.020000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 1.000000f,  0.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.020000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, 0.000000f,  1.000000f, 0.000000f, 0.000000f, 0.000000f,
+      0.000000f, -0.000013f, 0.000000f, 0.010000f, 0.000000f, 0.000000f,
+      0.000000f, -0.001962f, 0.000000f, 1.000000f, 0.000000f, 0.000000f,
+      0.000013f, 0.000000f,  0.000000f, 0.000000f, 0.010000f, 0.000000f,
+      0.001962f, 0.000000f,  0.000000f, 0.000000f, 1.000000f, 0.000000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 0.010000f,
+      0.000000f, 0.000000f,  0.000000f, 0.000000f, 0.000000f, 1.000000f,
   };
-  sfloat B_data[NSTATES*NINPUTS] = {
-    -0.000019f,-0.000001f,0.000981f,0.001264f,-0.029414f,0.004771f,-0.003847f,-0.000165f,0.098100f,0.252748f,-5.882783f,0.954290f,
-    -0.000001f,-0.000019f,0.000981f,0.029044f,-0.001057f,-0.003644f,-0.000138f,-0.003799f,0.098100f,5.808852f,-0.211410f,-0.728857f,
-    0.000019f,0.000001f,0.000981f,-0.001493f,0.028771f,0.001265f,0.003763f,0.000195f,0.098100f,-0.298680f,5.754175f,0.252942f,
-    0.000001f,0.000019f,0.000981f,-0.028815f,0.001700f,-0.002392f,0.000222f,0.003769f,0.098100f,-5.762921f,0.340018f,-0.478376f,
+  sfloat B_data[NSTATES * NINPUTS] = {
+      -0.000019f, -0.000001f, 0.000981f, 0.001264f,  -0.029414f, 0.004771f,
+      -0.003847f, -0.000165f, 0.098100f, 0.252748f,  -5.882783f, 0.954290f,
+      -0.000001f, -0.000019f, 0.000981f, 0.029044f,  -0.001057f, -0.003644f,
+      -0.000138f, -0.003799f, 0.098100f, 5.808852f,  -0.211410f, -0.728857f,
+      0.000019f,  0.000001f,  0.000981f, -0.001493f, 0.028771f,  0.001265f,
+      0.003763f,  0.000195f,  0.098100f, -0.298680f, 5.754175f,  0.252942f,
+      0.000001f,  0.000019f,  0.000981f, -0.028815f, 0.001700f,  -0.002392f,
+      0.000222f,  0.003769f,  0.098100f, -5.762921f, 0.340018f,  -0.478376f,
   };
-  sfloat f_data[NSTATES] = {0};            // f in model
+  sfloat f_data[NSTATES] = {0};                                // f in model
   sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
   sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
   sfloat goal_dual_data[NSTATES] = {0};                        // dual vars
@@ -211,7 +228,7 @@ int main() {
     // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
-    cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC;  // ms
+    cpu_time_used = ((double)(end - start)) * 1000 / CLOCKS_PER_SEC;  // ms
     printf("solve time: %f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
@@ -233,7 +250,7 @@ int main() {
     // tiny_PrintT(Uref[k]);
     // tiny_PrintT(Xref[k+1])
   }
-  
+
   // ========== Test ==========
   // Test state constraints
   // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {

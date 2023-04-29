@@ -7,15 +7,6 @@
 //========================================
 // Planar quadrotor model parameters
 //========================================
-// struct tiny_Model_PlanarQuadrotor {
-//   sfloat g;
-//   sfloat m;
-//   sfloat l;
-//   sfloat J;
-//   sfloat umin[2];
-//   sfloat umax[2];
-// } tiny_DefaultModel_PlanarQuadrotor = {9.81, 1,      0.018,
-//                                        0.3,  {0, 0}, {19.62, 19.62}};
 
 //========================================
 // Codes generated from julia/planar_quad_gen

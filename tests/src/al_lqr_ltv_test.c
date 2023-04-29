@@ -186,7 +186,7 @@ void AbsLqrLtvTest() {
   tiny_MpcLtv(X, U, &prob, &solver, model, 0, temp_data);
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
     // tiny_Print(slap_Transpose(Xref[k]));
     // tiny_Print(model.B[k]);

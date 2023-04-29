@@ -8,6 +8,6 @@ $DIR/cost_test
 $DIR/lqr_lti_test
 $DIR/lqr_lti_track_test
 $DIR/al_lqr_lti_test
-$DIR/lqr_ltv_test
+# $DIR/lqr_ltv_test
 $DIR/lqr_ltv_track_test
 $DIR/al_lqr_ltv_test

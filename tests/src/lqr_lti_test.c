@@ -124,7 +124,7 @@ void LqrLtiTest() {
     // tiny_PrintT(U[k]);
     // tiny_PrintT(X[k]);
   }
-  tiny_Print(X[NHORIZON-1]);
+  // tiny_Print(X[NHORIZON - 1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 

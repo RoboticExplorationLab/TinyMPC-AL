@@ -12,13 +12,12 @@
 // pwm in [0..1]
 //========================================
 
-
 //========================================
 // Codes generated from julia/quadrotor_quat/quadrotor_gen
 // Discrete dynamics of quadrotor
 //========================================
 void tiny_QuadNonlinearDynamics_Raw(sfloat* xn, const sfloat* x,
-                                     const sfloat* u);
+                                    const sfloat* u);
 
 void tiny_QuadNonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u);
 

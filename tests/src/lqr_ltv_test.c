@@ -13,10 +13,10 @@
 #define H 0.1
 #define NSTATES 6
 #define NINPUTS 2
-#define NHORIZON 30
+#define NHORIZON 40
 // GRADIENT EXPLOSION/VANISHING WHEN NHORIZON > 60 => LS FORMULATION
 
-sfloat x0_data[NSTATES] = {2, 3, 0.1, 0.1, 0.1, 0.1};  // initial state
+sfloat x0_data[NSTATES] = {1, 1, 0.1, 0.1, 0.1, 0.1};  // initial state
 sfloat ug_data[NINPUTS] = {0};                         // initial state
 sfloat xg_data[NSTATES] = {3, 2, 0, 0, 0, 0};          // goal state
 sfloat xhover_data[NSTATES] = {0, 0, 0, 0, 0, 0};

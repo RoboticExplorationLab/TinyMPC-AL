@@ -1,57 +1,82 @@
-# TinyMPC
-Under Development
+# README
 
-## Project Proposal
-Sam Schoedel, Khai Nguyen, Anoushka Alavilli
+- This is a full library, embedded (optimized) version is under development.
+However, it aims at highly modular integration. You can just use part of the
+sources at your need. Currently, assertion is not present. Users should be
+responsible for this during development.
+- AL-TVLQR is ready to use. It is able to handle input/state box constraints and
+goal constraint within stabilization or tracking problems for LTI and LTV
+systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
+`examples` for MPC experiments.
+- You can set constraints on/off in `CMakeLists.txt`, more are under development.
+- AL-iLQR is under development. It is able to handle input/state box constraints
+and goal constraint within stabilization or tracking problems for nonlinear
+systems.
 
-### Provide a brief high-level description of what you'd like to work on for your project*
+## How to compile and run
 
-Create a fast, efficient, dependency-free implementation of MPC in C that can be run on various microcontrollers.
+1. Inside `TinyMPC/c` directory, use `cmake -S. -Bbuild`. This creates a new
+`build` directory and configuration.  
 
-### What baseline solutions already exist for this problem?*
+2. To build the entire project, use `cmake --build build`. Alternatively, you
+can build a particular target by `cmake --build build -t target_name`. Let's
+try `cmake --build build -t bicycle_example`.  
 
-Some papers:  
-FDLQDMC (Fast Non-Linear Quadratic Dynamic Matrix Control) from https://doi.org/10.1016/j.ifacol.2021.10.004 (applied to servo motor driving a mechanical load)  
-Fast Model Predictive Control Using Online Optimization. https://web.stanford.edu/~boyd/papers/fast_mpc.html  
-A Microcontroller Implementation of Model Predictive Control.
-https://www.idc-online.com/technical_references/pdfs/electrical_engineering/A%20Microcontroller.pdf  
-Application of model predictive control for a thermal process using STM32 microcontroller. https://ieeexplore.ieee.org/document/8075647  
-Fast Analytical Model Predictive Controllers and Their Implementation for STM32 ARM Microcontroller. https://ieeexplore.ieee.org/document/8611361  
-Github repositories:  
-https://github.com/pronenewbits/Arduino_Unconstrained_MPC_Library  
-https://github.com/pronenewbits/Arduino_Constrained_MPC_Library
+3. To run `bicycle_example` executable, use `./build/examples/bicycle_example` while
+still inside `TinyMPC/c` directory.  
 
-### Provide 1 or 2 references that you've consulted on the problem you want to work on.*
+4. Iterate via 2 to develop your programs.  
 
-https://www.ri.cmu.edu/publications/altro-a-fast-solver-for-constrained-trajectory-optimization/   
-https://www.sciencedirect.com/science/article/pii/S2405896321014063
+## Notes
 
+- Use `slap_MatMulAdd(C, A, B, 1, 0)` instead of `slap_MatMulAB(C, A, B)`
+because the later one ignores all metadata.  
+- Can use `slap_MatrixAddition(C, C, A, alp)` to bias `C = C + alp*A`.  
+- Should use zero-initialization of array in global scope. Use `memset()` for
+local one.  
+- Should pass by reference instead of return type  
+- Linear term q, qf, r come from reference trajectories, ie. q = -Q*xref
+- MPC for LTI systems can handel all provided types of constraints.
+- Tracking MPC for LTV systems may not handle all due to the strictness.
 
-https://www.mdpi.com/2079-9292/6/4/88  
-Pytorch version: https://locuslab.github.io/mpc.pytorch/  
-https://www.sciencedirect.com/science/article/abs/pii/S0167691121001134 (potentially less relevant but worth looking into)  
-Worth looking into if we want to improve/add more functionality to TinyMPC:   
+## Done
 
-### What control techniques do you plan to use?*
+- Augmented Lagrangian LQR/TVLQR and MPC.
+- Successful unit and integration testing.
+- Experiments on sfloat integrator, planar quadrotor and bicycle model.
 
-iLQR, AL-iLQR
+## Optimal Control Problem
 
-### What will you actually implement? Is there existing software you can leverage?*
+- Check [the report](tinyMPC_Report.pdf) for full derivation.
 
-We will likely have to actually implement Newton’s method, the vehicle model, and the communication bridge between microcontroller and sensor processor (Jetson NX, probably). Brian Jackson has developed a lightweight linear algebra library in C called slap that we can leverage for implementing control algorithms.  
-Since we aim to create a dependency-free LQR solver, we will create a matrix inversion tool (that uses Cholesky, QR, and LU matrix factorizations) that we can call depending on the structure of our system (whether it’s overdetermined, undetermined, square, symmetric positive-definite, etc.).
-We will explore if we can make an in-house dLQR() function (as in MATLAB and Julia) to solve for the feedback matrix K in the Riccati equations.
+- Check `examples/bicycle_example.c` to see how to use the library (not so good
+API yet).
 
-### How will you evaluate your solution?*
+- There are almost no local variables created inside a function (all defined by
+user before solve).
 
-Initially, we should benchmark the solution in HIL style (use computer to simulate the dynamics) for a Jet Transport Aircraft (https://www.mathworks.com/help/control/ug/mimo-state-space-models.html#buv3tp8-1), where the configuration is (4 state, 2 input, 2 output LTI system). 
-https://www.mathworks.com/matlabcentral/answers/440277-what-are-mil-sil-pil-and-hil-and-how-do-they-integrate-with-the-model-based-design-approach  
-Then, evaluation will be done on a physical robot with various microcontrollers. Will likely use some variation of the F1/10 racecar (https://f1tenth.org/build.html). Currently plan on using Teensy 4.0 and STM32 Nucleo dev board, but can always try our solution on other microcontrollers. We can also do microcontroller emulation and sim if necessary.  
-Additionally, for debugging purposes, we will first implement the solver in Julia and then port to C so that we can verify whether our MPC is working as expected.
+- Temporary data should not be modified unless you know exactly what you want to
+do.
 
-### Questions
-Do we have microcontrollers in the lab already?  
-Is SLAP slower than BLAS?  
-Seems like an arduino constrained MPC implementation exists, should look at it first.  
+- If you have a LTV system, you'd better derive the formulas to compute A(t),
+B(t), f(t). We use `Symbolics.jl` to derive it analytically and convert to C code.
 
+*Workflow:*
 
+1. Define all necessary array and convert them to `Matrix`.
+
+2. Define necessary struct: `model`, `problem_data`, `solver`.
+
+3. Assign data to struct.
+
+4. Solve the problem.
+
+*Constraints:*
+
+- Inequality constraints will be identically applied to all timestep, in the
+form: $Ax \leq b$. For example, input bound:
+$$A = [I; -I], \quad b = [umax; -umin]$$
+
+- Equality constraint is goal constraint.
+
+- Enable/disable constraints by setting, e.g.,  `prob.ncstr_inputs` to `1` or `0`

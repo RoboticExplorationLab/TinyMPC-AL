@@ -35,14 +35,8 @@ option(TINY_BUILD_TESTS "Build tests for TinyMPC" ON)
 # Enable clang-tidy analysis
 option(TINY_CLANG_TIDY "Run clang-tidy analyzer on the source code." OFF)
 
-# Floating point precision
-set(SLAP_FLOAT float CACHE STRING "Floating point precision for slap (float,double).")
-
 # Build examples
 option(TINY_BUILD_EXAMPLES "Build examples for TinyMPC." ON)
-
-# Build with -march=native
-option(TINY_VECTORIZE "Compile with -march=native" OFF)
 
 # Build with extra information for profiling
 option(TINY_PROFILE "Compile with -pg" ON)
@@ -58,6 +52,8 @@ FetchContent_Declare(slap
   GIT_TAG main
   )
 set(SLAP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SLAP_VECTORIZE ON CACHE BOOL "" FORCE)
+set(SLAP_FLOAT float CACHE STRING "" FORCE)
 FetchContent_MakeAvailable(slap)
 endif ()
 

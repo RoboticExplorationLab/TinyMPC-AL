@@ -160,7 +160,6 @@ int main() {
   slap_SetConst(prob.bcstr_state, 100.0);  // x_max = -x_min = 100
   prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   slap_SetConst(prob.bcstr_input, 0.5);  // u_max = -u_min = 0.5
-  tiny_PrintT(prob.bcstr_input);
 
   prob.X_ref = Xref;
   prob.U_ref = Uref;
@@ -191,7 +190,7 @@ int main() {
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
     Matrix pos_ref = slap_CreateSubMatrix(Xref[k], 0, 0, 3, 1);
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    printf("ex[%d] = %.4f\n", k, slap_NormedDifference(pos, pos_ref));
+    // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(pos, pos_ref));
 
     // === 1. Setup and solve MPC ===
     for (int j = 0; j < NSTATES; ++j) {
@@ -211,7 +210,7 @@ int main() {
     // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
-    cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC; // milliseconds
+    cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC; // ms
     printf("%f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)

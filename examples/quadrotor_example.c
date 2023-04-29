@@ -211,7 +211,7 @@ int main() {
     // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC;  // ms
     printf("%f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)

@@ -29,8 +29,8 @@ void tiny_UpdateHorizonJacobians(tiny_LtvModel* model, tiny_ProblemData prob) {
     model->get_jacobians(&(model->A[i]), &(model->B[i]), prob.X_ref[i],
                          prob.U_ref[i]);
     // get f = x1 - Ax - Bu
-    if (model->get_nonlinear_dynamics != NULL) {
-      model->get_nonlinear_dynamics(&(model->f[i]), prob.X_ref[i],
+    if (model->get_nonl_model != NULL) {
+      model->get_nonl_model(&(model->f[i]), prob.X_ref[i],
                                     prob.U_ref[i]);
       slap_MatMulAdd(model->f[i], model->A[i], prob.X_ref[i], -1, 1);
       slap_MatMulAdd(model->f[i], model->B[i], prob.U_ref[i], -1, 1);

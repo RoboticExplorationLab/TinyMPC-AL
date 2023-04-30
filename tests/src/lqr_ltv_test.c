@@ -39,8 +39,8 @@ void DeltaLqrLtvTest() {
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -169,8 +169,8 @@ void AbsLqrLtvTest() {
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -298,8 +298,8 @@ void DeltaLqrLtiTest() {
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -414,8 +414,8 @@ void AbsLqrLtiTest() {
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];

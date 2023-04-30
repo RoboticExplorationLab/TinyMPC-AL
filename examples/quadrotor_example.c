@@ -95,16 +95,16 @@ int main() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix input_duals[NHORIZON - 1];
-  Matrix state_duals[NHORIZON];
+  Matrix YU[NHORIZON - 1];
+  Matrix YX[NHORIZON];
 
   // ===== Created tinyMPC struct =====
   tiny_LtiModel model;
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   // ===== Fill in the struct =====
   for (int i = 0; i < NSIM; ++i) {
@@ -123,7 +123,7 @@ int main() {
       K[i] = slap_MatrixFromArray(NINPUTS, NSTATES,
                                   &K_data[i * NINPUTS * NSTATES]);
       d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
+      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
                                             &input_dual_data[i * 2 * NINPUTS]);
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
@@ -131,7 +131,7 @@ int main() {
     P[i] =
         slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
     p[i] = slap_MatrixFromArray(NSTATES, 1, &p_data[i * NSTATES]);
-    state_duals[i] =
+    YX[i] =
         slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
   }
 
@@ -161,26 +161,26 @@ int main() {
   prob.ncstr_inputs = 1;
   prob.ncstr_states = 0;
 
-  prob.Acstr_state =
+  prob.Acx =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, 0, 0, NSTATES, NSTATES);
   Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.Acstr_input =
+  prob.Acu =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  upper_half = slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
   lower_half =
-      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
 
-  prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  slap_SetConst(prob.bcstr_state, 100.0);  // x_max = -x_min = 100
-  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
-  slap_SetConst(prob.bcstr_input, 0.5);  // u_max = -u_min = 0.5
+  prob.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  slap_SetConst(prob.bcx, 100.0);  // x_max = -x_min = 100
+  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  slap_SetConst(prob.bcu, 0.5);  // u_max = -u_min = 0.5
 
   prob.X_ref = Xref;
   prob.U_ref = Uref;
@@ -189,9 +189,9 @@ int main() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
-  prob.input_duals = input_duals;
-  prob.state_duals = state_duals;
-  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
+  prob.YU = YU;
+  prob.YX = YX;
+  prob.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_outer_iters = 5;  // Often takes less than 5
   solver.cstr_tol = 1e-4;

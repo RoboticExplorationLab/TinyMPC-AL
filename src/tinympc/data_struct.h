@@ -3,7 +3,7 @@
 #include "slap/slap.h"
 #include "utils.h"
 
-#define kNullMat  \
+#define TINY_NULL_MAT  \
   ((Matrix){      \
       0,          \
       0,          \
@@ -33,7 +33,7 @@ typedef struct {
   Matrix* f;
   Matrix x0;
   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
-  void (*get_nonlinear_dynamics)(Matrix*, const Matrix, const Matrix);
+  void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
   // int data_size;
 } tiny_LtvModel;
 
@@ -60,9 +60,9 @@ typedef struct {
   int max_search_iters;
   sfloat riccati_tol;
   sfloat cstr_tol;
-} tiny_Solver;
+} tiny_Settings;
 
-void tiny_InitSolver(tiny_Solver* solver);
+void tiny_InitSettings(tiny_Settings* solver);
 
 typedef struct tiny_ProblemData {
   int nstates;
@@ -85,13 +85,13 @@ typedef struct tiny_ProblemData {
   Matrix* d;
   Matrix* P;
   Matrix* p;
-  Matrix* input_duals;
-  Matrix* state_duals;
-  Matrix goal_dual;
-  Matrix Acstr_state;
-  Matrix bcstr_state;
-  Matrix Acstr_input;
-  Matrix bcstr_input;
+  Matrix* YU;
+  Matrix* YX;
+  Matrix YG;
+  Matrix Acx;
+  Matrix bcx;
+  Matrix Acu;
+  Matrix bcu;
   // int data_size;
 } tiny_ProblemData;
 

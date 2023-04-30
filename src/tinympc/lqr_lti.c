@@ -2,7 +2,7 @@
 
 // Riccati recursion for LTI without constraints
 enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_Solver solver,
+                                         const tiny_Settings solver,
                                          const tiny_LtiModel model,
                                          Matrix* Q_temp) {
   int N = prob->nhorizon;

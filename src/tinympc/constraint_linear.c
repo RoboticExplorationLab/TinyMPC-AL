@@ -26,8 +26,8 @@ sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob) {
 void tiny_IneqInputs(Matrix* ineq_input, const tiny_ProblemData prob,
                      const Matrix u) {
   // slap_SetConst(*ineq_input, 0);  // clear before processing
-  slap_MatMulAdd(*ineq_input, prob.Acstr_input, u, 1.0, 0.0);
-  slap_MatrixAddition(*ineq_input, *ineq_input, prob.bcstr_input, -1.0);
+  slap_MatMulAdd(*ineq_input, prob.Acu, u, 1.0, 0.0);
+  slap_MatrixAddition(*ineq_input, *ineq_input, prob.bcu, -1.0);
 }
 
 // // [u_max, -u_min]
@@ -65,8 +65,8 @@ void tiny_IneqInputs(Matrix* ineq_input, const tiny_ProblemData prob,
 void tiny_IneqStates(Matrix* ineq_state, const tiny_ProblemData prob,
                      const Matrix x) {
   // slap_SetConst(*ineq_input, 0);  // clear before processing
-  slap_MatMulAdd(*ineq_state, prob.Acstr_state, x, 1.0, 0.0);
-  slap_MatrixAddition(*ineq_state, *ineq_state, prob.bcstr_state, -1.0);
+  slap_MatMulAdd(*ineq_state, prob.Acx, x, 1.0, 0.0);
+  slap_MatrixAddition(*ineq_state, *ineq_state, prob.bcx, -1.0);
 }
 
 // // [x_max, -x_min]

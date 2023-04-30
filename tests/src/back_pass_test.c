@@ -38,8 +38,8 @@ void BackPassTest() {
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;

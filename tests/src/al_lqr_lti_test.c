@@ -51,8 +51,8 @@ void MpcLtiTest() {
   tiny_InitLtiModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
@@ -70,8 +70,8 @@ void MpcLtiTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
-  Matrix input_duals[NHORIZON - 1];
-  Matrix state_duals[NHORIZON];
+  Matrix YU[NHORIZON - 1];
+  Matrix YX[NHORIZON];
 
   sfloat* Xptr = X_data;
   sfloat* Xref_ptr = Xref_data;
@@ -95,7 +95,7 @@ void MpcLtiTest() {
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
+      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
       udual_ptr += 2 * NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
@@ -107,7 +107,7 @@ void MpcLtiTest() {
     Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
+    YX[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
   slap_Copy(X[0], model.x0);
@@ -125,23 +125,23 @@ void MpcLtiTest() {
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 100 * 1e-1);
 
-  prob.Acstr_state =
+  prob.Acx =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, 0, 0, NSTATES, NSTATES);
   Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.Acstr_input =
+  prob.Acu =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  upper_half = slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
   lower_half =
-      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  prob.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   prob.X_ref = Xref;
 
   prob.U_ref = Uref;
@@ -150,9 +150,9 @@ void MpcLtiTest() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
-  prob.input_duals = input_duals;
-  prob.state_duals = state_duals;
-  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
+  prob.YU = YU;
+  prob.YX = YX;
+  prob.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_outer_iters = 10;
 

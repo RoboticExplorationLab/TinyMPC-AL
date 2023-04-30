@@ -52,8 +52,8 @@ Matrix p[NHORIZON];
 Matrix A[NHORIZON - 1];
 Matrix B[NHORIZON - 1];
 Matrix f[NHORIZON - 1];
-Matrix input_duals[NHORIZON - 1];
-Matrix state_duals[NHORIZON];
+Matrix YU[NHORIZON - 1];
+Matrix YX[NHORIZON];
 
 void AbsLqrLtvTest() {
   sfloat X_data[NSTATES * NHORIZON] = {0};
@@ -73,8 +73,8 @@ void AbsLqrLtvTest() {
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
   tiny_InitProblemData(&prob);
-  tiny_Solver solver;
-  tiny_InitSolver(&solver);
+  tiny_Settings solver;
+  tiny_InitSettings(&solver);
 
   sfloat* Xptr = X_data;
   sfloat* Xref_ptr = Xref_data;
@@ -107,7 +107,7 @@ void AbsLqrLtvTest() {
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
-      input_duals[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
+      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
       udual_ptr += 2 * NINPUTS;
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
@@ -118,7 +118,7 @@ void AbsLqrLtvTest() {
     Pptr += NSTATES * NSTATES;
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
-    state_duals[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
+    YX[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
     xdual_ptr += 2 * NSTATES;
   }
 
@@ -126,7 +126,7 @@ void AbsLqrLtvTest() {
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
   model.get_jacobians = tiny_Bicycle5dGetJacobians;  // from Bicycle
-  model.get_nonlinear_dynamics = tiny_Bicycle5dNonlinearDynamics;
+  model.get_nonl_model = tiny_Bicycle5dNonlinearDynamics;
   model.A = A;
   model.B = B;
   model.f = f;
@@ -144,23 +144,23 @@ void AbsLqrLtvTest() {
   slap_SetIdentity(prob.R, 1e-1);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_SetIdentity(prob.Qf, 10e-1);
-  prob.Acstr_state =
+  prob.Acx =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, 0, 0, NSTATES, NSTATES);
   Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(prob.Acx, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.Acstr_input =
+  prob.Acu =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+  upper_half = slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
   lower_half =
-      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  prob.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   prob.X_ref = Xref;
   prob.U_ref = Uref;
   prob.x0 = model.x0;
@@ -168,9 +168,9 @@ void AbsLqrLtvTest() {
   prob.d = d;
   prob.P = P;
   prob.p = p;
-  prob.input_duals = input_duals;
-  prob.state_duals = state_duals;
-  prob.goal_dual = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
+  prob.YU = YU;
+  prob.YX = YX;
+  prob.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   // Absolute formulation
   // Compute and store A, B before solving

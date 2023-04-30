@@ -1,7 +1,7 @@
 #include "lqr_ltv.h"
 
 enum slap_ErrorCode tiny_BackwardPassLtv(tiny_ProblemData* prob,
-                                         const tiny_Solver solver,
+                                         const tiny_Settings solver,
                                          const tiny_LtvModel model,
                                          Matrix* Q_temp) {
   int N = prob->nhorizon;

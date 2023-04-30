@@ -5,10 +5,10 @@ void tiny_InitLtiModel(tiny_LtiModel* model) {
       .nstates = 0,
       .ninputs = 0,
       .dt = 0.0,
-      .A = kNullMat,
-      .B = kNullMat,
-      .f = kNullMat,
-      .x0 = kNullMat,
+      .A = TINY_NULL_MAT,
+      .B = TINY_NULL_MAT,
+      .f = TINY_NULL_MAT,
+      .x0 = TINY_NULL_MAT,
   };
 }
 
@@ -20,23 +20,23 @@ void tiny_InitLtvModel(tiny_LtvModel* model) {
       .A = NULL,
       .B = NULL,
       .f = NULL,
-      .x0 = kNullMat,
+      .x0 = TINY_NULL_MAT,
       .get_jacobians = NULL,
-      .get_nonlinear_dynamics = NULL,
+      .get_nonl_model = NULL,
   };
 }
 
 void tiny_InitKnotPoint(tiny_KnotPoint* z) {
   *z = (tiny_KnotPoint){
-      .x = kNullMat,
-      .u = kNullMat,
+      .x = TINY_NULL_MAT,
+      .u = TINY_NULL_MAT,
       .t = 0.0,
       .dt = 0.0,
   };
 }
 
-void tiny_InitSolver(tiny_Solver* solver) {
-  *solver = (tiny_Solver){
+void tiny_InitSettings(tiny_Settings* solver) {
+  *solver = (tiny_Settings){
       .reg = 1e-8,
       .reg_min = 1e-8,
       .reg_max = 1e2,
@@ -58,26 +58,26 @@ void tiny_InitProblemData(tiny_ProblemData* prob) {
       .ncstr_states = 0,
       .ncstr_inputs = 0,
       .ncstr_goal = 0,
-      .Q = kNullMat,
-      .R = kNullMat,
-      .q = kNullMat,
-      .r = kNullMat,
-      .Qf = kNullMat,
-      .qf = kNullMat,
+      .Q = TINY_NULL_MAT,
+      .R = TINY_NULL_MAT,
+      .q = TINY_NULL_MAT,
+      .r = TINY_NULL_MAT,
+      .Qf = TINY_NULL_MAT,
+      .qf = TINY_NULL_MAT,
       .X_ref = NULL,
       .U_ref = NULL,
       .dt = 0.0,
-      .x0 = kNullMat,
+      .x0 = TINY_NULL_MAT,
       .K = NULL,
       .d = NULL,
       .P = NULL,
       .p = NULL,
-      .input_duals = NULL,
-      .state_duals = NULL,
-      .goal_dual = kNullMat,
-      .Acstr_state = kNullMat,
-      .bcstr_state = kNullMat,
-      .Acstr_input = kNullMat,
-      .bcstr_input = kNullMat,
+      .YU = NULL,
+      .YX = NULL,
+      .YG = TINY_NULL_MAT,
+      .Acx = TINY_NULL_MAT,
+      .bcx = TINY_NULL_MAT,
+      .Acu = TINY_NULL_MAT,
+      .bcu = TINY_NULL_MAT,
   };
 }

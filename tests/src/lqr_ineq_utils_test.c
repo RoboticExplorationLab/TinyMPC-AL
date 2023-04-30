@@ -115,15 +115,15 @@ void ActiveIneqMaskTest() {
   prob.ncstr_inputs = 2 * NINPUTS;
   prob.ncstr_goal = NSTATES;
 
-  prob.Acstr_input =
+  prob.Acu =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
   Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
 
   Matrix u = slap_MatrixFromArray(NINPUTS, 1, u_data);
   Matrix ineq = slap_MatrixFromArray(NINPUTS * 2, 1, ineq_data);

@@ -11,34 +11,6 @@ extern "C" {
 #include "utils.h"
 #include "errors.h"
 
-// typedef struct {
-//   int nstates;
-//   int ninputs;
-//   int affine;         ///< Boolean, true if model is affine //TODO: compile option
-//   sfloat dt;
-//   Matrix A;
-//   Matrix B;
-//   Matrix f;
-//   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
-//   void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
-//   int data_size;      ///< number of sfloats need to store A, B, f
-// } tiny_LtiModel;
-
-// // for a horizon of N x(0)->x(N-1), need N-1 matrices
-// typedef struct {
-//   int nstates;
-//   int ninputs;
-//   int nhorizon;
-//   int affine;         ///< Boolean, true if model is affine
-//   sfloat dt;
-//   Matrix* A;
-//   Matrix* B;
-//   Matrix* f;
-//   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
-//   void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
-//   int data_size;      ///< number of sfloats need to store A, B, f
-// } tiny_LtvModel;
-
 // for a horizon of N x(0)->x(N-1), need N-1 matrices
 typedef struct {
   int nstates;

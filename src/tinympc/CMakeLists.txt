@@ -25,8 +25,8 @@ add_library(tinympc
   cost_lqr.h
   cost_lqr.c
 
-  # lqr_lti.h
-  # lqr_lti.c
+  lqr_lti.h
+  lqr_lti.c
 
   # lqr_ltv.h
   # lqr_ltv.c

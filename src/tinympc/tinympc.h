@@ -13,10 +13,9 @@ extern "C" {
 #include "model.h"
 #include "auxil.h"
 #include "cost_lqr.h"
-
-// #include "constraint_linear.h"
-// #include "lqr_lti.h"
+#include "lqr_lti.h"
 // #include "lqr_ltv.h"
+// #include "constraint_linear.h"
 // #include "mpc_lti.h"
 // #include "mpc_ltv.h"
 

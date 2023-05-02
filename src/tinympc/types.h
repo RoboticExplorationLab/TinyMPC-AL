@@ -136,6 +136,8 @@ typedef struct {
   tiny_Solution*    soln;      ///< problem solution
   tiny_Info*        info;      ///< solver information
 
+  sfloat reg;
+  sfloat alpha;
   // Temporary data
   Matrix Q_temp;
   Matrix c_temp;

@@ -1,7 +1,9 @@
-#pragma once
-#ifdef __cplusplus
+#ifndef TINYMPC_H
+# define TINYMPC_H
+
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif // ifdef __cplusplus
 
 // NOTE: this is an odd fix to get gcov to run correctly on GitHub Actions:
 // https://www.osadl.org/fileadmin/dam/interface/docbook/howtos/coverage.pdf
@@ -13,7 +15,8 @@ extern "C" {
 #include "model.h"
 #include "auxil.h"
 #include "cost_lqr.h"
-#include "lqr_lti.h"
+#include "lqr.h"
+// #include "lqr_lti.h"
 // #include "lqr_ltv.h"
 // #include "constraint_linear.h"
 // #include "mpc_lti.h"
@@ -50,6 +53,9 @@ extern "C" {
 //   #endif
 // #endif
 
-#ifdef __cplusplus
+
+# ifdef __cplusplus
 }
-#endif
+# endif // ifdef __cplusplus
+
+#endif // ifndef TINYMPC_H

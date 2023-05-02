@@ -7,7 +7,8 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tinympc/dynamics_lti.h"
+#include "tinympc/lqr.h"
+#include "tinympc/auxil.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -18,26 +19,47 @@ sfloat A_data[NSTATES * NSTATES] = {1,   0, 0, 0, 0, 1,   0, 0,
 sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
 sfloat f_data[NSTATES] = {0, 0, 0, 0};
 // sfloat x0_data[NSTATES] = {5,7,2,-1.4};
+sfloat Q_data[NSTATES*NSTATES] = {0};
+sfloat R_data[NINPUTS*NINPUTS] = {0};
+sfloat Qf_data[NSTATES] = {0};
+sfloat q_data[NSTATES*(NHORIZON-1)] = {0};
+sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
+sfloat qf_data[NSTATES] = {0};
+
+sfloat X_ref_data[NSTATES] = {0};
+sfloat U_ref_data[NINPUTS] = {0};
 
 void ForwardPassTest() {
   const sfloat tol = 1e-6;
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  model.dt = 0.1;
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  // model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  Matrix A;
+  Matrix B;
+  Matrix f;
+
+  tiny_Model model;
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
+  tiny_Settings stgs;
+  tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
+  tiny_Data data;
+  tiny_Info info;
+  tiny_Solution soln;
+  tiny_Workspace work;
+  tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
+  
+  sfloat temp_data[work.data_size];
+  INIT_ZEROS(temp_data);
+
+  tiny_InitTempData(&work, temp_data);
+  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix X[NHORIZON];
   Matrix Xsln[NHORIZON];
   Matrix U[NHORIZON - 1];
   Matrix K[NHORIZON - 1];
   Matrix d[NHORIZON - 1];
+  Matrix X_ref[NHORIZON];
+  Matrix U_ref[NHORIZON-1];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
 
   sfloat* xptr = x_data;
   sfloat* xsol_ptr = xsol_data;
@@ -60,12 +82,33 @@ void ForwardPassTest() {
     xsol_ptr += NSTATES;
   }
 
-  prob.ninputs = NINPUTS;
-  prob.nstates = NSTATES;
-  prob.nhorizon = NHORIZON;
-  prob.x0 = X[0];  // check if possible
-  prob.K = K;
-  prob.d = d;
+  data.x0 = X[0];  // check if possible
+  soln.K = K;
+  soln.d = d;
+  soln.U = U;
+  soln.X = X;
+  data.X_ref = X_ref;
+  data.U_ref = U_ref;
+  data.q = q;
+  data.r = r;
+
+  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
+  slap_SetIdentity(data.Q, 1);
+  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
+  slap_SetIdentity(data.R, 1);
+  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
+  slap_SetIdentity(data.Qf, 1);
+  data.q[0] = slap_MatrixFromArray(NSTATES, 1, q_data);
+  data.q[1] = slap_MatrixFromArray(NSTATES, 1, &q_data[NSTATES]);
+  data.r[0] = slap_MatrixFromArray(NINPUTS, 1, r_data);
+  data.r[1] = slap_MatrixFromArray(NINPUTS, 1, &r_data[NINPUTS]);
+  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);    
+  X_ref[0] = slap_MatrixFromArray(NSTATES, 1, X_ref_data);
+  X_ref[1] = slap_MatrixFromArray(NSTATES, 1, X_ref_data);
+  X_ref[2] = slap_MatrixFromArray(NSTATES, 1, X_ref_data);
+  U_ref[0] = slap_MatrixFromArray(NINPUTS, 1, U_ref_data);
+  U_ref[1] = slap_MatrixFromArray(NINPUTS, 1, U_ref_data);
+  tiny_UpdateLinearCost(&work);
 
   uptr = u_data;
   xsol_ptr = xsol_data;
@@ -78,13 +121,13 @@ void ForwardPassTest() {
       TEST(U[i].cols == 1);
       TEST(SumOfSquaredError(U[i].data, uptr, NINPUTS) < tol);
       uptr += NINPUTS;
-      TEST(prob.K[i].rows == NINPUTS);
-      TEST(prob.K[i].cols == NSTATES);
-      TEST(SumOfSquaredError(prob.K[i].data, Kptr, NINPUTS * NSTATES) < tol);
+      TEST(soln.K[i].rows == NINPUTS);
+      TEST(soln.K[i].cols == NSTATES);
+      TEST(SumOfSquaredError(soln.K[i].data, Kptr, NINPUTS * NSTATES) < tol);
       Kptr += NINPUTS * NSTATES;
-      TEST(prob.d[i].rows == NINPUTS);
-      TEST(prob.d[i].cols == 1);
-      TEST(SumOfSquaredError(prob.d[i].data, dptr, NINPUTS) < tol);
+      TEST(soln.d[i].rows == NINPUTS);
+      TEST(soln.d[i].cols == 1);
+      TEST(SumOfSquaredError(soln.d[i].data, dptr, NINPUTS) < tol);
       dptr += NINPUTS;
     }
     TEST(X[i].rows == NSTATES);
@@ -98,10 +141,15 @@ void ForwardPassTest() {
   }
 
   // Include discrete dynamics test
-  tiny_ForwardPassLti(X, U, prob, model);
+  tiny_ForwardPass(&work);
   for (int i = 0; i < NHORIZON; ++i) {
-    TEST(SumOfSquaredError(X[i].data, Xsln[i].data, NSTATES) < tol);
+    TEST(SumOfSquaredError(soln.X[i].data, Xsln[i].data, NSTATES) < tol);
   }
+  //FIXME: cost is not exact!!
+  // printf("%f\n", info.obj_pri);
+  // tiny_Print(soln.U[0]);
+  // tiny_Print(soln.U[1]);
+  // tiny_Print(soln.X[0]);tiny_Print(soln.X[1]);tiny_Print(soln.X[2]);
 }
 
 int main() {

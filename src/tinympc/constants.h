@@ -42,6 +42,7 @@ enum tiny_ErrorCode {
 # define PENALTY_MUL (10.0)
 
 # define ALPHA_MUL (0.5)
+# define ALPHA (1)
 
 # define MAX_ITER_AL (10)
 # define MAX_ITER_RICCATI (10)

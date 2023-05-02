@@ -138,6 +138,8 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
   int m = model->ninputs;
   // int N = model->nhorizon;
 
+  work->reg = (sfloat)REG_MIN;
+  work->alpha = (sfloat)ALPHA;
   work->Q_temp = TINY_NULL_MAT;
   work->c_temp = TINY_NULL_MAT;
 

@@ -131,7 +131,7 @@ enum tiny_ErrorCode tiny_SetModelNonlFunc(
 
 enum tiny_ErrorCode tiny_EvalModel(Matrix* xn, const Matrix x, const Matrix u,
                                    tiny_Model* model, const int k) {
-  if (model->ltv) {
+  if (model->affine) {
     slap_Copy(*xn, model->f[k]);
     slap_MatMulAdd(*xn, model->A[k], x, 1, 1);  // x[k+1] += A * x[k]
   }
@@ -153,7 +153,12 @@ enum tiny_ErrorCode tiny_RollOutModel(tiny_Workspace* work) {
       slap_Copy(work->soln->U[k], work->soln->d[k]); // u[k] = -d[k]
       slap_MatMulAdd(work->soln->U[k], work->soln->K[k], work->soln->X[k], -1, -1);  // u[k] -= K[k] * x[k]
       // Next state: x = A*x + B*u + f
-      tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[0], k);
+      if (adaptive_horizon && k > adaptive_horizon - 1) {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[1], k);
+      }
+      else {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[0], k);
+      }
     }    
   }
   else {

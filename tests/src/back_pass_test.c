@@ -7,7 +7,8 @@
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tinympc/lqr_lti.h"
+#include "tinympc/lqr.h"
+#include "tinympc/auxil.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -30,23 +31,31 @@ void BackPassTest() {
   sfloat Q_data[NSTATES * NSTATES] = {0};
   sfloat R_data[NINPUTS * NINPUTS] = {0};
   sfloat Qf_data[NSTATES * NSTATES] = {0};
-  sfloat umin_data[NINPUTS] = {-2, -2};
-  sfloat umax_data[NINPUTS] = {2, 2};
+  sfloat q_data[NSTATES*(NHORIZON-1)] = {0};
+  sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
+  sfloat qf_data[NSTATES] = {0};
+
   const sfloat tol = 1e-6;
 
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Settings solver;
-  tiny_InitSettings(&solver);
+  tiny_Model model;
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
+  tiny_Settings stgs;
+  tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
+  tiny_Data data;
+  tiny_Info info;
+  tiny_Solution soln;
+  tiny_Workspace work;
+  tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
+  
+  sfloat temp_data[work.data_size];
+  INIT_ZEROS(temp_data);
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  tiny_InitTempData(&work, temp_data);
+
+  Matrix A;
+  Matrix B;
+  Matrix f;
+  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON - 1];
@@ -54,6 +63,8 @@ void BackPassTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
 
   sfloat* Xref_ptr = Xref_data;
   sfloat* Uref_ptr = Uref_data;
@@ -79,33 +90,42 @@ void BackPassTest() {
     pptr += NSTATES;
   }
 
-  prob.ninputs = NINPUTS;
-  prob.nstates = NSTATES;
-  prob.nhorizon = NHORIZON;
-  prob.ncstr_inputs = 2 * NINPUTS * (NHORIZON - 1);
-  prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1e-1);
-  prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e-1);
-  prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 100 * 1e-1);
-  prob.u_max = slap_MatrixFromArray(NINPUTS, 1, umax_data);
-  prob.u_min = slap_MatrixFromArray(NINPUTS, 1, umin_data);
-  prob.X_ref = Xref;
-  prob.U_ref = Uref;
-  prob.x0 = model.x0;
-  prob.K = K;
-  prob.d = d;
-  prob.P = P;
-  prob.p = p;
-
-  solver.reg = 1e-8;
-  solver.penalty_mul = 10;
-
-  sfloat G_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix G_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       G_temp_data);
-  tiny_BackwardPassLti(&prob, solver, model, &G_temp);
+  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
+  slap_SetIdentity(data.Q, 1e-1);
+  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
+  slap_SetIdentity(data.R, 1e-1);
+  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
+  slap_SetIdentity(data.Qf, 100 * 1e-1);
+  data.X_ref = Xref;
+  data.U_ref = Uref;
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  data.q = q;
+  data.r = r;
+  data.q[0] = slap_MatrixFromArray(NSTATES, 1, q_data);
+  data.q[1] = slap_MatrixFromArray(NSTATES, 1, &q_data[NSTATES]);
+  data.r[0] = slap_MatrixFromArray(NINPUTS, 1, r_data);
+  data.r[1] = slap_MatrixFromArray(NINPUTS, 1, &r_data[NINPUTS]);
+  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);   
+  soln.K = K;
+  soln.d = d;
+  soln.P = P;
+  soln.p = p; 
+  if (0) {
+    printf("\nProblem Info: \n");
+    tiny_Print(work.data->model->A[0]);
+    tiny_Print(work.data->model->B[0]);
+    tiny_Print(work.data->model->f[0]);
+    tiny_Print(work.data->Q);
+    tiny_Print(work.data->R);
+    tiny_Print(work.data->Qf);
+  }
+  tiny_UpdateLinearCost(&work);
+  tiny_BackwardPass(&work);
+  if (1) {
+    for (int k = 0; k < NHORIZON - 1; ++k) {
+      tiny_Print(work.soln->d[k]);
+    }
+  }
   TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);
 }
 

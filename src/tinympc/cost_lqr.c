@@ -7,9 +7,15 @@ enum tiny_ErrorCode tiny_AddStageCost(tiny_Workspace* work, const int k) {
   Matrix dx = slap_MatrixFromArray(n, 1, dx_data);
   slap_MatrixAddition(dx, work->soln->X[k], work->data->X_ref[k], -1);
   work->info->obj_pri += 0.5 * slap_QuadraticForm(dx, work->data->Q, dx);
+  // tiny_PrintT(dx);
+  // printf("%f\n", work->info->obj_pri);
   Matrix du = slap_MatrixFromArray(m, 1, dx_data);
   slap_MatrixAddition(du, work->soln->U[k], work->data->U_ref[k], -1);
   work->info->obj_pri += 0.5 * slap_QuadraticForm(du, work->data->R, du);
+
+  // tiny_PrintT(du);
+  // tiny_Print(work->data->R);
+  // printf("%f\n", work->info->obj_pri);
   return TINY_NO_ERROR;
 }
 

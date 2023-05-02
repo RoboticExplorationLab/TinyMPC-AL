@@ -95,7 +95,8 @@ typedef struct {
 
   int    verbose;             ///< boolean, write out progress
   int    adaptive_horizon;    ///< Integer, after `adaptive_horizon` steps, use the second model with longer interval; if 0, disabled 
-  int    check_termnation;    ///< integer, check termination interval; if 0, then termination checking is disabled
+  int    check_riccati;       ///< Boolean, if 0, then termination checking is disabled
+  int    check_al;            ///< Boolean, if 0, then termination checking is disabled
   int    warm_start;          ///< boolean, enable warm start
   sfloat time_limit;          ///< Time limit of each MPC step; if 0, disabled
 } tiny_Settings;

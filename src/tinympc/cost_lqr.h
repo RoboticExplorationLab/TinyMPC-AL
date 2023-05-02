@@ -1,23 +1,32 @@
-#pragma once
+#ifndef COST_LQR_H
+# define COST_LQR_H
 
-#include "data_struct.h"
-#include "slap/slap.h"
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
 
-void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
-                       const Matrix x, const Matrix u, const int k);
 
-void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
-                          const Matrix x);
+#include "types.h"
 
-void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                          Matrix* hes_el_uu, Matrix* grad_el_u,
-                          const tiny_ProblemData prob, const int k);
+enum tiny_ErrorCode tiny_AddStageCost(tiny_Workspace* work, const int k);
 
-void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                             const tiny_ProblemData prob);
+enum tiny_ErrorCode tiny_AddTerminalCost(tiny_Workspace* work);
 
-// void tiny_SetQ(tiny_Workspace* work, sfloat* Q);
+enum tiny_ErrorCode tiny_ExpandStageCost(tiny_Workspace* work, const int k);
 
-// void tiny_SetQf(tiny_Workspace* work, sfloat* Qf);
+enum tiny_ErrorCode tiny_ExpandTerminalCost(tiny_Workspace* work);
 
-// void tiny_SetR(tiny_Workspace* work, sfloat* R);
+enum tiny_ErrorCode tiny_UpdateLinearCost(tiny_Workspace* work);
+
+// enum tiny_ErrorCode tiny_SetQ(tiny_Workspace* work, sfloat* Q);
+
+// enum tiny_ErrorCode tiny_SetQf(tiny_Workspace* work, sfloat* Qf);
+
+// enum tiny_ErrorCode tiny_SetR(tiny_Workspace* work, sfloat* R);
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef COST_LQR_H

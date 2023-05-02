@@ -1,35 +1,49 @@
 #include "cost_lqr.h"
 
-void tiny_AddStageCost(sfloat* cost, const tiny_ProblemData prob,
-                       const Matrix x, const Matrix u, const int k) {
-  sfloat dx_data[prob.nstates];
-  Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
-  slap_MatrixAddition(dx, x, prob.X_ref[k], -1);
-  *cost += 0.5 * slap_QuadraticForm(dx, prob.Q, dx);
-  Matrix du = slap_MatrixFromArray(prob.ninputs, 1, dx_data);
-  slap_MatrixAddition(du, u, prob.U_ref[k], -1);
-  *cost += 0.5 * slap_QuadraticForm(du, prob.R, du);
+enum tiny_ErrorCode tiny_AddStageCost(tiny_Workspace* work, const int k) {
+  int n = work->data->model[0].nstates;
+  int m = work->data->model[0].ninputs;
+  sfloat dx_data[n];
+  Matrix dx = slap_MatrixFromArray(n, 1, dx_data);
+  slap_MatrixAddition(dx, work->soln->X[k], work->data->X_ref[k], -1);
+  work->info->obj_pri += 0.5 * slap_QuadraticForm(dx, work->data->Q, dx);
+  Matrix du = slap_MatrixFromArray(m, 1, dx_data);
+  slap_MatrixAddition(du, work->soln->U[k], work->data->U_ref[k], -1);
+  work->info->obj_pri += 0.5 * slap_QuadraticForm(du, work->data->R, du);
+  return TINY_NO_ERROR;
 }
 
-void tiny_AddTerminalCost(sfloat* cost, const tiny_ProblemData prob,
-                          const Matrix x) {
-  sfloat dx_data[prob.nstates];
-  Matrix dx = slap_MatrixFromArray(prob.nstates, 1, dx_data);
-  slap_MatrixAddition(dx, x, prob.X_ref[prob.nhorizon - 1], -1);
-  *cost += 0.5 * slap_QuadraticForm(dx, prob.Qf, dx);
+enum tiny_ErrorCode tiny_AddTerminalCost(tiny_Workspace* work) {
+  int n = work->data->model[0].nstates;
+  int N = work->data->model[0].nhorizon;
+  sfloat dx_data[n];
+  Matrix dx = slap_MatrixFromArray(n, 1, dx_data);
+  slap_MatrixAddition(dx, work->soln->X[N - 1], work->data->X_ref[N - 1], -1);
+  work->info->obj_pri += 0.5 * slap_QuadraticForm(dx, work->data->Qf, dx);
+  return TINY_NO_ERROR;
 }
 
-void tiny_ExpandStageCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                          Matrix* hes_el_uu, Matrix* grad_el_u,
-                          const tiny_ProblemData prob, const int k) {
-  slap_Copy(*hes_el_xx, prob.Q);
-  slap_MatMulAdd(*grad_el_x, prob.Q, prob.X_ref[k], -1, 0);
-  slap_Copy(*hes_el_uu, prob.R);
-  slap_MatMulAdd(*grad_el_u, prob.R, prob.U_ref[k], -1, 0);
+enum tiny_ErrorCode tiny_ExpandStageCost(tiny_Workspace* work, const int k) {
+  slap_Copy(work->Qxx, work->data->Q);
+  slap_Copy(work->Quu, work->data->R);
+
+  slap_Copy(work->Qx, work->data->q[k]);
+  slap_Copy(work->Qu, work->data->r[k]); 
+  return TINY_NO_ERROR; 
 }
 
-void tiny_ExpandTerminalCost(Matrix* hes_el_xx, Matrix* grad_el_x,
-                             const tiny_ProblemData prob) {
-  slap_Copy(*hes_el_xx, prob.Qf);
-  slap_MatMulAdd(*grad_el_x, prob.Qf, prob.X_ref[prob.nhorizon - 1], -1, 0);
+enum tiny_ErrorCode tiny_ExpandTerminalCost(tiny_Workspace* work) {
+  slap_Copy(work->Qxx, work->data->Qf);
+  slap_Copy(work->Qx, work->data->qf);
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_UpdateLinearCost(tiny_Workspace* work) {
+  int N = work->data->model[0].nhorizon;
+  for (int k = 0; k < N - 1; ++k) {
+    slap_MatMulAdd(work->data->q[k], work->data->Q, work->data->X_ref[k], -1, 0);
+    slap_MatMulAdd(work->data->r[k], work->data->R, work->data->U_ref[k], -1, 0);
+  }
+  slap_MatMulAdd(work->data->qf, work->data->Qf, work->data->X_ref[N-1], -1, 0);
+  return TINY_NO_ERROR;
 }

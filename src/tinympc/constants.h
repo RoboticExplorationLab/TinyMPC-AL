@@ -56,7 +56,8 @@ enum tiny_ErrorCode {
 
 # define VERBOSE (1)
 # define ADAPTIVE_HORIZON (0)
-# define CHECK_TERMINATION (0)
+# define CHECK_RICCATI (0)
+# define CHECK_AL (1)
 # define WARM_START (1)
 # define TIME_LIMIT (0.0)
 

@@ -1,10 +1,7 @@
 #include "lqr_lti.h"
 
 // Riccati recursion for LTI without constraints
-enum slap_ErrorCode tiny_BackwardPassLti(tiny_ProblemData* prob,
-                                         const tiny_Settings solver,
-                                         const tiny_LtiModel model,
-                                         Matrix* Q_temp) {
+enum slap_ErrorCode tiny_BackwardPassLti(tiny_Wor) {
   int N = prob->nhorizon;
   int n = prob->nstates;
   int m = prob->ninputs;

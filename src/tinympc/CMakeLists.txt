@@ -22,6 +22,9 @@ add_library(tinympc
   auxil.h
   auxil.c
   
+  cost_lqr.h
+  cost_lqr.c
+
   # lqr_lti.h
   # lqr_lti.c
 
@@ -34,8 +37,7 @@ add_library(tinympc
   # mpc_ltv.h
   # mpc_ltv.c
 
-  # cost_lqr.h
-  # cost_lqr.c
+
 
   # dynamics_lti.h
   # dynamics_lti.c

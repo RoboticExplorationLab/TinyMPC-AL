@@ -39,6 +39,20 @@
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
 
 //========================================
+// Print matrix info
+//========================================
+#define PrintMatrixInfo(mat)      \
+  {                          \
+    printf("%s info: \n", #mat); \
+    printf(" Dims: (%d, %d)\n", mat.rows, mat.cols);   \
+    printf(" Data: "); \
+    for (int imat = 0; imat < mat.cols * mat.rows; ++imat) { \
+      printf("%.4f, ", mat.data[imat]); \
+    } \
+    printf("\n");\
+  }
+
+//========================================
 // Read data from file
 //========================================
 int tiny_ReadData(const char* filename, sfloat* des, const int size,

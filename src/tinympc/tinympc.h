@@ -12,11 +12,9 @@ extern "C" {
 #include "utils.h"
 #include "model.h"
 #include "auxil.h"
+#include "cost_lqr.h"
+
 // #include "constraint_linear.h"
-// #include "cost_lqr.h"
-// #include "data_struct.h"
-// #include "dynamics_lti.h"
-// #include "dynamics_ltv.h"
 // #include "lqr_lti.h"
 // #include "lqr_ltv.h"
 // #include "mpc_lti.h"

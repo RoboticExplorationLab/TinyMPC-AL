@@ -27,7 +27,8 @@ enum tiny_ErrorCode tiny_InitSettings(tiny_Settings* stgs) {
 
   stgs->verbose          = VERBOSE;
   stgs->adaptive_horizon = ADAPTIVE_HORIZON;
-  stgs->check_termnation = CHECK_TERMINATION;
+  stgs->check_riccati    = CHECK_RICCATI;
+  stgs->check_al         = CHECK_AL;
   stgs->warm_start       = WARM_START;
   stgs->time_limit       = TIME_LIMIT;
 

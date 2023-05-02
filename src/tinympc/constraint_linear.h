@@ -1,4 +1,4 @@
-#include "data_struct.h"
+#include "types.h"
 
 sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob);
 

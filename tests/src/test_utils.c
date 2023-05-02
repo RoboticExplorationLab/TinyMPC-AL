@@ -1,5 +1,6 @@
 #include "test_utils.h"
 
+// This will not work with sub-matrices
 sfloat SumOfSquaredError(const sfloat* x, const sfloat* y, const int len) {
   sfloat err = 0;
   for (int i = 0; i < len; ++i) {

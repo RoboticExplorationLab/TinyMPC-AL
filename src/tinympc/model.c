@@ -142,7 +142,7 @@ enum tiny_ErrorCode tiny_EvalModel(Matrix* xn, const Matrix x, const Matrix u,
   return TINY_NO_ERROR;
 }
 
-enum tiny_ErrorCode tiny_RollOutModel(tiny_Workspace* work) {
+enum tiny_ErrorCode tiny_RollOutClosedLoop(tiny_Workspace* work) {
   tiny_Model* model = work->data->model;
   int N = model[0].nhorizon;
   int adaptive_horizon = work->stgs->adaptive_horizon;
@@ -166,6 +166,36 @@ enum tiny_ErrorCode tiny_RollOutModel(tiny_Workspace* work) {
       // Control input: u = - d - K*x
       slap_Copy(work->soln->U[k], work->soln->d[k]); // u[k] = -d[k]
       slap_MatMulAdd(work->soln->U[k], work->soln->K[k], work->soln->X[k], -1, -1);  // u[k] -= K[k] * x[k]
+      // Next state: x = A*x + B*u + f
+      if (adaptive_horizon && k > adaptive_horizon - 1) {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[1], 0);
+      }
+      else {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[0], 0);
+      }
+    }        
+  }
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_RollOutOpenLoop(tiny_Workspace* work) {
+  tiny_Model* model = work->data->model;
+  int N = model[0].nhorizon;
+  int adaptive_horizon = work->stgs->adaptive_horizon;
+  
+  if (model[0].ltv) {
+    for (int k = 0; k < N - 1; ++k) {
+      // Next state: x = A*x + B*u + f
+      if (adaptive_horizon && k > adaptive_horizon - 1) {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[1], k);
+      }
+      else {
+        tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[0], k);
+      }
+    }    
+  }
+  else {
+    for (int k = 0; k < N - 1; ++k) {
       // Next state: x = A*x + B*u + f
       if (adaptive_horizon && k > adaptive_horizon - 1) {
         tiny_EvalModel(&(work->soln->X[k + 1]), work->soln->X[k], work->soln->U[k], &model[1], 0);

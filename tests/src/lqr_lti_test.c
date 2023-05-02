@@ -2,13 +2,11 @@
 // Scenerio: Drive double integrator to arbitrary goal state.
 // This one is absolutely correct
 
-#include "tinympc/lqr_lti.h"
-
 #include "simpletest.h"
 #include "slap/slap.h"
 #include "test_utils.h"
-#include "tinympc/data_struct.h"
-#include "tinympc/utils.h"
+#include "tinympc/lqr.h"
+#include "tinympc/auxil.h"
 
 #define NSTATES 4
 #define NINPUTS 2
@@ -20,7 +18,7 @@ void LqrLtiTest() {
   sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   sfloat f_data[NSTATES] = {0};
   sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
-  sfloat xg_data[NSTATES] = {2, 5, 3, -1};
+  sfloat xg_data[NSTATES] = {2, 5, 1, -1};
   sfloat Xref_data[NSTATES * NHORIZON] = {0};
   sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
   sfloat X_data[NSTATES * NHORIZON] = {0};
@@ -32,20 +30,30 @@ void LqrLtiTest() {
   sfloat Q_data[NSTATES * NSTATES] = {0};
   sfloat R_data[NINPUTS * NINPUTS] = {0};
   sfloat Qf_data[NSTATES * NSTATES] = {0};
+  sfloat q_data[NSTATES*(NHORIZON-1)] = {0};
+  sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
+  sfloat qf_data[NSTATES] = {0};
 
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Settings solver;
-  tiny_InitSettings(&solver);
+  tiny_Model model;
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
+  tiny_Settings stgs;
+  tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
+  tiny_Data data;
+  tiny_Info info;
+  tiny_Solution soln;
+  tiny_Workspace work;
+  tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
+  
+  sfloat temp_data[work.data_size];
+  INIT_ZEROS(temp_data);
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
+  tiny_InitTempData(&work, temp_data);
+
+  Matrix A;
+  Matrix B;
+  Matrix f;
+  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+
   Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
   Matrix X[NHORIZON];
@@ -56,6 +64,8 @@ void LqrLtiTest() {
   Matrix d[NHORIZON - 1];
   Matrix P[NHORIZON];
   Matrix p[NHORIZON];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
 
   sfloat* Xptr = X_data;
   sfloat* Xref_ptr = Xref_data;
@@ -65,6 +75,9 @@ void LqrLtiTest() {
   sfloat* dptr = d_data;
   sfloat* Pptr = P_data;
   sfloat* pptr = p_data;
+  sfloat* qptr = q_data;
+  sfloat* rptr = r_data;
+
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
       U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
@@ -76,6 +89,10 @@ void LqrLtiTest() {
       Kptr += NINPUTS * NSTATES;
       d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
       dptr += NINPUTS;
+      q[i] = slap_MatrixFromArray(NSTATES, 1, qptr);
+      qptr += NSTATES;
+      r[i] = slap_MatrixFromArray(NINPUTS, 1, rptr);
+      rptr += NINPUTS;      
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
     Xptr += NSTATES;
@@ -87,44 +104,58 @@ void LqrLtiTest() {
     p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
     pptr += NSTATES;
   }
-  slap_Copy(X[0], model.x0);
-  prob.ninputs = NINPUTS;
-  prob.nstates = NSTATES;
-  prob.nhorizon = NHORIZON;
 
-  prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 1.0);
-  prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1.0);
-  prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 1000.0);
+  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
+  slap_SetIdentity(data.Q, 1000.0);
+  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
+  slap_SetIdentity(data.R, 1.0);
+  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
+  slap_SetIdentity(data.Qf, 1000.0);
 
-  prob.X_ref = Xref;
-  prob.U_ref = Uref;
-  prob.x0 = model.x0;
-  prob.K = K;
-  prob.d = d;
-  prob.P = P;
-  prob.p = p;
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
+  soln.X = X;
+  soln.U = U;
+  soln.K = K;
+  soln.d = d;
+  soln.P = P;
+  soln.p = p;
+  soln.U = U;
+  soln.X = X;
+  data.X_ref = Xref;
+  data.U_ref = Uref;
+  data.q = q;
+  data.r = r;
+  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);  
 
-  solver.reg = 1e-8;
-  solver.max_outer_iters = 10;
+  tiny_UpdateLinearCost(&work);
 
-  sfloat Q_temp_data[(NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1)] = {0};
-  Matrix Q_temp = slap_MatrixFromArray(NSTATES + NINPUTS, NSTATES + NINPUTS + 1,
-                                       Q_temp_data);
-
-  tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
-  tiny_ForwardPassLti(X, U, prob, model);
-
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("\nk = \n", k);
-    // tiny_Print(p[k]);
-    // tiny_PrintT(Xref[k]);
-    // tiny_PrintT(U[k]);
-    // tiny_PrintT(X[k]);
+  if (1) {
+    printf("\nProblem Info: \n");
+    tiny_Print(work.data->model->A[0]);
+    tiny_Print(work.data->model->B[0]);
+    tiny_Print(work.data->model->f[0]);
+    tiny_Print(work.data->Q);
+    tiny_Print(work.data->R);
+    tiny_Print(work.data->Qf);
+    tiny_PrintT(work.data->x0);
+    tiny_PrintT(work.data->X_ref[NHORIZON-1]);
+    tiny_PrintT(work.data->U_ref[NHORIZON-2]);
+    tiny_PrintT(work.data->q[NHORIZON-2]);
+    tiny_PrintT(work.data->r[NHORIZON-2]);
   }
-  // tiny_Print(X[NHORIZON - 1]);
+ 
+  tiny_SolveLqr(&work);
+
+  if (1) {
+    for (int k = 0; k < NHORIZON - 1; ++k) {
+      printf("\n=>k = %d\n", k);
+      tiny_Print(d[k]);
+      // tiny_PrintT(Xref[k]);
+      tiny_PrintT(U[k]);
+      tiny_PrintT(X[k]);
+    }
+  }
+  tiny_Print(X[NHORIZON - 1]);
   TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
 }
 

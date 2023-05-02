@@ -1,127 +1,127 @@
 #include "utils.h"
 
-//========================================
-// Read data from file
-//========================================
-int tiny_ReadData(const char* filename, sfloat* des, const int size,
-                  bool verbose) {
-  FILE* input;
-  int i;
+// //========================================
+// // Read data from file
+// //========================================
+// int tiny_ReadData(const char* filename, sfloat* des, const int size,
+//                   bool verbose) {
+//   FILE* input;
+//   int i;
 
-  input = fopen(filename, "r");
-  if (!input) {
-    if (verbose == true)
-      fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
-    return EXIT_FAILURE;
-  }
+//   input = fopen(filename, "r");
+//   if (!input) {
+//     if (verbose == true)
+//       fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
+//     return EXIT_FAILURE;
+//   }
 
-  for (i = 0; i < size; ++i) {
-    if (fscanf(input, "%lf ", &(des[i])) != 1) {
-      if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
-      fclose(input);
-      return EXIT_FAILURE;
-    }
+//   for (i = 0; i < size; ++i) {
+//     if (fscanf(input, "%lf ", &(des[i])) != 1) {
+//       if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
+//       fclose(input);
+//       return EXIT_FAILURE;
+//     }
 
-    if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
-  }
+//     if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
+//   }
 
-  if (ferror(input)) {
-    fclose(input);
-    if (verbose == true) fprintf(stderr, "Error reading %s.\n", filename);
-    return EXIT_FAILURE;
-  }
-  if (fclose(input)) {
-    if (verbose == true) fprintf(stderr, "Error closing %s.\n", filename);
-    return EXIT_FAILURE;
-  }
+//   if (ferror(input)) {
+//     fclose(input);
+//     if (verbose == true) fprintf(stderr, "Error reading %s.\n", filename);
+//     return EXIT_FAILURE;
+//   }
+//   if (fclose(input)) {
+//     if (verbose == true) fprintf(stderr, "Error closing %s.\n", filename);
+//     return EXIT_FAILURE;
+//   }
 
-  if (verbose == true) printf("All sfloats read successfully.\n");
+//   if (verbose == true) printf("All sfloats read successfully.\n");
 
-  return EXIT_SUCCESS;
-}
+//   return EXIT_SUCCESS;
+// }
 
-//========================================
-// Read data from file and copy the last knot point into
-// remaining space of the array. Useful for extend horizon at the end.
-//========================================
-int tiny_ReadData_Extend(const char* filename, sfloat* des, const int stride,
-                         const int size, bool verbose) {
-  FILE* input;
-  int i;
-  int k = 0;
-  input = fopen(filename, "r");
-  if (!input) {
-    if (verbose == true)
-      fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
-    return EXIT_FAILURE;
-  }
+// //========================================
+// // Read data from file and copy the last knot point into
+// // remaining space of the array. Useful for extend horizon at the end.
+// //========================================
+// int tiny_ReadData_Extend(const char* filename, sfloat* des, const int stride,
+//                          const int size, bool verbose) {
+//   FILE* input;
+//   int i;
+//   int k = 0;
+//   input = fopen(filename, "r");
+//   if (!input) {
+//     if (verbose == true)
+//       fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
+//     return EXIT_FAILURE;
+//   }
 
-  for (i = 0; i < size; ++i) {
-    if (fscanf(input, "%lf ", &(des[i])) != 1) {
-      if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
-      fclose(input);
-      break;
-    }
+//   for (i = 0; i < size; ++i) {
+//     if (fscanf(input, "%lf ", &(des[i])) != 1) {
+//       if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
+//       fclose(input);
+//       break;
+//     }
 
-    if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
+//     if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
 
-    k += 1;
-  }
+//     k += 1;
+//   }
 
-  if (verbose == true)
-    printf("All sfloats read successfully and now extend.\n");
+//   if (verbose == true)
+//     printf("All sfloats read successfully and now extend.\n");
 
-  int remain_cnt = (size - k) / stride;  // # of remaining chunks
-  for (i = 0; i < remain_cnt; i += 1) {
-    for (int j = 0; j < stride; j += 1) {
-      des[k + j + i * stride] = des[k + j - stride];  // copy
-    }
-  }
+//   int remain_cnt = (size - k) / stride;  // # of remaining chunks
+//   for (i = 0; i < remain_cnt; i += 1) {
+//     for (int j = 0; j < stride; j += 1) {
+//       des[k + j + i * stride] = des[k + j - stride];  // copy
+//     }
+//   }
 
-  return EXIT_SUCCESS;
-}
+//   return EXIT_SUCCESS;
+// }
 
-//========================================
-// Read data from file and copy the goal state into
-// remaining space of the array. Useful for extend horizon at the end.
-//========================================
-int tiny_ReadData_ExtendGoal(const char* filename, sfloat* des,
-                             const sfloat* xf, const int stride, const int size,
-                             bool verbose) {
-  FILE* input;
-  int i;
-  int k = 0;
-  input = fopen(filename, "r");
-  if (!input) {
-    if (verbose == true)
-      fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
-    return EXIT_FAILURE;
-  }
+// //========================================
+// // Read data from file and copy the goal state into
+// // remaining space of the array. Useful for extend horizon at the end.
+// //========================================
+// int tiny_ReadData_ExtendGoal(const char* filename, sfloat* des,
+//                              const sfloat* xf, const int stride, const int size,
+//                              bool verbose) {
+//   FILE* input;
+//   int i;
+//   int k = 0;
+//   input = fopen(filename, "r");
+//   if (!input) {
+//     if (verbose == true)
+//       fprintf(stderr, "Cannot open %s: %s.\n", filename, strerror(errno));
+//     return EXIT_FAILURE;
+//   }
 
-  for (i = 0; i < size; ++i) {
-    if (fscanf(input, "%lf ", &(des[i])) != 1) {
-      if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
-      fclose(input);
-      break;
-    }
+//   for (i = 0; i < size; ++i) {
+//     if (fscanf(input, "%lf ", &(des[i])) != 1) {
+//       if (verbose == true) fprintf(stderr, "Invalid data in %s.\n", filename);
+//       fclose(input);
+//       break;
+//     }
 
-    if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
+//     if (verbose == true) printf("Read %lf from %s.\n", des[i], filename);
 
-    k += 1;
-  }
+//     k += 1;
+//   }
 
-  if (verbose == true)
-    printf("All sfloats read successfully and now extend.\n");
+//   if (verbose == true)
+//     printf("All sfloats read successfully and now extend.\n");
 
-  int remain_cnt = (size - k) / stride;  // # of remaining chunks
-  for (i = 0; i < remain_cnt; i += 1) {
-    for (int j = 0; j < stride; j += 1) {
-      des[k + j + i * stride] = xf[j];  // copy
-    }
-  }
+//   int remain_cnt = (size - k) / stride;  // # of remaining chunks
+//   for (i = 0; i < remain_cnt; i += 1) {
+//     for (int j = 0; j < stride; j += 1) {
+//       des[k + j + i * stride] = xf[j];  // copy
+//     }
+//   }
 
-  return EXIT_SUCCESS;
-}
+//   return EXIT_SUCCESS;
+// }
 
 //========================================
 // Clamp the inputs to within min max value

@@ -39,7 +39,9 @@ enum tiny_ErrorCode tiny_SetModelNonlFunc(
 enum tiny_ErrorCode tiny_EvalModel(Matrix* xn, const Matrix x, const Matrix u,
                                    tiny_Model* model, const int k);
 
-enum tiny_ErrorCode tiny_RollOutModel(tiny_Workspace* work);
+enum tiny_ErrorCode tiny_RollOutClosedLoop(tiny_Workspace* work);
+
+enum tiny_ErrorCode tiny_RollOutOpenLoop(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_UpdateModelJac(tiny_Workspace* work);
 

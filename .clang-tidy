@@ -33,7 +33,7 @@ CheckOptions:
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
     value:           'true'
   - key:             modernize-use-nullptr.NullMacros
-    value:           'NULL'
+    value:           'TINY_NULL'
   - key:             llvm-qualified-auto.AddConstToQualified
     value:           'false'
   - key:             modernize-loop-convert.NamingStyle

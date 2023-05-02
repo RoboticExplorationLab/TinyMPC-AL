@@ -16,51 +16,62 @@ extern "C" {
 # define TINY_UNSOLVED (-10)            /* Unsolved. Only setup function has been called */
 
 
+/******************
+* Solver Errors  *
+******************/
+// Inherit from slap_ErrorCode and expand new errors for tinympc
+enum tiny_ErrorCode {
+  TINY_SLAP_ERROR = 0,
+  TINY_MATRIX_NOT_PSD,
+  TINY_PROBLEM_INFEASIBLE,
+  TINY_NO_ERROR,
+};
+
+
 /**********************************
 * Solver Parameters and Settings *
 **********************************/
 
-# define RHO (0.1)
-# define SIGMA (1E-06)
-# define MAX_ITER (4000)
-# define EPS_ABS (1E-3)
-# define EPS_REL (1E-3)
-# define EPS_PRIM_INF (1E-4)
-# define EPS_DUAL_INF (1E-4)
-# define ALPHA (1.6)
-# define LINSYS_SOLVER (QDLDL_SOLVER)
+# define REG_MIN (1e-6)
+# define REG_MAX (1e2)
+# define REG_MUL (1.6)
+# define EN_REG_UPDATE (0)
 
-# define RHO_MIN (1e-06)
-# define RHO_MAX (1e06)
-# define RHO_EQ_OVER_RHO_INEQ (1e03)
-# define RHO_TOL (1e-04) ///< tolerance for detecting if an inequality is set to equality
+# define PENALTY_INIT (1e0)
+# define PENALTY_MAX (1e6)
+# define PENALTY_MUL (10.0)
 
+# define ALPHA_MUL (0.5)
 
-# ifndef EMBEDDED
-#  define DELTA (1E-6)
-#  define POLISH (0)
-#  define POLISH_REFINE_ITER (3)
-#  define VERBOSE (1)
-# endif // ifndef EMBEDDED
+# define MAX_ITER_AL (10)
+# define MAX_ITER_RICCATI (10)
+# define MAX_ITER_LS (10)
 
-# define SCALED_TERMINATION (0)
-# define CHECK_TERMINATION (25)
+# define TOL_ABS_RICCATI (1e-2)
+# define TOL_ABS_CSTR (1e-2)
+
+# define EN_CSTR_STATES (1)
+# define EN_CSTR_INPUTS (1)
+# define EN_CSTR_GOAL (1)
+
+# define VERBOSE (1)
+# define ADAPTIVE_HORIZON (0)
+# define CHECK_TERMINATION (0)
 # define WARM_START (1)
-# define SCALING (10)
-
-# define MIN_SCALING (1e-04) ///< minimum scaling value
-# define MAX_SCALING (1e+04) ///< maximum scaling value
+# define TIME_LIMIT (0.0)
 
 
-# define TINY_NULL_MAT  \
+# ifndef TINY_NULL_MAT
+#  define TINY_NULL_MAT  \
   ((Matrix){      \
       0,          \
       0,          \
       0,          \
       0,          \
-      NULL,       \
+      TINY_NULL,       \
       slap_DENSE, \
   })
+# endif /* ifndef TINY_NULL_MAT */
 
 # ifndef TINY_NULL
 #  define TINY_NULL 0
@@ -73,23 +84,6 @@ extern "C" {
 # ifndef TINY_INFTY
 #  define TINY_INFTY ((sfloat)1e30)        // infinity
 # endif /* ifndef TINY_INFTY */
-
-
-# if EMBEDDED != 1
-#  define ADAPTIVE_RHO (1)
-#  define ADAPTIVE_RHO_INTERVAL (0)
-#  define ADAPTIVE_RHO_FRACTION (0.4)           ///< fraction of setup time after which we update rho
-#  define ADAPTIVE_RHO_MULTIPLE_TERMINATION (4) ///< multiple of check_termination after which we update rho (if PROFILING disabled)
-#  define ADAPTIVE_RHO_FIXED (100)              ///< number of iterations after which we update rho if termination_check  and PROFILING are disabled
-#  define ADAPTIVE_RHO_TOLERANCE (5)            ///< tolerance for adopting new rho; minimum ratio between new rho and the current one
-# endif // if EMBEDDED != 1
-
-# ifdef PROFILING
-#  define TIME_LIMIT (0)                        ///< Disable time limit as default
-# endif // ifdef PROFILING
-
-/* Printing */
-# define PRINT_INTERVAL 200
 
 
 # ifdef __cplusplus

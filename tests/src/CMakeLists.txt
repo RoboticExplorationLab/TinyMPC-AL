@@ -10,11 +10,7 @@ function(add_my_test name)
     test_utils.h
     test_utils.c  
 
-    bicycle_5d.h  # we don't want to include for all
-    bicycle_5d.c
-
-    planar_quadrotor.h   # we don't want to include for all
-    planar_quadrotor.c
+    ${ARGN}
     )
   target_link_libraries(${TEST_NAME}
     PRIVATE
@@ -29,13 +25,16 @@ endfunction()
 # add_subdirectory(data)
 
 # Add tests
-add_my_test(lqrdata)
-add_my_test(lqr_ineq_utils)
-add_my_test(forward_pass)
-add_my_test(cost)
-add_my_test(lqr_lti)
-add_my_test(lqr_lti_track)
-add_my_test(al_lqr_lti)
+# add_my_test(model_lti bicycle_5d.h bicycle_5d.c)
+# add_my_test(model_ltv bicycle_5d.h bicycle_5d.c)
+add_my_test(model bicycle_5d.h bicycle_5d.c)
+add_my_test(setup_prob)
+# add_my_test(lqr_ineq_utils)
+# add_my_test(forward_pass)
+# add_my_test(cost)
+# add_my_test(lqr_lti)
+# add_my_test(lqr_lti_track)
+# add_my_test(al_lqr_lti)
 # add_my_test(lqr_ltv)
-add_my_test(lqr_ltv_track)
-add_my_test(al_lqr_ltv)
+# add_my_test(lqr_ltv_track)
+# add_my_test(al_lqr_ltv)

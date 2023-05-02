@@ -8,7 +8,7 @@
 
 enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     tiny_ProblemData* prob, const tiny_Settings solver, const tiny_LtiModel model,
-    const Matrix* X, const Matrix* U, Matrix* Q_temp, Matrix* ineq_temp);
+    const Matrix* X, const Matrix* U, Matrix* Q_temp, Matrix* c_temp);
 
 enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
                                 tiny_Settings* solver, const tiny_LtiModel model,

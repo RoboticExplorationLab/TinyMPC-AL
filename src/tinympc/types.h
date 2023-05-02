@@ -5,37 +5,58 @@
 extern "C" {
 # endif // ifdef __cplusplus
 
+
 #include "slap/slap.h"
+#include "constants.h"
+#include "utils.h"
+#include "errors.h"
 
+// typedef struct {
+//   int nstates;
+//   int ninputs;
+//   int affine;         ///< Boolean, true if model is affine //TODO: compile option
+//   sfloat dt;
+//   Matrix A;
+//   Matrix B;
+//   Matrix f;
+//   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
+//   void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
+//   int data_size;      ///< number of sfloats need to store A, B, f
+// } tiny_LtiModel;
 
-typedef struct {
-  int nstates;
-  int ninputs;
-  sfloat dt;
-  Matrix A;
-  Matrix B;
-  Matrix f;
-  Matrix x0;
-  // int data_size;  ///< number of sfloats need to store the data
-} tiny_LtiModel;
+// // for a horizon of N x(0)->x(N-1), need N-1 matrices
+// typedef struct {
+//   int nstates;
+//   int ninputs;
+//   int nhorizon;
+//   int affine;         ///< Boolean, true if model is affine
+//   sfloat dt;
+//   Matrix* A;
+//   Matrix* B;
+//   Matrix* f;
+//   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
+//   void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
+//   int data_size;      ///< number of sfloats need to store A, B, f
+// } tiny_LtvModel;
 
+// for a horizon of N x(0)->x(N-1), need N-1 matrices
 typedef struct {
   int nstates;
   int ninputs;
   int nhorizon;
-  sfloat dt;
+
+  int ltv;            ///< Boolean, true if model is LTV  
+  int affine;         ///< Boolean, true if model is affine
+  sfloat dt;          ///< Sample time Ts of the discrete model
+
   Matrix* A;
   Matrix* B;
   Matrix* f;
-  Matrix x0;
+
   void (*get_jacobians)(Matrix*, Matrix*, const Matrix, const Matrix);
   void (*get_nonl_model)(Matrix*, const Matrix, const Matrix);
-  // int data_size;
-} tiny_LtvModel;
-
-void tiny_InitLtiModel(tiny_LtiModel* model);
-void tiny_InitLtvModel(tiny_LtvModel* model);
-
+  int data_size;
+} tiny_Model;
 
 /**
  * Solution structure
@@ -52,6 +73,7 @@ typedef struct {
   Matrix* d;
   Matrix* P;
   Matrix* p;
+  int data_size;
 } tiny_Solution;
 
 
@@ -62,7 +84,8 @@ typedef struct {
   int iter;           ///< Number of iterations taken
   int status_val;     ///< Integer, status defined in constants.h
 
-  sfloat obj_val;     ///< primal objective
+  sfloat obj_pri;     ///< primal objective
+  sfloat obj_al;      ///< Augmented Lagrangian objective
   sfloat pri_res;     ///< norm of primal residual
   sfloat dua_res;     ///< norm of dual residual
 } tiny_Info;
@@ -78,7 +101,8 @@ typedef struct {
 typedef struct {
   sfloat reg_min;             ///< Minimum regularization
   sfloat reg_max;             ///< Maximum regularization
-  int    en_reg_update;       ///< Enable regularization update (tighter solve)
+  sfloat reg_mul;             ///< Regularization update multiplier
+  int    en_reg_update;       ///< Boolean, enable regularization update (tighter solve)
   
   sfloat penalty_init;        ///< Initial penalty
   sfloat penalty_max;         ///< Maximum penalty
@@ -93,25 +117,26 @@ typedef struct {
   sfloat tol_abs_riccati;     ///< Riccati solve tolerance
   sfloat tol_abs_cstr;        ///< Constraint tolerance
 
-  int    en_cstr_states;      ///< Enable inequality constraints on states
-  int    en_cstr_inputs;      ///< Enable inequality constraints on inputs
-  int    en_cstr_goal;        ///< Enable equality constraint on goal
+  int    en_cstr_states;      ///< Boolean, enable inequality constraints on states
+  int    en_cstr_inputs;      ///< Boolean, enable inequality constraints on inputs
+  int    en_cstr_goal;        ///< Boolean, enable equality constraint on goal
 
-  int    adaptive_horizon;    ///< Integer, from this step, use the second model with longer step; if 0, disabled 
-  
+  int    verbose;             ///< boolean, write out progress
+  int    adaptive_horizon;    ///< Integer, after `adaptive_horizon` steps, use the second model with longer interval; if 0, disabled 
+  int    check_termnation;    ///< integer, check termination interval; if 0, then termination checking is disabled
+  int    warm_start;          ///< boolean, enable warm start
   sfloat time_limit;          ///< Time limit of each MPC step; if 0, disabled
 } tiny_Settings;
 
-void tiny_InitSettings(tiny_Settings* solver);
+// void tiny_InitSettings(tiny_Settings* solver);
 
 
 /**
  * Data structure
  */
 typedef struct {
-  int nstates;
-  int ninputs;
-  int nhorizon;
+  tiny_Model* model;    ///< System model
+  Matrix x0;
 
   Matrix  Q;
   Matrix  R;
@@ -127,15 +152,20 @@ typedef struct {
   Matrix bcx;
   Matrix Acu;
   Matrix bcu;
-} tiny_ProblemData;
+  int data_size;
+} tiny_Data;
 
-void tiny_InitProblemData(tiny_ProblemData* prob);
+// void tiny_InitProblemData(tiny_ProblemData* prob);
 
 typedef struct {
-  tiny_ProblemData* data;      ///< problem data
+  tiny_Data*        data;      ///< problem data
   tiny_Settings*    stgs;      ///< problem settings
   tiny_Solution*    soln;      ///< problem solution
   tiny_Info*        info;      ///< solver information
+
+  // Temporary data
+  Matrix Q_temp;
+  Matrix c_temp;
 
   Matrix Qxx;
   Matrix Qxu;
@@ -144,7 +174,24 @@ typedef struct {
   Matrix Qx;
   Matrix Qu;
   
-  c_int first_run;      ///< flag indicating whether the solve function has been run before
+  Matrix cu;
+  Matrix cu2;
+  Matrix cu_jac;
+  Matrix cu_jac2;
+  Matrix cu_mask;
+  Matrix YU_hat;
+
+  Matrix cx;
+  Matrix cx2;
+  Matrix cx_jac;
+  Matrix cx_jac2;
+  Matrix cx_mask;
+  Matrix YX_hat;
+
+  Matrix cg;
+
+  int data_size;      ///< sum data size of all temporary data //TODO: + model + solution 
+  int first_run;      ///< flag indicating whether the solve function has been run before
 } tiny_Workspace;
 
 

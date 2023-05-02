@@ -7,16 +7,21 @@ extern "C" {
 // https://www.osadl.org/fileadmin/dam/interface/docbook/howtos/coverage.pdf
 // void __gcov_flush(void);
 
-#include "constraint_linear.h"
-#include "cost_lqr.h"
-#include "data_struct.h"
-#include "dynamics_lti.h"
-#include "dynamics_ltv.h"
-#include "lqr_lti.h"
-#include "lqr_ltv.h"
-#include "mpc_lti.h"
-#include "mpc_ltv.h"
+#include "constants.h"
+#include "types.h"
 #include "utils.h"
+#include "model.h"
+#include "auxil.h"
+// #include "constraint_linear.h"
+// #include "cost_lqr.h"
+// #include "data_struct.h"
+// #include "dynamics_lti.h"
+// #include "dynamics_ltv.h"
+// #include "lqr_lti.h"
+// #include "lqr_ltv.h"
+// #include "mpc_lti.h"
+// #include "mpc_ltv.h"
+
 
 // #if (MODEL == LTI_MODEL)
 //   #include "dynamics_lti.h"

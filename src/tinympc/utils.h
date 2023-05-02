@@ -29,6 +29,11 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 //========================================
+// Initialize memory with zeros
+//========================================
+#define INIT_ZEROS(data) (memset(data, 0, sizeof(data)))  
+
+//========================================
 // Return a random noise from percentage
 //========================================
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)

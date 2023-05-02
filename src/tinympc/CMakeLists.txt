@@ -9,35 +9,42 @@
 # endif ()
 
 add_library(tinympc
-  lqr_lti.h
-  lqr_lti.c
-
-  lqr_ltv.h
-  lqr_ltv.c
-
-  mpc_lti.h
-  mpc_lti.c
-
-  mpc_ltv.h
-  mpc_ltv.c
-
+  constants.h 
+  
   utils.h
   utils.c
 
-  data_struct.h
-  data_struct.c
+  types.h
 
-  cost_lqr.h
-  cost_lqr.c
+  model.h
+  model.c
 
-  dynamics_lti.h
-  dynamics_lti.c
+  auxil.h
+  auxil.c
+  
+  # lqr_lti.h
+  # lqr_lti.c
 
-  dynamics_ltv.h
-  dynamics_ltv.c
+  # lqr_ltv.h
+  # lqr_ltv.c
 
-  constraint_linear.h
-  constraint_linear.c
+  # mpc_lti.h
+  # mpc_lti.c
+
+  # mpc_ltv.h
+  # mpc_ltv.c
+
+  # cost_lqr.h
+  # cost_lqr.c
+
+  # dynamics_lti.h
+  # dynamics_lti.c
+
+  # dynamics_ltv.h
+  # dynamics_ltv.c
+
+  # constraint_linear.h
+  # constraint_linear.c
   )
 
 target_include_directories(tinympc

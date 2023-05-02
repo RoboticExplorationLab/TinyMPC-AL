@@ -35,7 +35,7 @@ void BackPassTest() {
   sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
   sfloat qf_data[NSTATES] = {0};
 
-  const sfloat tol = 1e-6;
+  // const sfloat tol = 1e-6;
 
   tiny_Model model;
   tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
@@ -112,18 +112,18 @@ void BackPassTest() {
   soln.p = p; 
   if (0) {
     printf("\nProblem Info: \n");
-    tiny_Print(work.data->model->A[0]);
-    tiny_Print(work.data->model->B[0]);
-    tiny_Print(work.data->model->f[0]);
-    tiny_Print(work.data->Q);
-    tiny_Print(work.data->R);
-    tiny_Print(work.data->Qf);
+    PrintMatrix(work.data->model->A[0]);
+    PrintMatrix(work.data->model->B[0]);
+    PrintMatrix(work.data->model->f[0]);
+    PrintMatrix(work.data->Q);
+    PrintMatrix(work.data->R);
+    PrintMatrix(work.data->Qf);
   }
   tiny_UpdateLinearCost(&work);
   tiny_BackwardPass(&work);
   if (1) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
-      tiny_Print(work.soln->d[k]);
+      PrintMatrix(work.soln->d[k]);
     }
   }
   // TEST(SumOfSquaredError(d_data, dsln_data, (NHORIZON - 1) * NINPUTS) < tol);

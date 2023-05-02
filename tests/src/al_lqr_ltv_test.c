@@ -188,12 +188,12 @@ void AbsLqrLtvTest() {
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
     // tiny_NonlinearDynamics(&X[k+1], X[k], Uref[k]);
-    // tiny_Print(slap_Transpose(Xref[k]));
-    // tiny_Print(model.B[k]);
+    // PrintMatrix(slap_Transpose(Xref[k]));
+    // PrintMatrix(model.B[k]);
   }
   // ========== Test ==========
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_Print(U[k]);
+    // PrintMatrix(U[k]);
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);

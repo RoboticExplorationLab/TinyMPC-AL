@@ -110,11 +110,11 @@ int main() {
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
-      // tiny_Print(Uref[i]);
+      // PrintMatrix(Uref[i]);
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, xg_data);
-    // tiny_Print(Xref[i]);
+    // PrintMatrix(Xref[i]);
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
@@ -233,9 +233,9 @@ int main() {
 
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
-    // tiny_PrintT(Uhrz[0]);
+    // PrintMatrixT(Uhrz[0]);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
-    // tiny_PrintT(pos);
+    // PrintMatrixT(pos);
     // === 2. Simulate dynamics using the first control solution ===
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
@@ -244,11 +244,11 @@ int main() {
 
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("\nk = %d\n", k);
-    // tiny_PrintT(Uhrz[k]);
-    // tiny_PrintT(Xhrz[k+1]);
-    // tiny_Print(P[k]);
-    // tiny_PrintT(Uref[k]);
-    // tiny_PrintT(Xref[k+1])
+    // PrintMatrixT(Uhrz[k]);
+    // PrintMatrixT(Xhrz[k+1]);
+    // PrintMatrix(P[k]);
+    // PrintMatrixT(Uref[k]);
+    // PrintMatrixT(Xref[k+1])
   }
 
   // ========== Test ==========
@@ -264,12 +264,12 @@ int main() {
   //   TEST(slap_NormedDifference(X[k], Xref[k]) < 0.2);
   // }
   // --------------------------
-  // tiny_Print(model.A);
-  // tiny_Print(model.B);
-  // tiny_Print(model.f);
-  // tiny_Print(prob.Q);
-  // tiny_Print(prob.R);
-  // tiny_Print(prob.Qf);
+  // PrintMatrix(model.A);
+  // PrintMatrix(model.B);
+  // PrintMatrix(model.f);
+  // PrintMatrix(prob.Q);
+  // PrintMatrix(prob.R);
+  // PrintMatrix(prob.Qf);
   PrintTestResult();
   return TestResult();
 }

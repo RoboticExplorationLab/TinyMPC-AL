@@ -18,7 +18,7 @@ void LqrLtiTest() {
   sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   sfloat f_data[NSTATES] = {0};
   sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
-  sfloat xg_data[NSTATES] = {2, 5, 1, -1};
+  sfloat xg_data[NSTATES] = {2, 5, -1, 1};
   sfloat Xref_data[NSTATES * NHORIZON] = {0};
   sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
   sfloat X_data[NSTATES * NHORIZON] = {0};
@@ -106,11 +106,11 @@ void LqrLtiTest() {
   }
 
   data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(data.Q, 1000.0);
+  slap_SetIdentity(data.Q, 1.0);
   data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(data.R, 1.0);
   data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(data.Qf, 1000.0);
+  slap_SetIdentity(data.Qf, 10000.0);
 
   data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
   soln.X = X;
@@ -129,34 +129,34 @@ void LqrLtiTest() {
 
   tiny_UpdateLinearCost(&work);
 
-  if (1) {
+  if (0) {
     printf("\nProblem Info: \n");
-    tiny_Print(work.data->model->A[0]);
-    tiny_Print(work.data->model->B[0]);
-    tiny_Print(work.data->model->f[0]);
-    tiny_Print(work.data->Q);
-    tiny_Print(work.data->R);
-    tiny_Print(work.data->Qf);
-    tiny_PrintT(work.data->x0);
-    tiny_PrintT(work.data->X_ref[NHORIZON-1]);
-    tiny_PrintT(work.data->U_ref[NHORIZON-2]);
-    tiny_PrintT(work.data->q[NHORIZON-2]);
-    tiny_PrintT(work.data->r[NHORIZON-2]);
+    PrintMatrix(work.data->model->A[0]);
+    PrintMatrix(work.data->model->B[0]);
+    PrintMatrix(work.data->model->f[0]);
+    PrintMatrix(work.data->Q);
+    PrintMatrix(work.data->R);
+    PrintMatrix(work.data->Qf);
+    PrintMatrixT(work.data->x0);
+    PrintMatrixT(work.data->X_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->U_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->q[NHORIZON-5]);
+    PrintMatrixT(work.data->r[NHORIZON-5]);
   }
  
   tiny_SolveLqr(&work);
 
-  if (1) {
+  if (0) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
       printf("\n=>k = %d\n", k);
-      tiny_Print(d[k]);
-      // tiny_PrintT(Xref[k]);
-      tiny_PrintT(U[k]);
-      tiny_PrintT(X[k]);
+      // PrintMatrix(p[k]);
+      // PrintMatrixT(Xref[k]);
+      // PrintMatrixT(U[k]);
+      PrintMatrixT(X[k]);
     }
+    PrintMatrixT(X[NHORIZON - 1]);
   }
-  tiny_Print(X[NHORIZON - 1]);
-  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-1);
+  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) < 1e-2);
 }
 
 int main() {

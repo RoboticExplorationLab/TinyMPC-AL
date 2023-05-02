@@ -83,7 +83,7 @@ int main() {
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, &X_ref_data[i * NSTATES]);
-    // tiny_Print(Xref[i]);
+    // PrintMatrix(Xref[i]);
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {

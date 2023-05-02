@@ -171,8 +171,8 @@ void MpcLtiTest() {
 
   // ========== Test ==========
   for (int k = 0; k < NHORIZON - 1; ++k) {
-    // tiny_PrintT(U[k]);
-    // tiny_PrintT(X[k+1]);
+    // PrintMatrixT(U[k]);
+    // PrintMatrixT(X[k+1]);
     for (int i = 0; i < NSTATES; ++i) {
       TEST(X[k].data[i] < xmax_data[i] + solver.cstr_tol);
       TEST(X[k].data[i] > xmin_data[i] - solver.cstr_tol);
@@ -182,7 +182,7 @@ void MpcLtiTest() {
       TEST(U[k].data[i] < umax_data[i] + solver.cstr_tol);
     }
   }
-  // tiny_Print(X[NHORIZON - 1]);
+  // PrintMatrix(X[NHORIZON - 1]);
   // TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
   //      solver.cstr_tol);
 }

@@ -107,11 +107,11 @@ int main() {
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
-      // tiny_Print(Uref[i]);
+      // PrintMatrix(Uref[i]);
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, &X_ref_data[i * NSTATES]);
-    // tiny_Print(Xref[i]);
+    // PrintMatrix(Xref[i]);
   }
   for (int i = 0; i < NHORIZON; ++i) {
     if (i < NHORIZON - 1) {
@@ -235,10 +235,10 @@ int main() {
     //   TEST(Uhrz[0].data[i] < bcstr_input_data[i] + solver.cstr_tol);
     //   TEST(Uhrz[0].data[i] > -bcstr_input_data[i] - solver.cstr_tol);
     // }
-    // tiny_PrintT(Uhrz[0]);
+    // PrintMatrixT(Uhrz[0]);
 
     // Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
-    // tiny_PrintT(pos);
+    // PrintMatrixT(pos);
 
     // === 2. Simulate dynamics using the first control solution ===
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);

@@ -147,9 +147,9 @@ void ForwardPassTest() {
   }
   //FIXME: cost is not exact!!
   // printf("%f\n", info.obj_pri);
-  // tiny_Print(soln.U[0]);
-  // tiny_Print(soln.U[1]);
-  // tiny_Print(soln.X[0]);tiny_Print(soln.X[1]);tiny_Print(soln.X[2]);
+  // PrintMatrix(soln.U[0]);
+  // PrintMatrix(soln.U[1]);
+  // PrintMatrix(soln.X[0]);PrintMatrix(soln.X[1]);PrintMatrix(soln.X[2]);
 }
 
 int main() {

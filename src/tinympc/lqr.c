@@ -63,7 +63,7 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
 
   if (model[0].ltv && model[0].affine) {
     for (int k = N - 2; k >= 0; --k) {
-      // Stage cost expansion
+      // Stage cost expansion: Qxx = Q; Qx = q; Quu = R; Qu = r;
       tiny_ExpandStageCost(work, k);
       // State Gradient: Qx = q + A'(P*f + p)
       slap_Copy(work->soln->p[k], work->soln->p[k + 1]);
@@ -171,10 +171,11 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
       tiny_ExpandStageCost(work, k);
       // State Gradient: Qx = q + A'(P*f + p)
       slap_Copy(work->soln->p[k], work->soln->p[k + 1]);
+      // PrintMatrix(work->soln->p[k]);
       slap_MatMulAdd(work->soln->p[k], work->soln->P[k + 1], model[0].f[0], 1,
                     1);  // p[k] = P[k+1]*f + p[k+1]
       slap_MatMulAdd(work->Qx, slap_Transpose(model[0].A[0]), work->soln->p[k], 1, 1);
-
+      // PrintMatrix(work->Qx);
       // Control Gradient: Qu = r + B'(P*f + p)
       slap_MatMulAdd(work->Qu, slap_Transpose(model[0].B[0]), work->soln->p[k], 1, 1);
 

@@ -11,13 +11,13 @@
 //========================================
 // Print matrix with its name (dummy)
 //========================================
-#define tiny_Print(mat)      \
+#define PrintMatrix(mat)      \
   {                          \
     printf("%s = \n", #mat); \
     slap_PrintMatrix(mat);   \
   }
 
-#define tiny_PrintT(mat)                   \
+#define PrintMatrixT(mat)                   \
   {                                        \
     printf("%s = \n", #mat);               \
     slap_PrintMatrix(slap_Transpose(mat)); \

@@ -132,7 +132,7 @@ void DeltaLqrLtvTest() {
     model.get_jacobians(&(model.A[i]), &(model.B[i]), xhover, uhover);
     tiny_PQuadNonlinearDynamics(&(model.f[i]), xhover, uhover);
     slap_MatrixAddition(model.f[i], model.f[i], xhover, -1);  // = 0
-    // tiny_Print(f[i]);
+    // PrintMatrix(f[i]);
   }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
@@ -147,7 +147,7 @@ void DeltaLqrLtvTest() {
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    // tiny_Print(X[k]);
+    // PrintMatrix(X[k]);
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
@@ -263,7 +263,7 @@ void AbsLqrLtvTest() {
     tiny_PQuadNonlinearDynamics(&(model.f[i]), xhover, uhover);
     slap_MatMulAdd(model.f[i], model.A[i], xhover, -1, 1);
     slap_MatMulAdd(model.f[i], model.B[i], uhover, -1, 1);
-    // tiny_Print(f[i]);
+    // PrintMatrix(f[i]);
   }
 
   tiny_BackwardPassLtv(&prob, solver, model, &Q_temp);
@@ -276,7 +276,7 @@ void AbsLqrLtvTest() {
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    // tiny_Print(X[k]);
+    // PrintMatrix(X[k]);
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
@@ -391,7 +391,7 @@ void DeltaLqrLtiTest() {
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
     // printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    // tiny_Print(X[k]);
+    // PrintMatrix(X[k]);
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {
@@ -508,7 +508,7 @@ void AbsLqrLtiTest() {
   // }
   for (int k = 0; k < NHORIZON - 1; ++k) {
     printf("ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
-    // tiny_Print(X[k]);
+    // PrintMatrix(X[k]);
   }
 
   for (int k = NHORIZON - 5; k < NHORIZON; ++k) {

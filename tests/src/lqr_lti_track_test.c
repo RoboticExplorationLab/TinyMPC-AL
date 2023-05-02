@@ -111,8 +111,8 @@ void LqrLtiTest() {
     slap_Copy(model.f, Xref[i + 1]);
     slap_MatMulAdd(model.f, model.A, Xref[i], -1, 1);
     slap_MatMulAdd(model.f, model.B, Uref[i], -1, 1);
-    // tiny_Print(model.f);  // Check if reference is feasible
-    // tiny_Print(slap_Transpose(Xref[i]));
+    // PrintMatrix(model.f);  // Check if reference is feasible
+    // PrintMatrix(slap_Transpose(Xref[i]));
   }
   tiny_BackwardPassLti(&prob, solver, model, &G_temp);
   tiny_ForwardPassLti(X, U, prob, model);

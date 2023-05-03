@@ -35,8 +35,8 @@ void LqrLtiTest() {
   sfloat qf_data[NSTATES] = {0};
 
   tiny_Model model;
-  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
-  // tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
+  // tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
   tiny_Settings stgs;
   tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
   tiny_Data data;
@@ -147,7 +147,7 @@ void LqrLtiTest() {
  
   tiny_SolveLqr(&work);
 
-  if (0) {
+  if (1) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
       printf("\n=>k = %d\n", k);
       // PrintMatrix(p[k]);

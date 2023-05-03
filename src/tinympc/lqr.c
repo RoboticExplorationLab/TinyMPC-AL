@@ -45,7 +45,6 @@ enum tiny_ErrorCode tiny_RollOutClosedLoopCost(tiny_Workspace* work) {
 
 enum tiny_ErrorCode tiny_ForwardPass(tiny_Workspace* work) {
   // tiny_RollOutClosedLoop(work);
-  slap_Copy(work->soln->X[0], work->data->x0);
   tiny_RollOutClosedLoopCost(work);
   return TINY_NO_ERROR;
 }
@@ -165,6 +164,7 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
     }
   }
   if (!model[0].ltv && model[0].affine) {
+    printf("LTI AND AFFINE\n");
     // for (int k = N - 2; k >= N-2; --k) {
     for (int k = N - 2; k >= 0; --k) {
       // Stage cost expansion
@@ -276,6 +276,7 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
 
 
 enum tiny_ErrorCode tiny_SolveLqr(tiny_Workspace* work) {
+  slap_Copy(work->soln->X[0], work->data->x0);
   tiny_BackwardPass(work);
   tiny_ForwardPass(work);
   return TINY_NO_ERROR;

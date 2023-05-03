@@ -53,7 +53,8 @@ typedef struct {
  * Solver return information
  */
 typedef struct {
-  int iter;           ///< Number of iterations taken
+  int iter_al;        ///< Number of AL iterations taken
+  int iter_riccati;   ///< Number of Riccati iterations taken
   int status_val;     ///< Integer, status defined in constants.h
 
   sfloat obj_pri;     ///< primal objective
@@ -93,7 +94,7 @@ typedef struct {
   int    en_cstr_inputs;      ///< Boolean, enable inequality constraints on inputs
   int    en_cstr_goal;        ///< Boolean, enable equality constraint on goal
 
-  int    verbose;             ///< boolean, write out progress
+  int    verbose;             ///< Integer, level to write out progress
   int    adaptive_horizon;    ///< Integer, after `adaptive_horizon` steps, use the second model with longer interval; if 0, disabled 
   int    check_riccati;       ///< Boolean, if 0, then termination checking is disabled
   int    check_al;            ///< Boolean, if 0, then termination checking is disabled
@@ -138,6 +139,7 @@ typedef struct {
 
   sfloat reg;
   sfloat alpha;
+  sfloat penalty;
   // Temporary data
   Matrix Q_temp;
   Matrix c_temp;

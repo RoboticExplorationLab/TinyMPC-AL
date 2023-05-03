@@ -51,13 +51,13 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
   }
   //========= State constraints at end ==========
   if (prob->ncstr_states > 0) {
-    tiny_IneqStates(&cx, *prob,
+    tiny_EvalStateConstraint(&cx, *prob,
                     X[N - 1]);  // cx size = 2*NINPUTS
     tiny_ActiveIneqMask(&cx_mask, prob->YX[N - 1], cx);
     slap_ScaleByConst(cx_mask, solver.penalty);  // mask = ρ*mask
-    // tiny_IneqStatesJacobian(&cx_jac, *prob);
+    // tiny_EvalStateConstraintJacobian(&cx_jac, *prob);
     // Qx  += G'*(μx[k] - ρ*mask * g)
-    // tiny_IneqStatesOffset(&cx, *prob);  // g
+    // tiny_EvalStateConstraintOffset(&cx, *prob);  // g
     slap_Copy(cx2, prob->YX[N - 1]);
     slap_MatMulAdd(cx2, cx_mask, prob->bcx, -1,
                    1);  //μx[k] - ρ*mask*g
@@ -96,12 +96,12 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
 
     //========= Control constraints ==========
     if (prob->ncstr_inputs > 0) {
-      tiny_IneqInputs(&cu, *prob, U[k]);  // cu size = 2*NINPUTS
+      tiny_EvalInputConstraint(&cu, *prob, U[k]);  // cu size = 2*NINPUTS
       tiny_ActiveIneqMask(&cu_mask, prob->YU[k], cu);
       slap_ScaleByConst(cu_mask, solver.penalty);  // mask = ρ*mask
-      // tiny_IneqInputsJacobian(&cu_jac, *prob);
+      // tiny_EvalInputConstraintJacobian(&cu_jac, *prob);
       // Qu  += G'*(μ[k] + (mask * g)
-      // tiny_IneqInputsOffset(&cu, *prob);  // g
+      // tiny_EvalInputConstraintOffset(&cu, *prob);  // g
       slap_Copy(cu2, prob->YU[k]);
       slap_MatMulAdd(cu2, cu_mask, prob->bcu, -1, 1);
       slap_MatMulAdd(Qu, slap_Transpose(prob->Acu), cu2, 1, 1);
@@ -112,12 +112,12 @@ enum slap_ErrorCode tiny_ConstrainedBackwardPassLti(
     }
     //========= State constraints ==========
     if (prob->ncstr_states > 0) {
-      tiny_IneqStates(&cx, *prob, X[k]);  // cx size = 2*NINPUTS
+      tiny_EvalStateConstraint(&cx, *prob, X[k]);  // cx size = 2*NINPUTS
       tiny_ActiveIneqMask(&cx_mask, prob->YX[k], cx);
       slap_ScaleByConst(cx_mask, solver.penalty);  // mask = ρ*mask
-      // tiny_IneqStatesJacobian(&cx_jac, *prob);
+      // tiny_EvalStateConstraintJacobian(&cx_jac, *prob);
       // Qx  += G'*(μx[k] - ρ*mask * g)
-      // tiny_IneqStatesOffset(&cx, *prob);  // g
+      // tiny_EvalStateConstraintOffset(&cx, *prob);  // g
       slap_Copy(cx2, prob->YX[k]);
       slap_MatMulAdd(cx2, cx_mask, prob->bcx, -1, 1);
       slap_MatMulAdd(Qx, slap_Transpose(prob->Acx), cx2, 1, 1);
@@ -206,7 +206,7 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
     if (prob->ncstr_inputs > 0) {
       for (int k = 0; k < N - 1; ++k) {
         //========= Control constraints ==========
-        tiny_IneqInputs(&cu, *prob,
+        tiny_EvalInputConstraint(&cu, *prob,
                         U[k]);  // cu size = 2*NINPUTS
         tiny_ActiveIneqMask(&cu_mask, prob->YU[k], cu);
         slap_ScaleByConst(cu_mask, solver->penalty);  // mask = ρ*mask
@@ -217,18 +217,18 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
         // convio = max(convio,norm(hxv + abs.(hxv),Inf))
         cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
         // Update duals
-        // tiny_IneqInputsOffset(&cu, *prob);  // g
+        // tiny_EvalInputConstraintOffset(&cu, *prob);  // g
         slap_Copy(YU_hat, prob->YU[k]);
         slap_MatMulAdd(YU_hat, cu_mask, prob->bcu, -1,
                        1);  //μ[k] - ρ*mask * g
-        tiny_ClampIneqDuals(&(prob->YU)[k], YU_hat);
+        tiny_ProjectOrthantDuals(&(prob->YU)[k], YU_hat);
       }
     }
 
     if (prob->ncstr_states > 0) {
       for (int k = 0; k < N; ++k) {
         //========= State constraints ==========
-        tiny_IneqStates(&cx, *prob,
+        tiny_EvalStateConstraint(&cx, *prob,
                         X[k]);  // cu size = 2*NINPUTS
         tiny_ActiveIneqMask(&cx_mask, prob->YX[k], cx);
         slap_ScaleByConst(cx_mask, solver->penalty);  // mask = ρ*mask
@@ -239,11 +239,11 @@ enum slap_ErrorCode tiny_MpcLti(Matrix* X, Matrix* U, tiny_ProblemData* prob,
         // convio = max(convio,norm(hxv + abs.(hxv),Inf))
         cstr_violation = cstr_violation < norm_inf ? norm_inf : cstr_violation;
         // Update duals
-        // tiny_IneqStatesOffset(&cx, *prob);  // g
+        // tiny_EvalStateConstraintOffset(&cx, *prob);  // g
         slap_Copy(YX_hat, prob->YX[k]);
         slap_MatMulAdd(YX_hat, cx_mask, prob->bcx, -1,
                        1);  //μ[k] - ρ*mask*g
-        tiny_ClampIneqDuals(&(prob->YX)[k], YX_hat);
+        tiny_ProjectOrthantDuals(&(prob->YX)[k], YX_hat);
       }
     }
 

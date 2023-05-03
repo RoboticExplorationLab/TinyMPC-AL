@@ -10,7 +10,7 @@ extern "C" {
 #include "cost_lqr.h"
 #include "model.h"
 
-enum tiny_ErrorCode tiny_RollOutModelCost(tiny_Workspace* work);
+enum tiny_ErrorCode tiny_RollOutClosedLoopCost(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_ForwardPass(tiny_Workspace* work);
 

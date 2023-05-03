@@ -140,6 +140,7 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
 
   work->reg = (sfloat)REG_MIN;
   work->alpha = (sfloat)ALPHA;
+  work->penalty = work->stgs->penalty_init;
   work->Q_temp = TINY_NULL_MAT;
   work->c_temp = TINY_NULL_MAT;
 
@@ -205,4 +206,25 @@ enum tiny_ErrorCode tiny_InitTempData(tiny_Workspace* work, sfloat* temp_data) {
   work->cg = slap_MatrixFromArray(n, 1, &temp_data[2 * n * (2 * n + 2 * n + 2)]);   
 
   return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_ResetInfo(tiny_Workspace* work) {
+  work->info->iter_al = 0;
+  work->info->iter_riccati = 0;
+  work->info->status_val = TINY_UNSOLVED;
+
+  work->info->obj_pri = 0.0;
+  work->info->obj_al = 0.0;
+  work->info->pri_res = 0.0;
+  work->info->dua_res = 0.0;
+  return TINY_NO_ERROR;
+}
+
+int IsConstrained(tiny_Workspace* work) {
+  if (!work->stgs->en_cstr_goal && 
+      !work->stgs->en_cstr_inputs && 
+      !work->stgs->en_cstr_states) {
+    return 0; // unconstrained
+  }
+  return 1;    
 }

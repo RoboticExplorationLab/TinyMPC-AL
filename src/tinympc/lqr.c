@@ -1,6 +1,6 @@
 #include "lqr.h"
 
-enum tiny_ErrorCode tiny_RollOutModelCost(tiny_Workspace* work) {
+enum tiny_ErrorCode tiny_RollOutClosedLoopCost(tiny_Workspace* work) {
   tiny_Model* model = work->data->model;
   int N = model[0].nhorizon;
   int adaptive_horizon = work->stgs->adaptive_horizon;
@@ -46,7 +46,7 @@ enum tiny_ErrorCode tiny_RollOutModelCost(tiny_Workspace* work) {
 enum tiny_ErrorCode tiny_ForwardPass(tiny_Workspace* work) {
   // tiny_RollOutClosedLoop(work);
   slap_Copy(work->soln->X[0], work->data->x0);
-  tiny_RollOutModelCost(work);
+  tiny_RollOutClosedLoopCost(work);
   return TINY_NO_ERROR;
 }
 

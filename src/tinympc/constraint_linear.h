@@ -1,21 +1,37 @@
+#ifndef CONSTRAINT_LINEAR_H
+# define CONSTRAINT_LINEAR_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
+
 #include "types.h"
 
-sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob);
+int tiny_CheckRiccati(tiny_Workspace* work);
 
-void tiny_IneqInputs(Matrix* ineq, const tiny_ProblemData prob, const Matrix u);
+enum tiny_ErrorCode tiny_CheckAl(tiny_Workspace* work);
 
-// void tiny_IneqInputsOffset(Matrix* cu, const tiny_ProblemData prob);
+enum tiny_ErrorCode tiny_EvalInputConstraint(tiny_Workspace* work, const int k);
 
-// void tiny_IneqInputsJacobian(Matrix* ineq_jac, const tiny_ProblemData prob);
+// void tiny_EvalInputConstraintOffset(Matrix* cu, const tiny_ProblemData prob);
 
-void tiny_IneqStates(Matrix* cx, const tiny_ProblemData prob,
-                     const Matrix x);
+// void tiny_EvalInputConstraintJacobian(Matrix* ineq_jac, const tiny_ProblemData prob);
 
-// void tiny_IneqStatesOffset(Matrix* cx, const tiny_ProblemData prob);
+enum tiny_ErrorCode tiny_EvalStateConstraint(tiny_Workspace* work, const int k);
 
-// void tiny_IneqStatesJacobian(Matrix* ineq_jac, const tiny_ProblemData prob);
+// void tiny_EvalStateConstraintOffset(Matrix* cx, const tiny_ProblemData prob);
 
-void tiny_ActiveIneqMask(Matrix* mask, const Matrix input_dual,
-                         const Matrix ineq);
+// void tiny_EvalStateConstraintJacobian(Matrix* ineq_jac, const tiny_ProblemData prob);
 
-void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual);
+enum tiny_ErrorCode tiny_ActiveIneqMask(Matrix* mask, const Matrix dual,
+                         const Matrix eval);
+
+enum tiny_ErrorCode tiny_ProjectOrthantDuals(Matrix* dual, const Matrix new_dual);
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef CONSTRAINT_LINEAR_H

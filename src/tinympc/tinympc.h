@@ -16,9 +16,12 @@ extern "C" {
 #include "auxil.h"
 #include "cost_lqr.h"
 #include "lqr.h"
+#include "constraint_linear.h"
+#include "al_lqr.h"
+
 // #include "lqr_lti.h"
 // #include "lqr_ltv.h"
-// #include "constraint_linear.h"
+
 // #include "mpc_lti.h"
 // #include "mpc_ltv.h"
 

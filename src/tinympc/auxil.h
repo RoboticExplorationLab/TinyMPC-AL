@@ -23,7 +23,9 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
 
 enum tiny_ErrorCode tiny_InitTempData(tiny_Workspace* work, sfloat* temp_data);
 
+enum tiny_ErrorCode tiny_ResetInfo(tiny_Workspace* work);
 
+int IsConstrained(tiny_Workspace* work);
 
 # ifdef __cplusplus
 }

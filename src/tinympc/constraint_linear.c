@@ -1,18 +1,26 @@
 #include "constraint_linear.h"
 
-sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob) {
-  sfloat norm_d_max = 0.0;
-  for (int k = 0; k < prob.nhorizon - 1; ++k) {
-    sfloat norm_d = slap_NormTwo(prob.d[k]);
-    if (norm_d > norm_d_max) {
-      norm_d_max = norm_d;
+int tiny_CheckRiccati(tiny_Workspace* work) {
+  int N = work->data->model->nhorizon;
+  work->info->pri_res = 0.0;
+  for (int k = 0; k < N - 1; ++k) {
+    sfloat norm_d = slap_NormTwo(work->soln->d[k]);
+    if (norm_d > work->info->pri_res) {
+      work->info->pri_res = norm_d;
     }
   }
-  return norm_d_max;
+  if (work->info->pri_res < work->stgs->tol_abs_riccati) {
+    return 1;  // within tolerance
+  }
+  else return 0;
+}
+ 
+enum tiny_ErrorCode tiny_CheckAl(tiny_Workspace* work) {
+  return TINY_NO_ERROR;
 }
 
 // // [u-p.u_max;-u + p.u_min]
-// void tiny_IneqInputs(Matrix* cu, const tiny_ProblemData prob,
+// void tiny_EvalInputConstraint(Matrix* cu, const tiny_ProblemData prob,
 //                      const Matrix u) {
 //   slap_SetConst(*cu, 0);  // clear before processing
 //   Matrix upper_half = slap_CreateSubMatrix(*cu, 0, 0, prob.ninputs,
@@ -23,15 +31,15 @@ sfloat tiny_RiccatiConvergence(const tiny_ProblemData prob) {
 // }
 
 // Input constraints: A*u - b <= 0
-void tiny_IneqInputs(Matrix* cu, const tiny_ProblemData prob,
-                     const Matrix u) {
+enum tiny_ErrorCode tiny_EvalInputConstraint(tiny_Workspace* work, const int k) {
   // slap_SetConst(*cu, 0);  // clear before processing
-  slap_MatMulAdd(*cu, prob.Acu, u, 1.0, 0.0);
-  slap_MatrixAddition(*cu, *cu, prob.bcu, -1.0);
+  slap_MatMulAdd(work->cu, work->data->Acu, work->soln->U[k], 1.0, 0.0);
+  slap_MatrixAddition(work->cu, work->cu, work->data->bcu, -1.0);
+  return TINY_NO_ERROR;
 }
 
 // // [u_max, -u_min]
-// void tiny_IneqInputsOffset(Matrix* cu, const tiny_ProblemData prob) {
+// void tiny_EvalInputConstraintOffset(Matrix* cu, const tiny_ProblemData prob) {
 //   Matrix upper_half = slap_CreateSubMatrix(*cu, 0, 0, prob.ninputs,
 //   1); Matrix lower_half =
 //       slap_CreateSubMatrix(*cu, prob.ninputs, 0, prob.ninputs, 1);
@@ -40,7 +48,7 @@ void tiny_IneqInputs(Matrix* cu, const tiny_ProblemData prob,
 //   slap_ScaleByConst(lower_half, -1);
 // }
 
-// void tiny_IneqInputsJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
+// void tiny_EvalInputConstraintJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
 //   slap_SetConst(*ineq_jac, 0);  // clear before processing
 //   Matrix upper_half =
 //       slap_CreateSubMatrix(*ineq_jac, 0, 0, prob.ninputs, prob.ninputs);
@@ -51,7 +59,7 @@ void tiny_IneqInputs(Matrix* cu, const tiny_ProblemData prob,
 // }
 
 // // [x-p.x_max;-x + p.x_min]
-// void tiny_IneqStates(Matrix* cx, const tiny_ProblemData prob,
+// void tiny_EvalStateConstraint(Matrix* cx, const tiny_ProblemData prob,
 //                      const Matrix x) {
 //   slap_SetConst(*cx, 0);  // clear before processing
 //   Matrix upper_half = slap_CreateSubMatrix(*cx, 0, 0, prob.nstates,
@@ -62,15 +70,15 @@ void tiny_IneqInputs(Matrix* cu, const tiny_ProblemData prob,
 // }
 
 // State constraints: A*x - b <= 0
-void tiny_IneqStates(Matrix* cx, const tiny_ProblemData prob,
-                     const Matrix x) {
-  // slap_SetConst(*cu, 0);  // clear before processing
-  slap_MatMulAdd(*cx, prob.Acx, x, 1.0, 0.0);
-  slap_MatrixAddition(*cx, *cx, prob.bcx, -1.0);
+enum tiny_ErrorCode tiny_EvalStateConstraint(tiny_Workspace* work, const int k) {
+  // slap_SetConst(*cx, 0);  // clear before processing
+  slap_MatMulAdd(work->cx, work->data->Acx, work->soln->X[k], 1.0, 0.0);
+  slap_MatrixAddition(work->cx, work->cx, work->data->bcx, -1.0);
+  return TINY_NO_ERROR;
 }
 
 // // [x_max, -x_min]
-// void tiny_IneqStatesOffset(Matrix* cx, const tiny_ProblemData prob) {
+// void tiny_EvalStateConstraintOffset(Matrix* cx, const tiny_ProblemData prob) {
 //   Matrix upper_half = slap_CreateSubMatrix(*cx, 0, 0, prob.nstates,
 //   1); Matrix lower_half =
 //       slap_CreateSubMatrix(*cx, prob.nstates, 0, prob.nstates, 1);
@@ -79,7 +87,7 @@ void tiny_IneqStates(Matrix* cx, const tiny_ProblemData prob,
 //   slap_ScaleByConst(lower_half, -1);
 // }
 
-// void tiny_IneqStatesJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
+// void tiny_EvalStateConstraintJacobian(Matrix* ineq_jac, const tiny_ProblemData prob) {
 //   slap_SetConst(*ineq_jac, 0);  // clear before processing
 //   Matrix upper_half =
 //       slap_CreateSubMatrix(*ineq_jac, 0, 0, prob.nstates, prob.nstates);
@@ -89,20 +97,23 @@ void tiny_IneqStates(Matrix* cx, const tiny_ProblemData prob,
 //   slap_SetIdentity(lower_half, -1);
 // }
 
-void tiny_ActiveIneqMask(Matrix* mask, const Matrix dual, const Matrix ineq) {
+enum tiny_ErrorCode tiny_ActiveIneqMask(Matrix* mask, const Matrix dual,
+                         const Matrix eval) {
   slap_SetConst(*mask, 0);  // clear before processing
-  for (int i = 0; i < ineq.rows; ++i) {
+  for (int i = 0; i < eval.rows; ++i) {
     // When variables are on the boundary or violating constraints
-    bool active = dual.data[i] > 0 || ineq.data[i] > 0;
+    bool active = dual.data[i] > 0 || eval.data[i] > 0;
     slap_SetElement(*mask, i, i, active);
   }
+  return TINY_NO_ERROR;
 }
 
-void tiny_ClampIneqDuals(Matrix* dual, const Matrix new_dual) {
+enum tiny_ErrorCode tiny_ProjectOrthantDuals(Matrix* dual, const Matrix new_dual) {
   for (int i = 0; i < dual->rows; ++i) {
     if (new_dual.data[i] > 0) {
       dual->data[i] = new_dual.data[i];
     } else
       dual->data[i] = 0.0;
   }
+  return TINY_NO_ERROR;
 }

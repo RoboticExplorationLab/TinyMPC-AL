@@ -31,6 +31,12 @@ add_library(tinympc
   # lqr_ltv.h
   # lqr_ltv.c
 
+  constraint_linear.h
+  constraint_linear.c
+
+  al_lqr.h
+  al_lqr.c
+
   # mpc_lti.h
   # mpc_lti.c
 
@@ -45,8 +51,7 @@ add_library(tinympc
   # dynamics_ltv.h
   # dynamics_ltv.c
 
-  # constraint_linear.h
-  # constraint_linear.c
+
   )
 
 target_include_directories(tinympc

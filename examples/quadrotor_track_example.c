@@ -15,7 +15,7 @@
 #define H 0.02       // dt
 #define NSTATES 12   // no. of states (error state)
 #define NINPUTS 4    // no. of controls
-#define NHORIZON 11  // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NHORIZON 20  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 200     // simulation steps (fixed with reference data)
 
 int main() {
@@ -73,6 +73,9 @@ int main() {
   sfloat Q_data[NSTATES * NSTATES] = {0};   // Q matrix in obj
   sfloat R_data[NINPUTS * NINPUTS] = {0};   // R matrix in obj
   sfloat Qf_data[NSTATES * NSTATES] = {0};  // Qf matrix in obj
+  sfloat q_data[NSTATES*(NHORIZON-1)] = {0};
+  sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
+  sfloat qf_data[NSTATES] = {0};  
 
   // Put constraints on u
   sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
@@ -94,14 +97,31 @@ int main() {
   Matrix p[NHORIZON];
   Matrix YU[NHORIZON - 1];
   Matrix YX[NHORIZON];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
+  Matrix A;
+  Matrix B;
+  Matrix f;
 
   // ===== Created tinyMPC struct =====
-  tiny_LtiModel model;
-  tiny_InitLtiModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Settings solver;
-  tiny_InitSettings(&solver);
+  tiny_Model model;
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
+  // tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
+  tiny_Settings stgs;
+  tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
+
+  tiny_Data data;
+  tiny_Info info;
+  tiny_Solution soln;
+  tiny_Workspace work;
+  tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
+  
+  sfloat temp_data[work.data_size];
+  INIT_ZEROS(temp_data);
+
+  tiny_InitTempData(&work, temp_data);
+
+  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   // ===== Fill in the struct =====
   for (int i = 0; i < NSIM; ++i) {
@@ -122,6 +142,8 @@ int main() {
       d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
       YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
                                             &input_dual_data[i * 2 * NINPUTS]);
+      q[i] = slap_MatrixFromArray(NSTATES, 1, &q_data[i * NSTATES]);
+      r[i] = slap_MatrixFromArray(NINPUTS, 1, &r_data[i * NINPUTS]);                                            
     }
     Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
     slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
@@ -132,72 +154,78 @@ int main() {
         slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
   }
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.A = slap_MatrixFromArray(NSTATES, NSTATES, A_data);
-  model.B = slap_MatrixFromArray(NSTATES, NINPUTS, B_data);
-  model.f = slap_MatrixFromArray(NSTATES, 1, f_data);
-  slap_Copy(X[0], model.x0);
+  soln.X = Xhrz;
+  soln.U = Uhrz;
+  soln.YU = YU;
+  soln.YX = YX;
+  soln.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
+  soln.K = K;
+  soln.d = d;
+  soln.P = P;
+  soln.p = p;
 
-  prob.ninputs = NINPUTS;
-  prob.nstates = NSTATES;
-  prob.nhorizon = NHORIZON;
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
+  data.X_ref = Xref;
+  data.U_ref = Uref;
+  data.q = q;
+  data.r = r;
+  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);    
 
-  prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
+  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   // slap_SetIdentity(prob.Q, 1000e-1);
   sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1};
-  slap_SetDiagonal(prob.Q, Qdiag, NSTATES);
-  prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e0);
-  prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_Copy(prob.Qf, prob.Q);
+  slap_SetDiagonal(data.Q, Qdiag, NSTATES);
+  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
+  slap_SetIdentity(data.R, 1);
+  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
+  slap_Copy(data.Qf, data.Q);
 
-  // Set up constraints
-  prob.ncstr_inputs = 1;
-  prob.ncstr_states = 0;
-
-  prob.Acx =
+ data.Acx =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
   Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acx, 0, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(data.Acx, 0, 0, NSTATES, NSTATES);
   Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acx, NSTATES, 0, NSTATES, NSTATES);
+      slap_CreateSubMatrix(data.Acx, NSTATES, 0, NSTATES, NSTATES);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.Acu =
+  data.Acu =
       slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
+  upper_half = slap_CreateSubMatrix(data.Acu, 0, 0, NINPUTS, NINPUTS);
   lower_half =
-      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
+      slap_CreateSubMatrix(data.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
 
-  prob.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  slap_SetConst(prob.bcx, 100.0);  // x_max = -x_min = 100
-  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
-  slap_SetConst(prob.bcu, 0.5);  // u_max = -u_min = 0.5
+  data.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  slap_SetConst(data.bcx, 100.0);  // x_max = -x_min = 100
+  data.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  slap_SetConst(data.bcu, 0.5);  // u_max = -u_min = 0.5
 
-  prob.X_ref = Xref;
-  prob.U_ref = Uref;
-  prob.x0 = model.x0;
-  prob.K = K;
-  prob.d = d;
-  prob.P = P;
-  prob.p = p;
-  prob.YU = YU;
-  prob.YX = YX;
-  prob.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
+  tiny_UpdateLinearCost(&work);
 
-  solver.max_outer_iters = 5;  // Often takes less than 5
-  solver.cstr_tol = 1e-3;
+  if (0) {
+    printf("\nProblem Info: \n");
+    PrintMatrix(work.data->model->A[0]);
+    PrintMatrix(work.data->model->B[0]);
+    // PrintMatrix(work.data->model->f[0]);
+    PrintMatrix(work.data->Q);
+    PrintMatrix(work.data->R);
+    PrintMatrix(work.data->Qf);
+    PrintMatrixT(work.data->x0);
+    PrintMatrixT(work.data->X_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->U_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->q[NHORIZON-5]);
+    PrintMatrixT(work.data->r[NHORIZON-5]);
+  }
 
-  int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
-                  (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];
-  memset(temp_data, 0,
-         sizeof(temp_data));  // temporary data, should not be changed
-  srand(1);                   // random seed
+  stgs.en_cstr_goal = 0;
+  stgs.en_cstr_inputs = 1;
+  stgs.en_cstr_states = 0;
+  stgs.max_iter_riccati = 1;
+  stgs.max_iter_al = 6;
+  stgs.tol_abs_cstr = 1e-2;
+  stgs.verbose = 0;
+  stgs.reg_min = 1e-6;
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
@@ -213,17 +241,18 @@ int main() {
     for (int j = 0; j < NSTATES; ++j) {
       X[k].data[j] += X[k].data[j] * NOISE(1);
     }
-    slap_Copy(Xhrz[0], X[k]);  // update current measurement
+    slap_Copy(work.data->x0, X[k]);  // update current measurement
 
     // Update reference
-    prob.X_ref = &Xref[k];
-    prob.U_ref = &Uref[k];
+    data.X_ref = &Xref[k];
+    data.U_ref = &Uref[k];
 
     clock_t start, end;
     double cpu_time_used;
     start = clock();
     // Solve optimization problem using Augmented Lagrangian TVLQR
-    tiny_MpcLti(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
+    // tiny_SolveAlLqr(&work);
+    tiny_SolveLqr(&work);
     // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
@@ -244,7 +273,7 @@ int main() {
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
     tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
     // tiny_DynamicsLti(&X[k + 1], X[k], Uref[k], model);
-    tiny_ShiftFill(Uhrz, ARRAY_SIZE(Uhrz));
+    // tiny_ShiftFill(Uhrz, ARRAY_SIZE(Uhrz));
   }
 
   // ========== Test ==========

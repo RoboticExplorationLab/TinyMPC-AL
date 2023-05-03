@@ -1,4 +1,10 @@
-#pragma once
+#ifndef QUADROTOR_H
+# define QUADROTOR_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <math.h>
 
@@ -31,3 +37,10 @@ void tiny_QuadNonlinearDynamics(Matrix* xn, const Matrix x, const Matrix u);
 
 // void tiny_QuadGetJacobians(Matrix* A, Matrix* B, const Matrix x,
 //                             const Matrix u);
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef QUADROTOR_H

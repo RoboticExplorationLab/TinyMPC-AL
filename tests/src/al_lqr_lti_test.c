@@ -11,7 +11,7 @@
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 50
+#define NHORIZON 51
 
 void MpcLtiTest() {
   // sfloat tol = 1e-4;
@@ -56,12 +56,6 @@ void MpcLtiTest() {
   // tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
   tiny_Settings stgs;
   tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
-
-  stgs.en_cstr_goal = 0;
-  stgs.en_cstr_inputs = 1;
-  stgs.en_cstr_states = 0;
-  stgs.max_iter_riccati = 1;
-  stgs.max_iter_al = 6;
 
   tiny_Data data;
   tiny_Info info;
@@ -197,44 +191,46 @@ void MpcLtiTest() {
     PrintMatrixT(work.data->r[NHORIZON-5]);
   }
 
+  stgs.en_cstr_goal = 0;
+  stgs.en_cstr_inputs = 1;
+  stgs.en_cstr_states = 0;
+  stgs.max_iter_riccati = 1;
+  stgs.max_iter_al = 6;
+  stgs.verbose = 0;
+  stgs.reg_min = 1e-6;
+
   clock_t start, end;
   double cpu_time_used;
   start = clock();
   tiny_SolveAlLqr(&work);
-  // tiny_SolveLqr(&work);
-
-  // slap_Copy(work.soln->X[0], work.data->x0);
-  // tiny_BackwardPass(&work);
-  // tiny_ForwardPass(&work);  
-
   end = clock();
-  cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+  cpu_time_used = ((double)(end - start)) * 1000 / CLOCKS_PER_SEC;
   // printf("time: %f\n", cpu_time_used);
 
-  if (1) {
+  if (0) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
-      printf("\n=>k = %d\n", k);
+      // printf("\n=>k = %d\n", k);
       // PrintMatrix(p[k]);
       // PrintMatrixT(Xref[k]);
       // PrintMatrixT(U[k]);
-      PrintMatrixT(X[k]);
+      // PrintMatrixT(X[k]);
     }
     PrintMatrixT(X[NHORIZON - 1]);
   }  
 
   // ========== Test ==========
-  // for (int k = 0; k < NHORIZON - 1; ++k) {
-  //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < xmax_data[i] + stgs.tol_abs_cstr);
-  //     TEST(X[k].data[i] > xmin_data[i] - stgs.tol_abs_cstr);
-  //   }
-  //   for (int i = 0; i < NINPUTS; ++i) {
-  //     TEST(U[k].data[i] > umin_data[i] - stgs.tol_abs_cstr);
-  //     TEST(U[k].data[i] < umax_data[i] + stgs.tol_abs_cstr);
-  //   }
-  // }
-  // TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
-  //      solver.cstr_tol);
+  for (int k = 0; k < NHORIZON - 1; ++k) {
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < xmax_data[i] + stgs.tol_abs_cstr);
+      TEST(X[k].data[i] > xmin_data[i] - stgs.tol_abs_cstr);
+    }
+    for (int i = 0; i < NINPUTS; ++i) {
+      TEST(U[k].data[i] > umin_data[i] - stgs.tol_abs_cstr);
+      TEST(U[k].data[i] < umax_data[i] + stgs.tol_abs_cstr);
+    }
+  }
+  TEST(SumOfSquaredError(X[NHORIZON - 1].data, xg_data, NSTATES) <
+       stgs.tol_abs_cstr);
 }
 
 int main() {

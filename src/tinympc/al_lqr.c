@@ -476,10 +476,8 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
     }
 
     // check AL termination
-    if (work->info->dua_res < work->stgs->tol_abs_cstr) {
-      if (verbose > 0) printf("SUCCESS!\n");
+    if (tiny_CheckAl(work)) {
       work->info->status_val = TINY_SOLVED;
-      // printf("%f\n", work->info->dua_res);
       work->penalty = work->stgs->penalty_init;  // reset penalty for next MPC
       return TINY_NO_ERROR;
     }
@@ -487,6 +485,30 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
     // update penalty
     work->penalty = work->penalty * work->stgs->penalty_mul;    
   }
+  
   work->info->status_val = TINY_MAX_ITER_AL_REACHED;
   return TINY_NO_ERROR;
 }
+
+int tiny_CheckRiccati(tiny_Workspace* work) {
+  int N = work->data->model->nhorizon;
+  work->info->pri_res = 0.0;
+  for (int k = 0; k < N - 1; ++k) {
+    sfloat norm_d = slap_NormTwo(work->soln->d[k]);
+    if (norm_d > work->info->pri_res) {
+      work->info->pri_res = norm_d;
+    }
+  }
+  if (work->info->pri_res < work->stgs->tol_abs_riccati) {
+    return 1;  // primal residual within tolerance
+  }
+  return 0;
+}
+ 
+int tiny_CheckAl(tiny_Workspace* work) {
+  if (work->info->dua_res < work->stgs->tol_abs_cstr) {
+    return 1;  // dual residual/constraint violation within tolerance
+  }
+  return 0;
+}
+

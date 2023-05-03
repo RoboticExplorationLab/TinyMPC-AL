@@ -9,6 +9,7 @@ extern "C" {
 #include "types.h"
 #include "cost_lqr.h"
 #include "model.h"
+#include "auxil.h"
 
 enum tiny_ErrorCode tiny_RollOutClosedLoopCost(tiny_Workspace* work);
 

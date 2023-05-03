@@ -6,6 +6,9 @@ extern "C" {
 # endif // ifdef __cplusplus
 
 
+// To fill in error handling routines
+
+
 # ifdef __cplusplus
 }
 # endif // ifdef __cplusplus

@@ -234,7 +234,7 @@ int main() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   slap_Copy(X[0], work.data->x0);  
-  for (int k = 0; k < 70; ++k) {
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     // printf("\n=> k = %d\n", k);
     printf("\n=> ex[%d] = %.4f\n", k, slap_NormedDifference(X[k], Xref[k]));
 
@@ -266,13 +266,15 @@ int main() {
     // tiny_DynamicsLti(&X[k + 1], X[k], Uref[k], model);
   }
 
-  for (int k = 0; k < NHORIZON - 1; ++k) {
-    // printf("\nk = %d\n", k);
-    // PrintMatrixT(Uhrz[k]);
-    // PrintMatrixT(Xhrz[k+1]);
-    // PrintMatrix(P[k]);
-    // PrintMatrixT(Uref[k]);
-    // PrintMatrixT(Xref[k+1])
+  if (0) {
+    for (int k = 0; k < NHORIZON - 1; ++k) {
+      // printf("\nk = %d\n", k);
+      // PrintMatrixT(Uhrz[k]);
+      // PrintMatrixT(Xhrz[k+1]);
+      // PrintMatrix(P[k]);
+      // PrintMatrixT(Uref[k]);
+      // PrintMatrixT(Xref[k+1])
+    }
   }
 
   // ========== Test ==========

@@ -1,4 +1,10 @@
-#pragma once
+#ifndef BICYCLE_3D_H
+# define BICYCLE_3D_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <math.h>
 #include <slap/slap.h>
@@ -31,3 +37,11 @@ void tiny_Bicycle3dGetJacobianB_Raw(sfloat* B, const sfloat* x,
 
 void tiny_Bicycle3dGetJacobians(Matrix* A, Matrix* B, const Matrix x,
                                 const Matrix u);
+
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef BICYCLE_3D_H

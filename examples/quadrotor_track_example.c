@@ -15,8 +15,8 @@
 #define H 0.02       // dt
 #define NSTATES 12   // no. of states (error state)
 #define NINPUTS 4    // no. of controls
-#define NHORIZON 20  // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM 200     // simulation steps (fixed with reference data)
+#define NHORIZON 11  // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NSIM 500     // simulation steps (fixed with reference data)
 
 int main() {
   // ===== Created data =====
@@ -222,14 +222,15 @@ int main() {
   stgs.en_cstr_inputs = 1;
   stgs.en_cstr_states = 0;
   stgs.max_iter_riccati = 1;
-  stgs.max_iter_al = 6;
-  stgs.tol_abs_cstr = 1e-2;
+  stgs.max_iter_al = 1;
+  stgs.tol_abs_cstr = 1e-3;
   stgs.verbose = 0;
   stgs.reg_min = 1e-6;
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
+  slap_Copy(X[0], work.data->x0);  
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     // printf("\n=> k = %d\n", k);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
@@ -239,13 +240,14 @@ int main() {
 
     // === 1. Setup and solve MPC ===
     for (int j = 0; j < NSTATES; ++j) {
-      X[k].data[j] += X[k].data[j] * NOISE(1);
+      X[k].data[j] += X[k].data[j] * NOISE(5);
     }
     slap_Copy(work.data->x0, X[k]);  // update current measurement
 
     // Update reference
     data.X_ref = &Xref[k];
     data.U_ref = &Uref[k];
+    tiny_UpdateLinearCost(&work);
 
     clock_t start, end;
     double cpu_time_used;
@@ -273,7 +275,7 @@ int main() {
     // tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
     tiny_QuadNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
     // tiny_DynamicsLti(&X[k + 1], X[k], Uref[k], model);
-    // tiny_ShiftFill(Uhrz, ARRAY_SIZE(Uhrz));
+    tiny_ShiftFill(Uhrz, ARRAY_SIZE(Uhrz));
   }
 
   // ========== Test ==========

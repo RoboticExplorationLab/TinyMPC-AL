@@ -1,4 +1,10 @@
-#pragma once
+#ifndef BICYCLE_3D_TRACK_H
+# define BICYCLE_3D_TRACK_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <slap/slap.h>
 
@@ -318,3 +324,10 @@ sfloat U_ref_data[198] = {
     0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2,
     1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0,
     0.2, 1.0, 0.2};
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef BICYCLE_3D_TRACK_H

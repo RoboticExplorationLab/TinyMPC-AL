@@ -1,4 +1,10 @@
-#pragma once
+#ifndef QUADROTOR_FIG8_H
+# define QUADROTOR_FIG8_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <slap/slap.h>
 
@@ -6134,3 +6140,11 @@ sfloat X_ref_data[] = {0.0,
                        0.0,
                        0.0,
                        0.0};
+
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef QUADROTOR_FIG8_H

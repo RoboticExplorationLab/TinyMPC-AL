@@ -23,7 +23,6 @@ extern "C" {
 enum tiny_ErrorCode {
   TINY_SLAP_ERROR = 0,
   TINY_MATRIX_NOT_PSD,
-  TINY_PROBLEM_INFEASIBLE,
   TINY_NO_ERROR,
 };
 

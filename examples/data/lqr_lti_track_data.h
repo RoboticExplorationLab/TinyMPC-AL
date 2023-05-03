@@ -1,4 +1,10 @@
-#pragma once
+#ifndef LQR_LTI_TRACK_DATA_H
+# define LQR_LTI_TRACK_DATA_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <slap/slap.h>
 
@@ -242,3 +248,10 @@ sfloat Uref_data[100] = {
     0.28192205408744453,  0.41433948199854476, 0.2738160796651649,
     0.4221589460684351,   0.26836142313605527, 0.43414588383473807,
     0.26555707978598164};
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef LQR_LTI_TRACK_DATA_H

@@ -19,6 +19,10 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work);
 
+int tiny_CheckRiccati(tiny_Workspace* work);
+
+int tiny_CheckAl(tiny_Workspace* work);
+
 
 # ifdef __cplusplus
 }

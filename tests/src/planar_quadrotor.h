@@ -1,4 +1,10 @@
-#pragma once
+#ifndef PLANAR_QUADROTOR_H
+# define PLANAR_QUADROTOR_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <math.h>
 
@@ -27,3 +33,10 @@ void tiny_PQuadGetJacobianB_Raw(sfloat* B, const sfloat* x, const sfloat* u);
 
 void tiny_PQuadGetJacobians(Matrix* A, Matrix* B, const Matrix x,
                             const Matrix u);
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef PLANAR_QUADROTOR_H

@@ -219,12 +219,3 @@ enum tiny_ErrorCode tiny_ResetInfo(tiny_Workspace* work) {
   work->info->dua_res = 0.0;
   return TINY_NO_ERROR;
 }
-
-int IsConstrained(tiny_Workspace* work) {
-  if (!work->stgs->en_cstr_goal && 
-      !work->stgs->en_cstr_inputs && 
-      !work->stgs->en_cstr_states) {
-    return 0; // unconstrained
-  }
-  return 1;    
-}

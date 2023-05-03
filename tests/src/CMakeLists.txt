@@ -32,10 +32,7 @@ add_my_test(cost)
 add_my_test(back_pass)
 add_my_test(lqr_lti)
 add_my_test(lqr_lti_track)
-add_my_test(linear_cstr)
-
-# add_my_test(lqr_lti_track)
-add_my_test(al_lqr_lti)
-
 # add_my_test(lqr_ltv_track)
+add_my_test(linear_cstr)
+add_my_test(al_lqr_lti)
 # add_my_test(al_lqr_ltv)

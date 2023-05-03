@@ -1,4 +1,11 @@
-#pragma once
+#ifndef FORWARD_PASS_DATA_H
+# define FORWARD_PASS_DATA_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
+
 #include "slap/slap.h"
 
 sfloat x_data[12] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
@@ -29,3 +36,10 @@ sfloat xsol_data[12] = {1.0,
                         1.1605012516232516,
                         0.5885866254611287,
                         0.5756280013505097};
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef FORWARD_PASS_DATA_H

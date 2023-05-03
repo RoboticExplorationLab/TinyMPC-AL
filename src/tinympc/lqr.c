@@ -276,9 +276,15 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
 
 
 enum tiny_ErrorCode tiny_SolveLqr(tiny_Workspace* work) {
+
   slap_Copy(work->soln->X[0], work->data->x0);
+
+  tiny_ResetInfo(work);
+
   tiny_BackwardPass(work);
   tiny_ForwardPass(work);
+
   work->info->status_val = TINY_SOLVED;
+  
   return TINY_NO_ERROR;
 }

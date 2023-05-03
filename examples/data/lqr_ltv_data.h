@@ -1,4 +1,10 @@
-#pragma once
+#ifndef LQR_LTV_DATA_H
+# define LQR_LTV_DATA_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <slap/slap.h>
 
@@ -241,3 +247,10 @@ sfloat Uref_data[200] = {
     -1.536987524530329,      -0.21485055077450937,   -1.5660851876322166,
     -0.22922590745423896,    -1.5946591926179445,    -0.2392106353208698,
     -1.6226768590443195,     -0.24453302917291475};
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef LQR_LTV_DATA_H

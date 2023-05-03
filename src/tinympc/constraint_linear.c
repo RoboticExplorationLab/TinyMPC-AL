@@ -1,24 +1,5 @@
 #include "constraint_linear.h"
 
-int tiny_CheckRiccati(tiny_Workspace* work) {
-  int N = work->data->model->nhorizon;
-  work->info->pri_res = 0.0;
-  for (int k = 0; k < N - 1; ++k) {
-    sfloat norm_d = slap_NormTwo(work->soln->d[k]);
-    if (norm_d > work->info->pri_res) {
-      work->info->pri_res = norm_d;
-    }
-  }
-  if (work->info->pri_res < work->stgs->tol_abs_riccati) {
-    return 1;  // within tolerance
-  }
-  else return 0;
-}
- 
-enum tiny_ErrorCode tiny_CheckAl(tiny_Workspace* work) {
-  return TINY_NO_ERROR;
-}
-
 // // [u-p.u_max;-u + p.u_min]
 // void tiny_EvalInputConstraint(Matrix* cu, const tiny_ProblemData prob,
 //                      const Matrix u) {
@@ -116,4 +97,13 @@ enum tiny_ErrorCode tiny_ProjectOrthantDuals(Matrix* dual, const Matrix new_dual
       dual->data[i] = 0.0;
   }
   return TINY_NO_ERROR;
+}
+
+int IsConstrained(tiny_Workspace* work) {
+  if (!work->stgs->en_cstr_goal && 
+      !work->stgs->en_cstr_inputs && 
+      !work->stgs->en_cstr_states) {
+    return 0; // unconstrained
+  }
+  return 1;    
 }

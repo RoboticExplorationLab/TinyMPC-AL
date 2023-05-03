@@ -1,4 +1,10 @@
-#pragma once
+#ifndef UTILS_H
+# define UTILS_H
+
+# ifdef __cplusplus
+extern "C" {
+# endif // ifdef __cplusplus
+
 
 #include <errno.h>
 #include <math.h>
@@ -87,3 +93,10 @@ void tiny_ClampMatrix(Matrix* mat, const Matrix min, const Matrix max);
 void tiny_ShiftFill(Matrix* mats, const int length);
 
 void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length);
+
+
+# ifdef __cplusplus
+}
+# endif // ifdef __cplusplus
+
+#endif // ifndef UTILS_H

@@ -164,7 +164,7 @@ enum tiny_ErrorCode tiny_BackwardPass(tiny_Workspace* work) {
     }
   }
   if (!model[0].ltv && model[0].affine) {
-    printf("LTI AND AFFINE\n");
+    // printf("LTI AND AFFINE\n");
     // for (int k = N - 2; k >= N-2; --k) {
     for (int k = N - 2; k >= 0; --k) {
       // Stage cost expansion

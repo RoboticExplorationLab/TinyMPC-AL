@@ -381,9 +381,8 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
   slap_Copy(work->soln->X[0], work->data->x0);
   // Shortcut unconstrained problem
   if (!IsConstrained(work)) {
-    printf("UNCONSTRAINED!\n");
-    tiny_ForwardPass(work);
     tiny_BackwardPass(work);
+    tiny_ForwardPass(work);    
     return TINY_NO_ERROR;
   }
 

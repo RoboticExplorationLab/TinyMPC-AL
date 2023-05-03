@@ -11,7 +11,7 @@
 
 #define NSTATES 4
 #define NINPUTS 2
-#define NHORIZON 100
+#define NHORIZON 50
 
 void MpcLtiTest() {
   // sfloat tol = 1e-4;
@@ -20,8 +20,8 @@ void MpcLtiTest() {
   sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   sfloat f_data[NSTATES] = {0};
   sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
-  // sfloat xg_data[NSTATES] = {0};
-  sfloat xg_data[NSTATES] = {2, 5, -1, 1};
+  sfloat xg_data[NSTATES] = {0};
+  // sfloat xg_data[NSTATES] = {2, 5, -1, 1};
   sfloat Xref_data[NSTATES * NHORIZON] = {0};
   sfloat Uref_data[NINPUTS * (NHORIZON - 1)] = {0};
   sfloat X_data[NSTATES * NHORIZON] = {0};
@@ -58,7 +58,7 @@ void MpcLtiTest() {
   tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
 
   stgs.en_cstr_goal = 0;
-  stgs.en_cstr_inputs = 0;
+  stgs.en_cstr_inputs = 1;
   stgs.en_cstr_states = 0;
   stgs.max_iter_riccati = 1;
   stgs.max_iter_al = 6;
@@ -160,7 +160,7 @@ void MpcLtiTest() {
   data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(data.R, 1.0);
   data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(data.Qf, 10000.0);
+  slap_SetIdentity(data.Qf, 10.0);
 
   data.Acx =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
@@ -200,8 +200,13 @@ void MpcLtiTest() {
   clock_t start, end;
   double cpu_time_used;
   start = clock();
-  // tiny_SolveAlLqr(&work);
-  tiny_SolveLqr(&work);
+  tiny_SolveAlLqr(&work);
+  // tiny_SolveLqr(&work);
+
+  // slap_Copy(work.soln->X[0], work.data->x0);
+  // tiny_BackwardPass(&work);
+  // tiny_ForwardPass(&work);  
+
   end = clock();
   cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
   // printf("time: %f\n", cpu_time_used);

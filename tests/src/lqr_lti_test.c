@@ -147,7 +147,7 @@ void LqrLtiTest() {
  
   tiny_SolveLqr(&work);
 
-  if (1) {
+  if (0) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
       printf("\n=>k = %d\n", k);
       // PrintMatrix(p[k]);

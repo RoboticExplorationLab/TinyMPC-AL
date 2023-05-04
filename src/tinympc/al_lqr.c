@@ -394,11 +394,6 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
   int verbose = work->stgs->verbose;         // Boolean whether you can print
   // int compute_cost_function; // Boolean: compute the cost function in the loop or not
 
-  tiny_Model* model = work->data->model;
-  int N = model[0].nhorizon;
-  // int n = model[0].nstates;
-  // int m = model[0].ninputs;
-
   // Roll-out initial guess
   // tiny_RollOutOpenLoop(work);
 
@@ -433,32 +428,9 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
     }
 
     // update duals
-    if (work->stgs->en_cstr_inputs) {
-      for (int k = 0; k < N - 1; ++k) { 
-        tiny_ActiveIneqMask(&(work->cu_mask), work->soln->YU[k], work->cu);
-        slap_ScaleByConst(work->cu_mask, work->penalty);  // mask = ρ*mask
-        slap_Copy(work->YU_hat, work->soln->YU[k]);
-        slap_MatMulAdd(work->YU_hat, work->cu_mask, work->data->bcu, -1, 1);  //μ[k] - ρ*mask * g
-        tiny_ProjectOrthantDuals(&(work->soln->YU[k]), work->YU_hat);
-      }
-    }
-    if (work->stgs->en_cstr_states) {
-      for (int k = 0; k < N; ++k) {    
-        tiny_ActiveIneqMask(&(work->cx_mask), work->soln->YX[k], work->cx);
-        slap_ScaleByConst(work->cx_mask, work->penalty);  // mask = ρ*mask
-        slap_Copy(work->YX_hat, work->soln->YX[k]);
-        slap_MatMulAdd(work->YX_hat, work->cx_mask, work->data->bcx, -1, 1);  //μ[k] - ρ*mask * g
-        tiny_ProjectOrthantDuals(&(work->soln->YX[k]), work->YX_hat);
-      }
-    }
-    if (work->stgs->en_cstr_goal) {
-      // λ -= ρ*h
-      slap_Copy(work->cg, work->data->X_ref[N - 1]);  // h = xg
-      slap_MatrixAddition(work->soln->YG, work->soln->YG, work->cg, -work->penalty);
-    }
-
+    tiny_UpdateDuals(work);
     // update penalty
-    work->penalty = work->penalty * work->stgs->penalty_mul;    
+    tiny_UpdatePenalty(work); 
   }
 
   work->info->status_val = TINY_MAX_ITER_AL_REACHED;
@@ -539,5 +511,38 @@ enum tiny_ErrorCode tiny_WarmStartInput(tiny_Workspace* work, sfloat* U_data) {
   for (int i = 0; i < N - 1; ++i) {
     slap_CopyFromArray(work->soln->U[i], &U_data[i * m]);
   }
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_UpdateDuals(tiny_Workspace* work) {
+  int N = work->data->model->nhorizon;
+  if (work->stgs->en_cstr_inputs) {
+    for (int k = 0; k < N - 1; ++k) { 
+      tiny_ActiveIneqMask(&(work->cu_mask), work->soln->YU[k], work->cu);
+      slap_ScaleByConst(work->cu_mask, work->penalty);  // mask = ρ*mask
+      slap_Copy(work->YU_hat, work->soln->YU[k]);
+      slap_MatMulAdd(work->YU_hat, work->cu_mask, work->data->bcu, -1, 1);  //μ[k] - ρ*mask * g
+      tiny_ProjectOrthantDuals(&(work->soln->YU[k]), work->YU_hat);
+    }
+  }
+  if (work->stgs->en_cstr_states) {
+    for (int k = 0; k < N; ++k) {    
+      tiny_ActiveIneqMask(&(work->cx_mask), work->soln->YX[k], work->cx);
+      slap_ScaleByConst(work->cx_mask, work->penalty);  // mask = ρ*mask
+      slap_Copy(work->YX_hat, work->soln->YX[k]);
+      slap_MatMulAdd(work->YX_hat, work->cx_mask, work->data->bcx, -1, 1);  //μ[k] - ρ*mask * g
+      tiny_ProjectOrthantDuals(&(work->soln->YX[k]), work->YX_hat);
+    }
+  }
+  if (work->stgs->en_cstr_goal) {
+    // λ -= ρ*h
+    slap_Copy(work->cg, work->data->X_ref[N - 1]);  // h = xg
+    slap_MatrixAddition(work->soln->YG, work->soln->YG, work->cg, -work->penalty);
+  }
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_UpdatePenalty(tiny_Workspace* work) {
+  work->penalty = work->penalty * work->stgs->penalty_mul;
   return TINY_NO_ERROR;
 }

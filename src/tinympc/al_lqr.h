@@ -27,6 +27,10 @@ enum tiny_ErrorCode tiny_ResetWorkspace(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_WarmStartInput(tiny_Workspace* work, sfloat* U_data);
 
+enum tiny_ErrorCode tiny_UpdateDuals(tiny_Workspace* work);
+
+enum tiny_ErrorCode tiny_UpdatePenalty(tiny_Workspace* work);
+
 # ifdef __cplusplus
 }
 # endif // ifdef __cplusplus

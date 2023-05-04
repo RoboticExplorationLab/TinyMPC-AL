@@ -13,7 +13,7 @@ enum tiny_ErrorCode tiny_InitSettings(tiny_Settings* stgs);
 
 enum tiny_ErrorCode tiny_SetUnconstrained(tiny_Settings* stgs);
 
-enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work);
+// enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_InitDataFromMatrix(tiny_Workspace* work, Matrix x0,
                                             Matrix Q, Matrix R, Matrix Qf,
@@ -38,7 +38,7 @@ enum tiny_ErrorCode tiny_InitDataLinearCostFromArray(tiny_Workspace* work,
 Matrix* q, Matrix* r, 
 sfloat* q_data, sfloat* r_data, sfloat* qf_data);
 
-enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work);
+// enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_InitSolutionFromMatrix(tiny_Workspace* work, 
                                                Matrix* X, Matrix* U,

@@ -44,40 +44,40 @@ enum tiny_ErrorCode tiny_SetUnconstrained(tiny_Settings* stgs) {
   return TINY_NO_ERROR;
 }
 
-enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work) {
-  tiny_Solution* soln = work->soln;
-  tiny_Model* model   = &(work->data->model[0]);
-  int n = model->nstates;
-  int m = model->ninputs;
-  int N = model->nhorizon;
+// enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work) {
+//   tiny_Solution* soln = work->soln;
+//   tiny_Model* model   = &(work->data->model[0]);
+//   int n = model->nstates;
+//   int m = model->ninputs;
+//   int N = model->nhorizon;
 
-  soln->X = TINY_NULL;
-  soln->U = TINY_NULL;
+//   soln->X = TINY_NULL;
+//   soln->U = TINY_NULL;
 
-  soln->YX = TINY_NULL;
-  soln->YU = TINY_NULL;
-  soln->YG = TINY_NULL_MAT;
+//   soln->YX = TINY_NULL;
+//   soln->YU = TINY_NULL;
+//   soln->YG = TINY_NULL_MAT;
 
-  soln->K = TINY_NULL;
-  soln->d = TINY_NULL;
-  soln->P = TINY_NULL;
-  soln->p = TINY_NULL;
+//   soln->K = TINY_NULL;
+//   soln->d = TINY_NULL;
+//   soln->P = TINY_NULL;
+//   soln->p = TINY_NULL;
 
-  soln->data_size = n*N + m*(N-1) + (m+1)*n*(N-1) + (n+1)*n*N;
+//   soln->data_size = n*N + m*(N-1) + (m+1)*n*(N-1) + (n+1)*n*N;
 
-  if (work->stgs->en_cstr_inputs) {
-    soln->data_size += m*(N-1)*2;
-  }
+//   if (work->stgs->en_cstr_inputs) {
+//     soln->data_size += m*(N-1)*2;
+//   }
 
-  if (work->stgs->en_cstr_states) {
-    soln->data_size += n*N*2;
-  }  
+//   if (work->stgs->en_cstr_states) {
+//     soln->data_size += n*N*2;
+//   }  
 
-  if (work->stgs->en_cstr_goal) {
-    soln->data_size += n;
-  }  
-  return TINY_NO_ERROR;
-}
+//   if (work->stgs->en_cstr_goal) {
+//     soln->data_size += n;
+//   }  
+//   return TINY_NO_ERROR;
+// }
 
 enum tiny_ErrorCode tiny_InitSolutionFromMatrix(tiny_Workspace* work, 
                                                Matrix* X, Matrix* U,
@@ -189,39 +189,40 @@ sfloat* K_data, sfloat* d_data, sfloat* P_data, sfloat* p_data) {
 
   return TINY_NO_ERROR;  
 }
-enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work) {
-  tiny_Data* data   = work->data;
-  tiny_Model* model = &(work->data->model[0]);
-  int n = model->nstates;
-  int m = model->ninputs;
-  int N = model->nhorizon;
 
-  data->x0 = TINY_NULL_MAT;
-  data->Q = TINY_NULL_MAT;
-  data->R = TINY_NULL_MAT;
-  data->Qf = TINY_NULL_MAT;
-  data->q = TINY_NULL;
-  data->r = TINY_NULL;
-  data->qf = TINY_NULL_MAT;
-  data->X_ref = TINY_NULL;
-  data->U_ref = TINY_NULL;
-  data->Acx = TINY_NULL_MAT;
-  data->bcx = TINY_NULL_MAT;
-  data->Acu = TINY_NULL_MAT;
-  data->bcu = TINY_NULL_MAT;
+// enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work) {
+//   tiny_Data* data   = work->data;
+//   tiny_Model* model = &(work->data->model[0]);
+//   int n = model->nstates;
+//   int m = model->ninputs;
+//   int N = model->nhorizon;
 
-  data->data_size = n + n*n*2 + m*m + (N-1)*(n + m) + m + N*n + (N-1)*m;  // with ref
+//   data->x0 = TINY_NULL_MAT;
+//   data->Q = TINY_NULL_MAT;
+//   data->R = TINY_NULL_MAT;
+//   data->Qf = TINY_NULL_MAT;
+//   data->q = TINY_NULL;
+//   data->r = TINY_NULL;
+//   data->qf = TINY_NULL_MAT;
+//   data->X_ref = TINY_NULL;
+//   data->U_ref = TINY_NULL;
+//   data->Acx = TINY_NULL_MAT;
+//   data->bcx = TINY_NULL_MAT;
+//   data->Acu = TINY_NULL_MAT;
+//   data->bcu = TINY_NULL_MAT;
 
-  if (work->stgs->en_cstr_inputs) {
-    data->data_size += 2*m*m + 2*m; 
-  }
+//   data->data_size = n + n*n*2 + m*m + (N-1)*(n + m) + m + N*n + (N-1)*m;  // with ref
 
-  if (work->stgs->en_cstr_states) {
-    data->data_size += 2*n*n + 2*n;
-  }  
+//   if (work->stgs->en_cstr_inputs) {
+//     data->data_size += 2*m*m + 2*m; 
+//   }
 
-  return TINY_NO_ERROR;
-}
+//   if (work->stgs->en_cstr_states) {
+//     data->data_size += 2*n*n + 2*n;
+//   }  
+
+//   return TINY_NO_ERROR;
+// }
 
 enum tiny_ErrorCode tiny_InitDataFromMatrix(tiny_Workspace* work, Matrix x0,
                                             Matrix Q, Matrix R, Matrix Qf,
@@ -257,26 +258,6 @@ enum tiny_ErrorCode tiny_InitDataFromMatrix(tiny_Workspace* work, Matrix x0,
 
   return TINY_NO_ERROR;
 }
-
-// enum tiny_ErrorCode tiny_InitDataFromArray(tiny_Workspace* work, sfloat* x0_data,
-//                                             sfloat* Q_data, sfloat* R_data, sfloat* Qf_data,
-//                                             sfloat* q_data, sfloat* r_data, sfloat* qf_data,
-//                                             sfloat* X_ref_data, sfloat* U_ref_data,
-//                                             sfloat* Acx_data, sfloat* bcx_data,
-//                                             sfloat* Acu_data, sfloat* bcu_data) {
-//   int N = work->data->model->nhorizon;
-//   int n = work->data->model->nstates;
-//   int m = work->data->model->ninputs;
-
-//   for (int i = 0; i < N; ++i) {
-//     if (i < N - 1) {
-//       q[i] = slap_MatrixFromArray(n, 1, &q_data[i * n]);
-//       r[i] = slap_MatrixFromArray(m, 1, &r_data[i * m]);
-//       Uref[i] = slap_MatrixFromArray(m, 1, &U_ref_data[i * m]);
-//     }
-
-//   }
-// }
 
 enum tiny_ErrorCode tiny_InitDataQuadCostFromArray(tiny_Workspace* work, 
 sfloat* Q_data, 
@@ -333,8 +314,8 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
   work->stgs = stgs;
   work->data->model = model;
 
-  tiny_InitSolution(work);
-  tiny_InitData(work);
+  // tiny_InitSolution(work);
+  // tiny_InitData(work);
 
   int n = model->nstates;
   int m = model->ninputs;
@@ -343,31 +324,31 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
   work->reg = (sfloat)REG_MIN;
   work->alpha = (sfloat)ALPHA;
   work->penalty = work->stgs->penalty_init;
-  work->Q_temp = TINY_NULL_MAT;
-  work->c_temp = TINY_NULL_MAT;
+  // work->Q_temp = TINY_NULL_MAT;
+  // work->c_temp = TINY_NULL_MAT;
 
-  work->Qxx = TINY_NULL_MAT;
-  work->Qxu = TINY_NULL_MAT;
-  work->Qux = TINY_NULL_MAT;
-  work->Quu = TINY_NULL_MAT;
-  work->Qx = TINY_NULL_MAT;
-  work->Qu = TINY_NULL_MAT;
+  // work->Qxx = TINY_NULL_MAT;
+  // work->Qxu = TINY_NULL_MAT;
+  // work->Qux = TINY_NULL_MAT;
+  // work->Quu = TINY_NULL_MAT;
+  // work->Qx = TINY_NULL_MAT;
+  // work->Qu = TINY_NULL_MAT;
 
-  work->cu = TINY_NULL_MAT;
-  work->cu2 = TINY_NULL_MAT;
-  work->cu_jac = TINY_NULL_MAT;
-  work->cu_jac2 = TINY_NULL_MAT;
-  work->cu_mask = TINY_NULL_MAT;
-  work->YU_hat = TINY_NULL_MAT;
+  // work->cu = TINY_NULL_MAT;
+  // work->cu2 = TINY_NULL_MAT;
+  // work->cu_jac = TINY_NULL_MAT;
+  // work->cu_jac2 = TINY_NULL_MAT;
+  // work->cu_mask = TINY_NULL_MAT;
+  // work->YU_hat = TINY_NULL_MAT;
 
-  work->cx = TINY_NULL_MAT;
-  work->cx2 = TINY_NULL_MAT;
-  work->cx_jac = TINY_NULL_MAT;
-  work->cx_jac2 = TINY_NULL_MAT;
-  work->cx_mask = TINY_NULL_MAT;
-  work->YX_hat = TINY_NULL_MAT;
+  // work->cx = TINY_NULL_MAT;
+  // work->cx2 = TINY_NULL_MAT;
+  // work->cx_jac = TINY_NULL_MAT;
+  // work->cx_jac2 = TINY_NULL_MAT;
+  // work->cx_mask = TINY_NULL_MAT;
+  // work->YX_hat = TINY_NULL_MAT;
 
-  work->cg = TINY_NULL_MAT;
+  // work->cg = TINY_NULL_MAT;
 
 
   work->data_size = 2 * n * (2 * n + 2 * n + 2) + (n + m) * (n + m + 1);

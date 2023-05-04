@@ -118,7 +118,6 @@ int main() {
   tiny_SetInputBound(&work, Acu_data, bcu_data);
   tiny_SetStateBound(&work, Acx_data, bcx_data);
 
-  // Absolute formulation
   // Compute and store A, B offline
   tiny_UpdateModelJac(&work);
 
@@ -147,7 +146,7 @@ int main() {
   stgs.verbose = 0;
   stgs.reg_min = 1e-6;
 
-  srand(1);                   // random seed
+  srand(1);  // random seed
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused

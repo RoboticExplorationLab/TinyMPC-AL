@@ -356,7 +356,7 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
   return TINY_NO_ERROR;
 }
 
-enum tiny_ErrorCode tiny_InitTempData(tiny_Workspace* work, sfloat* temp_data) {
+enum tiny_ErrorCode tiny_InitWorkspaceTempData(tiny_Workspace* work, sfloat* temp_data) {
   int n = work->data->model->nstates;
   int m = work->data->model->ninputs;
 

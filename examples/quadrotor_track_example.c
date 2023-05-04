@@ -126,24 +126,20 @@ int main() {
   tiny_Workspace work;
   tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
   
+  // ===== Fill in the remaining struct =====
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
+
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
-
-  tiny_InitTempData(&work, temp_data);
-
-  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);  
 
   tiny_InitSolnTrajFromArray(&work, Xhrz, Uhrz, Xhrz_data, Uhrz_data);
   tiny_InitSolnDualsFromArray(&work, YX, YU, YX_data, YU_data, YG_data);
   tiny_InitSolnGainsFromArray(&work, K, d, P, p, K_data, d_data, P_data, p_data);
-  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible  
+
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  
   data.X_ref = Xref;
   data.U_ref = Uref;
-
-  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
-  data.X_ref = Xref;
-  data.U_ref = Uref;
-
   tiny_InitDataQuadCostFromArray(&work, Q_data, R_data, Qf_data);
   // slap_SetIdentity(prob.Q, 1000e-1);
   sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1};
@@ -188,6 +184,7 @@ int main() {
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   slap_Copy(X[0], work.data->x0);  
+  srand(1);  // random seed
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     // printf("\n=> k = %d\n", k);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
@@ -210,14 +207,17 @@ int main() {
     double cpu_time_used;
     start = clock();
     // Solve optimization problem using Augmented Lagrangian TVLQR
-    // tiny_SolveAlLqr(&work);
-    tiny_SolveLqr(&work);
+    tiny_SolveAlLqr(&work);
     // tiny_BackwardPassLti(&prob, solver, model, &Q_temp);
     // tiny_ForwardPassLti(Xhrz, Uhrz, prob, model);
     end = clock();
     cpu_time_used = ((double)(end - start)) * 1000 / CLOCKS_PER_SEC;  // ms
     printf("solve time: %f\n", cpu_time_used);
 
+    if(work.info->status_val != TINY_SOLVED) {
+      printf("!!! NOT SOLVED !!!\n");
+      return 0;
+    }
     // Test control constraints here (since we didn't save U)
     for (int i = 0; i < NINPUTS; ++i) {
       TEST(Uhrz[0].data[i] < bcu_data[i] + stgs.tol_abs_cstr);

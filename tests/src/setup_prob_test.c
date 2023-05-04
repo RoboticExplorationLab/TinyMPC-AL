@@ -148,7 +148,7 @@ void WorkspaceTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   TEST((work.YU_hat.rows == 2 * m) && (work.YU_hat.cols == 1));
   TEST((work.cu2.rows == 2 * m) && (work.cu2.cols == 1));

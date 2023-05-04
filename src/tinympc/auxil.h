@@ -66,7 +66,7 @@ enum tiny_ErrorCode tiny_InitWorkspace(tiny_Workspace* work,
                                        tiny_Solution* soln,
                                        tiny_Settings* stgs);
 
-enum tiny_ErrorCode tiny_InitTempData(tiny_Workspace* work, sfloat* temp_data);
+enum tiny_ErrorCode tiny_InitWorkspaceTempData(tiny_Workspace* work, sfloat* temp_data);
 
 enum tiny_ErrorCode tiny_ResetInfo(tiny_Workspace* work);
 

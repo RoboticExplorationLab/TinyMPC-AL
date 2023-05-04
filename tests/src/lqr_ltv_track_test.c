@@ -77,7 +77,7 @@ void DeltaLqrLtvTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   tiny_InitModelFromArray(&model, A, B, TINY_NULL, A_data, B_data, TINY_NULL);
 
@@ -250,7 +250,7 @@ void AbsLqrLtvTest() {
 
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   // Now can fill in all the remaining struct
   tiny_InitModelFromArray(&model, A, B, f, A_data, B_data, f_data);

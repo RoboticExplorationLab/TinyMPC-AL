@@ -93,11 +93,11 @@ int main() {
   tiny_Workspace work;
   tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
 
+  // Now can fill in all the remaining struct
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
-  // Now can fill in all the remaining struct
   tiny_InitModelFromArray(&model, A, B, f, A_data, B_data, f_data);
   model.get_jacobians = tiny_Bicycle3dGetJacobians;  // from Bicycle
   model.get_nonl_model = tiny_Bicycle3dNonlinearDynamics;
@@ -106,7 +106,7 @@ int main() {
   tiny_InitSolnDualsFromArray(&work, YX, YU, YX_data, YU_data, TINY_NULL);
   tiny_InitSolnGainsFromArray(&work, K, d, P, p, K_data, d_data, P_data, p_data);
 
-  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible  
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  
   data.X_ref = Xref;
   data.U_ref = Uref;
   tiny_InitDataQuadCostFromArray(&work, Q_data, R_data, Qf_data);
@@ -146,11 +146,10 @@ int main() {
   stgs.verbose = 0;
   stgs.reg_min = 1e-6;
 
-  srand(1);  // random seed
-
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
+  srand(1);  // random seed
   slap_Copy(X[0], work.data->x0);  
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
@@ -170,7 +169,10 @@ int main() {
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_SolveAlLqr(&work);
-
+    if(work.info->status_val != TINY_SOLVED) {
+      printf("!!! NOT SOLVED !!!\n");
+      return 0;
+    }
     // Test control constraints here (since we didn't save U)
     for (int i = 0; i < NINPUTS; ++i) {
       TEST(Uhrz[0].data[i] < bcu_data[i] + stgs.tol_abs_cstr);

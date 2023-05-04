@@ -66,7 +66,7 @@ void MpcLtiTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   Matrix A;
   Matrix B;

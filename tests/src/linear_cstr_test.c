@@ -121,7 +121,7 @@ void ActiveIneqMaskTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   soln.U = U;
   U[0] = slap_MatrixFromArray(NINPUTS, 1, u_data);
@@ -158,7 +158,7 @@ void RiccatiConvergenceTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   sfloat d_data[4] = {1.2, -0.3, -2.1, 3.1};
   sfloat ans = 3.744329045369811;

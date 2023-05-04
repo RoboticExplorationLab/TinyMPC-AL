@@ -23,6 +23,7 @@ int tiny_CheckRiccati(tiny_Workspace* work);
 
 int tiny_CheckAl(tiny_Workspace* work);
 
+enum tiny_ErrorCode tiny_ResetWorkspace(tiny_Workspace* work);
 
 # ifdef __cplusplus
 }

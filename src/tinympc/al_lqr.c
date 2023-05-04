@@ -1,8 +1,8 @@
 #include "al_lqr.h"
 
 enum tiny_ErrorCode tiny_ConstrainedForwardPass(tiny_Workspace* work) {
-  tiny_RollOutClosedLoop(work);
-  // tiny_RollOutClosedLoopCost(work);
+  // tiny_RollOutClosedLoop(work);
+  tiny_RollOutClosedLoopCost(work);
   return TINY_NO_ERROR;
 }
 
@@ -381,7 +381,9 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work) {
 }
 
 enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
-  slap_Copy(work->soln->X[0], work->data->x0);
+
+  tiny_ResetWorkspace(work);
+
   // Shortcut unconstrained problem
   if (!IsConstrained(work)) {
     tiny_SolveLqr(work);
@@ -396,8 +398,6 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
   int N = model[0].nhorizon;
   // int n = model[0].nstates;
   // int m = model[0].ninputs;
- 
-  tiny_ResetInfo(work);
 
   // Roll-out initial guess
   tiny_RollOutOpenLoop(work);
@@ -472,21 +472,21 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
         printf("------------------------------------------------------------\n");
       }
       printf("%4d%12.2e%12.2e%12.2e%10.1e%10.1e\n", 
-             work->info->iter_al, work->info->obj_al, work->info->pri_res,
+             work->info->iter_al, work->info->obj_pri, work->info->pri_res,
              work->info->dua_res, work->reg, work->penalty);
     }
 
     // check AL termination
     if (tiny_CheckAl(work)) {
+      work->penalty = work->stgs->penalty_init;
       work->info->status_val = TINY_SOLVED;
-      work->penalty = work->stgs->penalty_init;  // reset penalty for next MPC
       return TINY_NO_ERROR;
     }
 
     // update penalty
     work->penalty = work->penalty * work->stgs->penalty_mul;    
   }
-  
+  work->penalty = work->stgs->penalty_init;
   work->info->status_val = TINY_MAX_ITER_AL_REACHED;
   return TINY_NO_ERROR;
 }
@@ -513,3 +513,11 @@ int tiny_CheckAl(tiny_Workspace* work) {
   return 0;
 }
 
+enum tiny_ErrorCode tiny_ResetWorkspace(tiny_Workspace* work) {
+  slap_Copy(work->soln->X[0], work->data->x0);
+  work->reg = work->stgs->reg_min;
+  work->alpha = ALPHA;
+  work->penalty = work->stgs->penalty_init;
+  tiny_ResetInfo(work);
+  return TINY_NO_ERROR;
+}

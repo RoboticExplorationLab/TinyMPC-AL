@@ -61,7 +61,7 @@ void AddCostTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
 
   data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
   slap_SetIdentity(data.Q, 0.1);
@@ -119,7 +119,7 @@ void ExpandCostTest() {
   sfloat temp_data[work.data_size];
   INIT_ZEROS(temp_data);
 
-  tiny_InitTempData(&work, temp_data);
+  tiny_InitWorkspaceTempData(&work, temp_data);
   data.q = q;
   data.r = r;
   data.qf = slap_MatrixFromArray(NSTATES, 1, ans_gradxf);

@@ -122,7 +122,7 @@ int main() {
 
   tiny_InitTempData(&work, temp_data);
 
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   // ===== Fill in the struct =====
   for (int i = 0; i < NSIM; ++i) {
@@ -256,7 +256,7 @@ int main() {
     printf("solve time: %f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + stgs.tol_abs_cstr);
     PrintMatrixT(Uhrz[0]);
     Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
     PrintMatrixT(pos);
@@ -281,8 +281,8 @@ int main() {
   // Test state constraints
   // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
   //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-  //     TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+  //     TEST(X[k].data[i] < bcstr_state_data[i] + stgs.tol_abs_cstr);
+  //     TEST(X[k].data[i] > -bcstr_state_data[i] - stgs.tol_abs_cstr);
   //   }
   // }
   // // Test tracking performance

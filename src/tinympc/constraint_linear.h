@@ -8,6 +8,10 @@ extern "C" {
 
 #include "types.h"
 
+enum tiny_ErrorCode tiny_SetInputBound(tiny_Workspace* work, sfloat* Ac_data, sfloat* bc_data);
+
+enum tiny_ErrorCode tiny_SetStateBound(tiny_Workspace* work, sfloat* Ac_data, sfloat* bc_data);
+
 enum tiny_ErrorCode tiny_EvalInputConstraint(tiny_Workspace* work, const int k);
 
 // void tiny_EvalInputConstraintOffset(Matrix* cu, const tiny_ProblemData prob);

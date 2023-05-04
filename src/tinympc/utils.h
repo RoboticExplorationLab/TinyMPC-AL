@@ -12,7 +12,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#include "slap/slap.h"
+#include "types.h"
 
 //========================================
 // Print matrix with its name (dummy)
@@ -56,6 +56,16 @@ extern "C" {
       printf("%.4f, ", mat.data[imat]); \
     } \
     printf("\n");\
+  }
+
+//========================================
+// Print model info
+//========================================
+#define PrintModelInfo(model)      \
+  { \
+    printf("Model info: \n"); \
+    printf(" States: %d, inputs: %d, dt: %f\n", model.nstates, model.ninputs, model.dt);   \
+    printf(" LTV: %d, affine: %d\n", model.ltv, model.affine); \
   }
 
 //========================================

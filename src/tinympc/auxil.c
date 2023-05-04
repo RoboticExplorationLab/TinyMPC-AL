@@ -35,7 +35,14 @@ enum tiny_ErrorCode tiny_InitSettings(tiny_Settings* stgs) {
   return TINY_NO_ERROR;
 }
 
-// enum tiny_ErrorCode tiny_InitData(tiny_Data* data);
+enum tiny_ErrorCode tiny_SetUnconstrained(tiny_Settings* stgs) {
+  stgs->en_cstr_states  = 0;
+  stgs->en_cstr_inputs  = 0;
+  stgs->en_cstr_goal    = 0;
+  stgs->check_al        = 0;
+
+  return TINY_NO_ERROR;
+}
 
 enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work) {
   tiny_Solution* soln = work->soln;
@@ -72,6 +79,116 @@ enum tiny_ErrorCode tiny_InitSolution(tiny_Workspace* work) {
   return TINY_NO_ERROR;
 }
 
+enum tiny_ErrorCode tiny_InitSolutionFromMatrix(tiny_Workspace* work, 
+                                               Matrix* X, Matrix* U,
+                                               Matrix* P, Matrix* p,
+                                               Matrix* K, Matrix* d,
+                                               Matrix* YX, Matrix* YU,
+                                               Matrix YG) {
+  work->soln->X = X;
+  work->soln->U = U;
+
+  work->soln->P = P;
+  work->soln->p = p;
+  work->soln->K = K;
+  work->soln->d = d;
+
+  // if (work->stgs->en_cstr_states) {
+  //   SLAP_ASSERT(YX != TINY_NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  //   "tiny_InitSolitionDataArray: YX must not be TINY_NULL");
+  // }
+  work->soln->YX = YX;
+
+  // if (work->stgs->en_cstr_inputs) {
+  //   SLAP_ASSERT(YU != TINY_NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  //   "tiny_InitSolitionDataArray: YU must not be TINY_NULL");
+  // } 
+  work->soln->YU = YU;
+
+  // if (work->stgs->en_cstr_goal) {
+  //   SLAP_ASSERT(slap_IsNull(YG), SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  //   "tiny_InitSolitionDataArray: YG must not be TINY_NULL");
+  // }
+  work->soln->YG = YG;
+
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_InitSolnTrajFromArray(tiny_Workspace* work,
+Matrix* X, Matrix* U,
+sfloat* X_data, sfloat* U_data) {
+
+  int N = work->data->model->nhorizon;
+  int n = work->data->model->nstates;
+  int m = work->data->model->ninputs;
+
+  work->soln->X = X;  
+  work->soln->U = U;
+
+  for (int i = 0; i < N - 1; ++i) {
+    U[i] = slap_MatrixFromArray(m, 1, &U_data[i * m]);
+  }
+
+  for (int i = 0; i < N; ++i) {
+    X[i] = slap_MatrixFromArray(n, 1, &X_data[i * n]);
+  }
+
+  return TINY_NO_ERROR;  
+}
+
+enum tiny_ErrorCode tiny_InitSolnDualsFromArray(tiny_Workspace* work,
+Matrix* YX, Matrix* YU,
+sfloat* YX_data, sfloat* YU_data, sfloat* YG_data) {
+
+  int N = work->data->model->nhorizon;
+  int n = work->data->model->nstates;
+  int m = work->data->model->ninputs;
+
+  work->soln->YX = YX;  
+  work->soln->YU = YU;
+  if (YG_data) {
+    work->soln->YG = slap_MatrixFromArray(n, 1, YG_data);
+  }
+
+  if (YU_data) {
+    for (int i = 0; i < N - 1; ++i) {
+      YU[i] = slap_MatrixFromArray(2 * m, 1, &YU_data[i * 2 * m]);
+    }
+  }
+
+  if (YX_data) {
+    for (int i = 0; i < N; ++i) {
+      YX[i] = slap_MatrixFromArray(2 * n, 1, &YX_data[2 * n]);
+    }
+  }
+
+  return TINY_NO_ERROR;  
+}
+
+enum tiny_ErrorCode tiny_InitSolnGainsFromArray(tiny_Workspace* work, 
+Matrix* K, Matrix* d, Matrix* P, Matrix* p, 
+sfloat* K_data, sfloat* d_data, sfloat* P_data, sfloat* p_data) {
+
+  int N = work->data->model->nhorizon;
+  int n = work->data->model->nstates;
+  int m = work->data->model->ninputs;
+
+  work->soln->K = K;  
+  work->soln->d = d;
+  work->soln->P = P;  
+  work->soln->p = p;
+
+  for (int i = 0; i < N - 1; ++i) {
+    K[i] = slap_MatrixFromArray(m, n, &K_data[i * m * n]);
+    d[i] = slap_MatrixFromArray(m, 1, &d_data[i * m]);
+  }
+  for (int i = 0; i < N; ++i) {
+    P[i] = slap_MatrixFromArray(n, n, &P_data[i * n * n]);
+    p[i] = slap_MatrixFromArray(n, 1, &p_data[i * n]);
+  }
+
+  return TINY_NO_ERROR;  
+}
 enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work) {
   tiny_Data* data   = work->data;
   tiny_Model* model = &(work->data->model[0]);
@@ -103,6 +220,91 @@ enum tiny_ErrorCode tiny_InitData(tiny_Workspace* work) {
     data->data_size += 2*n*n + 2*n;
   }  
 
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_InitDataFromMatrix(tiny_Workspace* work, Matrix x0,
+                                            Matrix Q, Matrix R, Matrix Qf,
+                                            Matrix* q, Matrix* r, Matrix qf,
+                                            Matrix* X_ref, Matrix* U_ref,
+                                            Matrix Acx, Matrix bcx,
+                                            Matrix Acu, Matrix bcu) {
+  work->data->x0 = x0;
+
+  work->data->Q = Q;
+  work->data->R = R;
+  work->data->Qf = Qf;
+  work->data->q = q;
+  work->data->r = r;
+  work->data->qf = qf;
+
+  work->data->X_ref = X_ref;
+  work->data->U_ref = U_ref;
+
+  // if (work->stgs->en_cstr_states) {
+  //   SLAP_ASSERT(slap_IsNull(Acx) || slap_IsNull(bcx), SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  //   "tiny_InitSolitionDataArray: Acx and bcx must not be TINY_NULL_MAT");
+  // }
+  work->data->Acx = Acx;
+  work->data->bcx = bcx;
+
+  // if (work->stgs->en_cstr_inputs) {
+  //   SLAP_ASSERT(slap_IsNull(Acu) || slap_IsNull(bcu), SLAP_BAD_POINTER, TINY_SLAP_ERROR,
+  //   "tiny_InitSolitionDataArray: Acu and bcu must not be TINY_NULL_MAT");
+  // } 
+  work->data->Acu = Acu;
+  work->data->bcu = bcu;
+
+  return TINY_NO_ERROR;
+}
+
+// enum tiny_ErrorCode tiny_InitDataFromArray(tiny_Workspace* work, sfloat* x0_data,
+//                                             sfloat* Q_data, sfloat* R_data, sfloat* Qf_data,
+//                                             sfloat* q_data, sfloat* r_data, sfloat* qf_data,
+//                                             sfloat* X_ref_data, sfloat* U_ref_data,
+//                                             sfloat* Acx_data, sfloat* bcx_data,
+//                                             sfloat* Acu_data, sfloat* bcu_data) {
+//   int N = work->data->model->nhorizon;
+//   int n = work->data->model->nstates;
+//   int m = work->data->model->ninputs;
+
+//   for (int i = 0; i < N; ++i) {
+//     if (i < N - 1) {
+//       q[i] = slap_MatrixFromArray(n, 1, &q_data[i * n]);
+//       r[i] = slap_MatrixFromArray(m, 1, &r_data[i * m]);
+//       Uref[i] = slap_MatrixFromArray(m, 1, &U_ref_data[i * m]);
+//     }
+
+//   }
+// }
+
+enum tiny_ErrorCode tiny_InitDataQuadCostFromArray(tiny_Workspace* work, 
+sfloat* Q_data, 
+sfloat* R_data, 
+sfloat* Qf_data) {
+
+  int n = work->data->model->nstates;
+  int m = work->data->model->ninputs;
+  work->data->Q = slap_MatrixFromArray(n, n, Q_data);
+  work->data->R = slap_MatrixFromArray(m, m, R_data);
+  work->data->Qf = slap_MatrixFromArray(n, n, Qf_data);
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_InitDataLinearCostFromArray(tiny_Workspace* work, 
+Matrix* q, Matrix* r, 
+sfloat* q_data, sfloat* r_data, sfloat* qf_data) {
+
+  int N = work->data->model->nhorizon;
+  int n = work->data->model->nstates;
+  int m = work->data->model->ninputs;
+  work->data->qf = slap_MatrixFromArray(n, 1, qf_data);  
+  work->data->q = q;
+  work->data->r = r;
+  for (int i = 0; i < N - 1; ++i) {
+    q[i] = slap_MatrixFromArray(n, 1, &q_data[i * n]);
+    r[i] = slap_MatrixFromArray(m, 1, &r_data[i * m]);
+  }
   return TINY_NO_ERROR;
 }
 

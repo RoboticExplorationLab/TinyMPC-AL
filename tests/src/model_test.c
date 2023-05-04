@@ -35,7 +35,7 @@ void tiny_InitModel_Test() {
   // TEST(tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 1, 0.1) == TINY_SLAP_ERROR);
 }
 
-void tiny_InitModelDataArray_Test() {
+void tiny_InitModelFromArray_Test() {
   const sfloat tol = 1e-6;
   const int NSTATES = 2;
   const int NINPUTS = 2;
@@ -49,7 +49,7 @@ void tiny_InitModelDataArray_Test() {
   tiny_Model ltv_model;
   tiny_InitModel(&ltv_model, NSTATES, NINPUTS, NHORIZON, 1, 1, 0.1);
   TEST(ltv_model.nhorizon == NHORIZON);
-  tiny_InitModelDataArray(&ltv_model, A, B, f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&ltv_model, A, B, f, A_data, B_data, f_data);
   for (int k = 0; k < NHORIZON-1; ++k) {
     TEST(ltv_model.A[k].rows == ltv_model.nstates);
     TEST(ltv_model.A[k].cols == ltv_model.nstates);
@@ -67,7 +67,7 @@ void tiny_InitModelDataArray_Test() {
 
   tiny_Model ltv_model2;
   tiny_InitModel(&ltv_model2, NSTATES, NINPUTS, NHORIZON, 1, 0, 0.1);
-  tiny_InitModelDataArray(&ltv_model2, A, B, TINY_NULL, A_data, B_data, TINY_NULL);
+  tiny_InitModelFromArray(&ltv_model2, A, B, TINY_NULL, A_data, B_data, TINY_NULL);
   for (int k = 0; k < NHORIZON-1; ++k) {
     TEST(ltv_model2.A[k].rows == ltv_model2.nstates);
     TEST(ltv_model2.A[k].cols == ltv_model2.nstates);
@@ -88,7 +88,7 @@ void tiny_InitModelDataArray_Test() {
   tiny_Model lti_model;
   tiny_InitModel(&lti_model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
   TEST(lti_model.nhorizon == NHORIZON);
-  tiny_InitModelDataArray(&lti_model, &A2, &B2, &f2, A2_data, B2_data, f2_data);
+  tiny_InitModelFromArray(&lti_model, &A2, &B2, &f2, A2_data, B2_data, f2_data);
 
   TEST(lti_model.A[0].rows == lti_model.nstates);
   TEST(lti_model.A[0].cols == lti_model.nstates);
@@ -106,7 +106,7 @@ void tiny_InitModelDataArray_Test() {
   tiny_Model lti_model2;
   tiny_InitModel(&lti_model2, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
   TEST(lti_model2.nhorizon == NHORIZON);
-  tiny_InitModelDataArray(&lti_model2, &A2, &B2, &f2, A2_data, B2_data, f2_data);
+  tiny_InitModelFromArray(&lti_model2, &A2, &B2, &f2, A2_data, B2_data, f2_data);
 
   TEST(lti_model2.A[0].rows == lti_model.nstates);
   TEST(lti_model2.A[0].cols == lti_model.nstates);
@@ -244,7 +244,7 @@ void tiny_SetModelNonlFunc_Test() {
 
 int main() {
   tiny_InitModel_Test();
-  tiny_InitModelDataArray_Test();
+  tiny_InitModelFromArray_Test();
   // tiny_InitModelDataMatrix_Test();
   // tiny_InitModelMemory_Test();
   tiny_SetModelJacFunc_Test();

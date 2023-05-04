@@ -174,7 +174,7 @@ int main() {
   prob.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
 
   solver.max_outer_iters = 5;  // Often takes less than 5
-  solver.cstr_tol = 1e-2;
+  stgs.tol_abs_cstr = 1e-2;
 
   int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
                   (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
@@ -209,7 +209,7 @@ int main() {
     tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
 
     // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + stgs.tol_abs_cstr);
 
     // === 2. Simulate dynamics using the first control solution ===
     tiny_Bicycle5dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
@@ -219,8 +219,8 @@ int main() {
   // Test state constraints
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+      TEST(X[k].data[i] < bcstr_state_data[i] + stgs.tol_abs_cstr);
+      TEST(X[k].data[i] > -bcstr_state_data[i] - stgs.tol_abs_cstr);
     }
   }
   // Test tracking performance

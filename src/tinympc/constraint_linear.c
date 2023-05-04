@@ -1,5 +1,29 @@
 #include "constraint_linear.h"
 
+enum tiny_ErrorCode tiny_SetInputBound(tiny_Workspace* work, sfloat* Ac_data, sfloat* bc_data) {
+  int n = work->data->model->ninputs;
+  work->stgs->en_cstr_inputs = EN_CSTR_INPUTS;
+  work->data->Acu = slap_MatrixFromArray(2 * n, n, Ac_data);
+  Matrix upper_half = slap_CreateSubMatrix(work->data->Acu, 0, 0, n, n);
+  Matrix lower_half = slap_CreateSubMatrix(work->data->Acu, n, 0, n, n);
+  slap_SetIdentity(upper_half, 1);
+  slap_SetIdentity(lower_half, -1);
+  work->data->bcu = slap_MatrixFromArray(2 * n, 1, bc_data);
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_SetStateBound(tiny_Workspace* work, sfloat* Ac_data, sfloat* bc_data) {
+  int n = work->data->model->nstates;
+  work->stgs->en_cstr_states = EN_CSTR_STATES;
+  work->data->Acx = slap_MatrixFromArray(2 * n, n, Ac_data);
+  Matrix upper_half = slap_CreateSubMatrix(work->data->Acx, 0, 0, n, n);
+  Matrix lower_half = slap_CreateSubMatrix(work->data->Acx, n, 0, n, n);
+  slap_SetIdentity(upper_half, 1);
+  slap_SetIdentity(lower_half, -1);
+  work->data->bcx = slap_MatrixFromArray(2 * n, 1, bc_data);
+  return TINY_NO_ERROR;
+}
+
 // // [u-p.u_max;-u + p.u_min]
 // void tiny_EvalInputConstraint(Matrix* cu, const tiny_ProblemData prob,
 //                      const Matrix u) {

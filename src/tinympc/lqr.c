@@ -44,8 +44,8 @@ enum tiny_ErrorCode tiny_RollOutClosedLoopCost(tiny_Workspace* work) {
 }
 
 enum tiny_ErrorCode tiny_ForwardPass(tiny_Workspace* work) {
-  // tiny_RollOutClosedLoop(work);
-  tiny_RollOutClosedLoopCost(work);
+  tiny_RollOutClosedLoop(work);
+  // tiny_RollOutClosedLoopCost(work);
   return TINY_NO_ERROR;
 }
 

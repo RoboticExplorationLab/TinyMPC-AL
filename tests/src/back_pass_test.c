@@ -55,7 +55,7 @@ void BackPassTest() {
   Matrix A;
   Matrix B;
   Matrix f;
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix Xref[NHORIZON];
   Matrix Uref[NHORIZON - 1];

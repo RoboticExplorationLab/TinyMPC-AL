@@ -49,7 +49,7 @@ void ForwardPassTest() {
   INIT_ZEROS(temp_data);
 
   tiny_InitTempData(&work, temp_data);
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix X[NHORIZON];
   Matrix Xsln[NHORIZON];

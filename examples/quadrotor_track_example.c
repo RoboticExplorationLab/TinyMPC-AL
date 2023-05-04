@@ -67,9 +67,9 @@ int main() {
       0.000222f,  0.003769f,  0.098100f, -5.762921f, 0.340018f,  -0.478376f,
   };
   sfloat f_data[NSTATES] = {0};                                // f in model
-  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
-  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
-  sfloat goal_dual_data[NSTATES] = {0};                        // dual vars
+  sfloat YU_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
+  sfloat YX_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
+  sfloat YG_data[NSTATES] = {0};                        // dual vars
   sfloat Q_data[NSTATES * NSTATES] = {0};   // Q matrix in obj
   sfloat R_data[NINPUTS * NINPUTS] = {0};   // R matrix in obj
   sfloat Qf_data[NSTATES * NSTATES] = {0};  // Qf matrix in obj
@@ -78,12 +78,12 @@ int main() {
   sfloat qf_data[NSTATES] = {0};  
 
   // Put constraints on u
-  sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
-  sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
+  sfloat Acu_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
+  sfloat Acx_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
   // [u_max, -u_min]
-  sfloat bcstr_input_data[2 * NINPUTS] = {0};
+  sfloat bcu_data[2 * NINPUTS] = {0};
   // [x_max, -x_min]
-  sfloat bcstr_state_data[2 * NSTATES] = {0};
+  sfloat bcx_data[2 * NSTATES] = {0};
 
   // ===== Created matrices =====
   Matrix X[NSIM];
@@ -103,6 +103,16 @@ int main() {
   Matrix B;
   Matrix f;
 
+  for (int i = 0; i < NSIM; ++i) {
+    if (i < NSIM - 1) {
+      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
+      // PrintMatrix(Uref[i]);
+    }
+    X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, &X_ref_data[i * NSTATES]);
+    // PrintMatrix(Xref[i]);
+  }
+
   // ===== Created tinyMPC struct =====
   tiny_Model model;
   tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 0, 0.1);
@@ -121,84 +131,31 @@ int main() {
 
   tiny_InitTempData(&work, temp_data);
 
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
-  // ===== Fill in the struct =====
-  for (int i = 0; i < NSIM; ++i) {
-    if (i < NSIM - 1) {
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, ug_data);
-      // PrintMatrix(Uref[i]);
-    }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, &X_ref_data[i * NSTATES]);
-    // PrintMatrix(Xref[i]);
-  }
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, &Uhrz_data[i * NINPUTS]);
-      slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES,
-                                  &K_data[i * NINPUTS * NSTATES]);
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
-      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
-                                            &input_dual_data[i * 2 * NINPUTS]);
-      q[i] = slap_MatrixFromArray(NSTATES, 1, &q_data[i * NSTATES]);
-      r[i] = slap_MatrixFromArray(NINPUTS, 1, &r_data[i * NINPUTS]);                                            
-    }
-    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
-    slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
-    P[i] =
-        slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
-    p[i] = slap_MatrixFromArray(NSTATES, 1, &p_data[i * NSTATES]);
-    YX[i] =
-        slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
-  }
-
-  soln.X = Xhrz;
-  soln.U = Uhrz;
-  soln.YU = YU;
-  soln.YX = YX;
-  soln.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
-  soln.K = K;
-  soln.d = d;
-  soln.P = P;
-  soln.p = p;
+  tiny_InitSolnTrajFromArray(&work, Xhrz, Uhrz, Xhrz_data, Uhrz_data);
+  tiny_InitSolnDualsFromArray(&work, YX, YU, YX_data, YU_data, YG_data);
+  tiny_InitSolnGainsFromArray(&work, K, d, P, p, K_data, d_data, P_data, p_data);
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible  
+  data.X_ref = Xref;
+  data.U_ref = Uref;
 
   data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
   data.X_ref = Xref;
   data.U_ref = Uref;
-  data.q = q;
-  data.r = r;
-  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);    
 
-  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
+  tiny_InitDataQuadCostFromArray(&work, Q_data, R_data, Qf_data);
   // slap_SetIdentity(prob.Q, 1000e-1);
   sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1};
   slap_SetDiagonal(data.Q, Qdiag, NSTATES);
-  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
   slap_SetIdentity(data.R, 1);
-  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
   slap_Copy(data.Qf, data.Q);
+  tiny_InitDataLinearCostFromArray(&work, q, r, q_data, r_data, qf_data);
 
- data.Acx =
-      slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
-  Matrix upper_half =
-      slap_CreateSubMatrix(data.Acx, 0, 0, NSTATES, NSTATES);
-  Matrix lower_half =
-      slap_CreateSubMatrix(data.Acx, NSTATES, 0, NSTATES, NSTATES);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-  data.Acu =
-      slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(data.Acu, 0, 0, NINPUTS, NINPUTS);
-  lower_half =
-      slap_CreateSubMatrix(data.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-
-  data.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  // Set up constraints
+  tiny_SetInputBound(&work, Acu_data, bcu_data);
+  tiny_SetStateBound(&work, Acx_data, bcx_data);
   slap_SetConst(data.bcx, 100.0);  // x_max = -x_min = 100
-  data.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   slap_SetConst(data.bcu, 0.5);  // u_max = -u_min = 0.5
 
   tiny_UpdateLinearCost(&work);
@@ -262,10 +219,10 @@ int main() {
     printf("solve time: %f\n", cpu_time_used);
 
     // Test control constraints here (since we didn't save U)
-    // for (int i = 0; i < NINPUTS; ++i) {
-    //   TEST(Uhrz[0].data[i] < bcstr_input_data[i] + solver.cstr_tol);
-    //   TEST(Uhrz[0].data[i] > -bcstr_input_data[i] - solver.cstr_tol);
-    // }
+    for (int i = 0; i < NINPUTS; ++i) {
+      TEST(Uhrz[0].data[i] < bcu_data[i] + stgs.tol_abs_cstr);
+      TEST(Uhrz[0].data[i] > -bcu_data[i] - stgs.tol_abs_cstr);
+    }
     // PrintMatrixT(Uhrz[0]);
 
     // Matrix pos = slap_CreateSubMatrix(X[k], 0, 0, 3, 1);
@@ -280,16 +237,16 @@ int main() {
 
   // ========== Test ==========
   // Test state constraints
-  // for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
-  //   for (int i = 0; i < NSTATES; ++i) {
-  //     TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-  //     TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
-  //   }
-  // }
-  // // Test tracking performance
-  // for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
-  //   TEST(slap_NormedDifference(X[k], Xref[k]) < 0.2);
-  // }
+  for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
+    for (int i = 0; i < NSTATES; ++i) {
+      TEST(X[k].data[i] < bcx_data[i] + stgs.tol_abs_cstr);
+      TEST(X[k].data[i] > -bcx_data[i] - stgs.tol_abs_cstr);
+    }
+  }
+  // Test tracking performance
+  for (int k = NSIM - NHORIZON - 5; k < NSIM - NHORIZON; ++k) {
+    TEST(slap_NormedDifference(X[k], Xref[k]) < 0.2);
+  }
   // --------------------------
 
   PrintTestResult();

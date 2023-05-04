@@ -53,7 +53,7 @@ void LqrLtiTest() {
   Matrix A;
   Matrix B;
   Matrix f;
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 

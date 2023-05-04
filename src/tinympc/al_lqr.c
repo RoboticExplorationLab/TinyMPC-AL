@@ -410,6 +410,7 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
       tiny_ConstrainedBackwardPass(work);
       if (verbose > 1) printf("forward pass\n");
       tiny_ConstrainedForwardPass(work);
+      tiny_CheckRiccati(work);
     }
 
     work->info->dua_res = 0.0;
@@ -466,8 +467,8 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
 
     // printing
     if (verbose > 0) {
-      if (work->info->iter_al == 1) {
-        printf("iter           J           d      convio       reg         ρ\n");
+      if (work->info->iter_al == 0) {
+        printf("iter           J           d      convio       reg       rho\n");
         printf("------------------------------------------------------------\n");
       }
       printf("%4d%12.2e%12.2e%12.2e%10.1e%10.1e\n", 

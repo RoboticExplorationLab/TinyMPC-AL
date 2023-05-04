@@ -6,6 +6,7 @@
 #include "tinympc/constraint_linear.h"
 #include "tinympc/auxil.h"
 #include "tinympc/model.h"
+#include "tinympc/al_lqr.h"
 
 #define NSTATES 4
 #define NINPUTS 2

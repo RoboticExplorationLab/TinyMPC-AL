@@ -71,7 +71,7 @@ void MpcLtiTest() {
   Matrix A;
   Matrix B;
   Matrix f;
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
 
@@ -191,9 +191,9 @@ void MpcLtiTest() {
     PrintMatrixT(work.data->r[NHORIZON-5]);
   }
 
-  stgs.en_cstr_goal = 0;
+  stgs.en_cstr_goal = 1;
   stgs.en_cstr_inputs = 1;
-  stgs.en_cstr_states = 0;
+  stgs.en_cstr_states = 1;
   stgs.max_iter_riccati = 1;
   stgs.max_iter_al = 6;
   stgs.verbose = 0;

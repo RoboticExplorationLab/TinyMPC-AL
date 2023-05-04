@@ -50,7 +50,7 @@ void LqrLtiTest() {
   Matrix A;
   Matrix B;
   Matrix f;
-  tiny_InitModelDataArray(&model, &A, &B, &f, A_data, B_data, f_data);
+  tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
   Matrix X[NHORIZON];
   Matrix U[NHORIZON - 1];
@@ -141,7 +141,7 @@ void LqrLtiTest() {
 
   tiny_SolveLqr(&work);
 
-  if (1) {
+  if (0) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
       printf("\n=>k = %d\n", k);
       printf("ex = %.4f\n", slap_NormedDifference(Xref[k], X[k]));

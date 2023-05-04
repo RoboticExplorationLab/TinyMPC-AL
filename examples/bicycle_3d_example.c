@@ -23,8 +23,6 @@
 #define NHORIZON 10  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 100     // simulation steps (fixed with reference data)
 
-#define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1) / 100 * percent)
-
 int main() {
   // ===== Created data =====
   sfloat x0_data[NSTATES] = {-1, -1, 0.2};     // initial state
@@ -38,19 +36,22 @@ int main() {
   sfloat A_data[NSTATES * NSTATES * (NHORIZON - 1)] = {0};  // A in model
   sfloat B_data[NSTATES * NINPUTS * (NHORIZON - 1)] = {0};  // B in model
   sfloat f_data[NSTATES * (NHORIZON - 1)] = {0};            // f in model
-  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
-  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
+  sfloat YU_data[2 * NINPUTS * (NHORIZON - 1)] = {0};  // dual vars
+  sfloat YX_data[2 * NSTATES * (NHORIZON)] = {0};      // dual vars
   sfloat Q_data[NSTATES * NSTATES] = {0};   // Q matrix in obj
   sfloat R_data[NINPUTS * NINPUTS] = {0};   // R matrix in obj
   sfloat Qf_data[NSTATES * NSTATES] = {0};  // Qf matrix in obj
+  sfloat q_data[NSTATES*(NHORIZON-1)] = {0};
+  sfloat r_data[NINPUTS*(NHORIZON-1)] = {0};
+  sfloat qf_data[NSTATES] = {0};  
 
   // Put constraints on u, x4, x5
-  sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
-  sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
+  sfloat Acu_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
+  sfloat Acx_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
   // [u_max, -u_min]
-  sfloat bcstr_input_data[2 * NINPUTS] = {1.5, 0.6, 1.5, 0.6};
+  sfloat bcu_data[2 * NINPUTS] = {1.5, 0.6, 1.5, 0.6};
   // [x_max, -x_min]
-  sfloat bcstr_state_data[2 * NSTATES] = {100, 100, 100, 100, 100, 100};
+  sfloat bcx_data[2 * NSTATES] = {100, 100, 100, 100, 100, 100};
 
   // ===== Created matrices =====
   Matrix X[NSIM];
@@ -67,16 +68,9 @@ int main() {
   Matrix f[NHORIZON - 1];
   Matrix YU[NHORIZON - 1];
   Matrix YX[NHORIZON];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
 
-  // ===== Created tinyMPC struct =====
-  tiny_LtvModel model;
-  tiny_InitLtvModel(&model);
-  tiny_ProblemData prob;
-  tiny_InitProblemData(&prob);
-  tiny_Settings solver;
-  tiny_InitSettings(&solver);
-
-  // ===== Fill in the struct =====
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, &U_ref_data[i * NINPUTS]);
@@ -85,120 +79,104 @@ int main() {
     Xref[i] = slap_MatrixFromArray(NSTATES, 1, &X_ref_data[i * NSTATES]);
     // PrintMatrix(Xref[i]);
   }
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      A[i] = slap_MatrixFromArray(NSTATES, NSTATES,
-                                  &A_data[i * NSTATES * NSTATES]);
-      B[i] = slap_MatrixFromArray(NSTATES, NINPUTS,
-                                  &B_data[i * NSTATES * NINPUTS]);
-      f[i] = slap_MatrixFromArray(NSTATES, 1, &f_data[i * NSTATES]);
-      Uhrz[i] = slap_MatrixFromArray(NINPUTS, 1, &Uhrz_data[i * NINPUTS]);
-      slap_Copy(Uhrz[i], Uref[i]);  // Initialize U
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES,
-                                  &K_data[i * NINPUTS * NSTATES]);
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, &d_data[i * NINPUTS]);
-      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1,
-                                            &input_dual_data[i * 2 * NINPUTS]);
-    }
-    Xhrz[i] = slap_MatrixFromArray(NSTATES, 1, &Xhrz_data[i * NSTATES]);
-    slap_Copy(Xhrz[i], Xref[i]);  // Initialize U
-    P[i] =
-        slap_MatrixFromArray(NSTATES, NSTATES, &P_data[i * NSTATES * NSTATES]);
-    p[i] = slap_MatrixFromArray(NSTATES, 1, &p_data[i * NSTATES]);
-    YX[i] =
-        slap_MatrixFromArray(2 * NSTATES, 1, &state_dual_data[2 * NSTATES]);
+
+  // Create model and settings first due to essential problem setup
+  tiny_Model model;
+  tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 1, 1, 0.1);
+  tiny_Settings stgs;
+  tiny_InitSettings(&stgs);  //if switch on/off during run, initialize all
+
+  // Create workspace
+  tiny_Data data;
+  tiny_Info info;
+  tiny_Solution soln;
+  tiny_Workspace work;
+  tiny_InitWorkspace(&work, &info, &model, &data, &soln, &stgs);
+
+  sfloat temp_data[work.data_size];
+  INIT_ZEROS(temp_data);
+  tiny_InitTempData(&work, temp_data);
+
+  // Now can fill in all the remaining struct
+  tiny_InitModelFromArray(&model, A, B, f, A_data, B_data, f_data);
+  model.get_jacobians = tiny_Bicycle3dGetJacobians;  // from Bicycle
+  model.get_nonl_model = tiny_Bicycle3dNonlinearDynamics;
+
+  tiny_InitSolnTrajFromArray(&work, Xhrz, Uhrz, Xhrz_data, Uhrz_data);
+  tiny_InitSolnDualsFromArray(&work, YX, YU, YX_data, YU_data, TINY_NULL);
+  tiny_InitSolnGainsFromArray(&work, K, d, P, p, K_data, d_data, P_data, p_data);
+
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible  
+  data.X_ref = Xref;
+  data.U_ref = Uref;
+  tiny_InitDataQuadCostFromArray(&work, Q_data, R_data, Qf_data);
+  slap_SetIdentity(data.Q, 10e-1);  
+  slap_SetIdentity(data.R, 1e-1);  
+  slap_SetIdentity(data.Qf, 10e-1);
+  tiny_InitDataLinearCostFromArray(&work, q, r, q_data, r_data, qf_data);
+
+  tiny_SetInputBound(&work, Acu_data, bcu_data);
+  tiny_SetStateBound(&work, Acx_data, bcx_data);
+
+  // Absolute formulation
+  // Compute and store A, B offline
+  tiny_UpdateModelJac(&work);
+
+  tiny_UpdateLinearCost(&work);
+
+  if (0) {
+    printf("\nProblem Info: \n");
+    PrintMatrix(work.data->model->A[10]);
+    PrintMatrix(work.data->model->B[10]);
+    PrintMatrix(work.data->model->f[10]);
+    PrintMatrix(work.data->Q);
+    PrintMatrix(work.data->R);
+    PrintMatrix(work.data->Qf);
+    PrintMatrixT(work.data->x0);
+    PrintMatrixT(work.data->X_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->U_ref[NHORIZON-5]);
+    PrintMatrixT(work.data->q[NHORIZON-5]);
+    PrintMatrixT(work.data->r[NHORIZON-5]);
   }
 
-  model.ninputs = NSTATES;
-  model.nstates = NINPUTS;
-  model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
-  model.get_jacobians =
-      tiny_Bicycle3dGetJacobians;  // have analytical functions to compute
-                                   // Jacobians, or you can assign manually for
-                                   // each time step
-  model.get_nonl_model =
-      tiny_Bicycle3dNonlinearDynamics;  // have dynamics
+  stgs.en_cstr_goal = 0;
+  stgs.en_cstr_inputs = 1;
+  stgs.en_cstr_states = 1;
+  stgs.max_iter_riccati = 1;
+  stgs.max_iter_al = 6;
+  stgs.verbose = 0;
+  stgs.reg_min = 1e-6;
 
-  model.A = A;
-  model.B = B;
-  model.f = f;
-  slap_Copy(X[0], model.x0);
-
-  prob.ninputs = NINPUTS;
-  prob.nstates = NSTATES;
-  prob.nhorizon = NHORIZON;
-
-  prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
-  prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e-1);
-  prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 10e-1);
-
-  // Set up constraints
-  prob.ncstr_inputs = 0;
-  prob.ncstr_states = 0;
-
-  prob.Acx =
-      slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
-  Matrix upper_half =
-      slap_CreateSubMatrix(prob.Acx, 0, 0, NSTATES, NSTATES);
-  Matrix lower_half =
-      slap_CreateSubMatrix(prob.Acx, NSTATES, 0, NSTATES, NSTATES);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-  prob.Acu =
-      slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(prob.Acu, 0, 0, NINPUTS, NINPUTS);
-  lower_half =
-      slap_CreateSubMatrix(prob.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-  prob.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  prob.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
-
-  prob.X_ref = Xref;
-  prob.U_ref = Uref;
-  prob.x0 = model.x0;
-  prob.K = K;
-  prob.d = d;
-  prob.P = P;
-  prob.p = p;
-  prob.YU = YU;
-  prob.YX = YX;
-
-  solver.max_outer_iters = 6;  // Often takes less than 5
-  solver.cstr_tol = 1e-2;
-  int temp_size = 2 * NSTATES * (2 * NSTATES + 2 * NSTATES + 2) +
-                  (NSTATES + NINPUTS) * (NSTATES + NINPUTS + 1);
-  sfloat temp_data[temp_size];
-  memset(temp_data, 0,
-         sizeof(temp_data));  // temporary data, should not be changed
   srand(1);                   // random seed
 
   // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
+  slap_Copy(X[0], work.data->x0);  
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     printf("\n=> k = %d\n", k);
     // === 1. Setup and solve MPC ===
-    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise 1% of current X
+    X[k].data[0] += X[k].data[0] * NOISE(1);  // noise 2% of current X
     X[k].data[1] += X[k].data[1] * NOISE(1);
     X[k].data[2] += X[k].data[2] * NOISE(1);
-    slap_Copy(Xhrz[0], X[k]);  // update current measurement
+    slap_Copy(work.data->x0, X[k]);  // update current measurement
 
     // Update reference
-    prob.X_ref = &Xref[k];
-    prob.U_ref = &Uref[k];
+    data.X_ref = &Xref[k];
+    data.U_ref = &Uref[k];
+    tiny_UpdateLinearCost(&work);
 
     // Update A, B within horizon (as we have Jacobians function)
-    tiny_UpdateHorizonJacobians(&model, prob);
+    tiny_UpdateModelJac(&work);
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0, temp_data);
+    tiny_SolveAlLqr(&work);
 
     // Test control constraints here (since we didn't save U)
-    // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);
+    for (int i = 0; i < NINPUTS; ++i) {
+      TEST(Uhrz[0].data[i] < bcu_data[i] + stgs.tol_abs_cstr);
+      TEST(Uhrz[0].data[i] > -bcu_data[i] - stgs.tol_abs_cstr);
+    }
 
     // === 2. Simulate dynamics using the first control solution ===
     tiny_Bicycle3dNonlinearDynamics(&X[k + 1], X[k], Uhrz[0]);
@@ -211,8 +189,8 @@ int main() {
   // Test state constraints
   for (int k = 0; k < NSIM - NHORIZON - 1; ++k) {
     for (int i = 0; i < NSTATES; ++i) {
-      TEST(X[k].data[i] < bcstr_state_data[i] + solver.cstr_tol);
-      TEST(X[k].data[i] > -bcstr_state_data[i] - solver.cstr_tol);
+      TEST(X[k].data[i] < bcx_data[i] + stgs.tol_abs_cstr);
+      TEST(X[k].data[i] > -bcx_data[i] - stgs.tol_abs_cstr);
     }
   }
   // Test tracking performance

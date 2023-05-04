@@ -6,6 +6,7 @@ extern "C" {
 # endif // ifdef __cplusplus
 
 #include "types.h"
+#include "utils.h"
 
 enum tiny_ErrorCode tiny_InitModel(tiny_Model* model, const int nstates,
                                    const int ninputs, const int nhorizon,
@@ -17,7 +18,7 @@ enum tiny_ErrorCode tiny_InitModelDataMatrix(tiny_Model* model,
     Matrix* A, Matrix* B, Matrix* f);
 
 // User provides matrix as column-major array
-enum tiny_ErrorCode tiny_InitModelDataArray(tiny_Model* model, Matrix* A, 
+enum tiny_ErrorCode tiny_InitModelFromArray(tiny_Model* model, Matrix* A, 
     Matrix* B, Matrix* f, sfloat* A_array, sfloat* B_array, sfloat* f_array);
 
 enum tiny_ErrorCode tiny_InitModelMemory(tiny_Model* model, Matrix* mats,
@@ -43,7 +44,12 @@ enum tiny_ErrorCode tiny_RollOutClosedLoop(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_RollOutOpenLoop(tiny_Workspace* work);
 
+// Update Model Jacobians based on get_jacobians, get_nonl_model, Xref, Uref
 enum tiny_ErrorCode tiny_UpdateModelJac(tiny_Workspace* work);
+
+// Update Model Jacobians based on get_jacobians, get_nonl_model, user-input X, U traj
+enum tiny_ErrorCode tiny_UpdateModelJacAbout(tiny_Workspace* work,
+                                             Matrix* X, Matrix* U);
 
 
 # ifdef __cplusplus

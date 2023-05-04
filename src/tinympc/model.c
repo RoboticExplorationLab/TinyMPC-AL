@@ -54,7 +54,7 @@ enum tiny_ErrorCode tiny_InitModelDataMatrix(tiny_Model* model,
 }
 
 // User provides matrix as column-major array
-enum tiny_ErrorCode tiny_InitModelDataArray(tiny_Model* model, Matrix* A, 
+enum tiny_ErrorCode tiny_InitModelFromArray(tiny_Model* model, Matrix* A, 
     Matrix* B, Matrix* f, sfloat* A_array, sfloat* B_array, sfloat* f_array) {
   SLAP_ASSERT(A != TINY_NULL && B != TINY_NULL, SLAP_BAD_POINTER, TINY_SLAP_ERROR,
   "InitModelData: A and B must not be TINY_NULL");
@@ -258,4 +258,44 @@ enum tiny_ErrorCode tiny_UpdateModelJac(tiny_Workspace* work) {
     }
   }
   return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_UpdateModelJacAbout(tiny_Workspace* work,
+                                             Matrix* X, Matrix* U) {
+  tiny_Model* model = work->data->model;
+  int N = model[0].nhorizon;
+  // LTV model
+  if (model[0].ltv) {
+    for (int i = 0; i < N - 1; ++i) {
+      // get A and B
+      model[0].get_jacobians(&(model[0].A[i]), &(model[0].B[i]), X[i], U[i]);
+      
+      if (model[0].affine) {
+        // get f = x1 - Ax - Bu
+        if (model[0].get_nonl_model != TINY_NULL) {
+          model[0].get_nonl_model(&(model[0].f[i]), X[i], U[i]);
+          slap_MatMulAdd(model[0].f[i], model[0].A[i], X[i], -1, 1);
+          slap_MatMulAdd(model[0].f[i], model[0].B[i], U[i], -1, 1);
+        }
+      }
+    }
+  }
+  // LTI model
+  else {
+    // get A and B
+    model[0].get_jacobians(&(model[0].A[0]), &(model[0].B[0]), X[N-1], U[N-1]);
+    if (model[0].affine) {      
+      printf("A");               
+      // get f = x1 - Ax - Bu
+      if (model[0].get_nonl_model != TINY_NULL) {
+        model[0].get_nonl_model(model[0].f, 
+                                work->data->X_ref[N-1],
+                                work->data->U_ref[N-1]);
+        slap_MatMulAdd(model[0].f[0], model[0].A[0], X[N-1], -1, 1);
+        slap_MatMulAdd(model[0].f[0], model[0].B[0], U[N-1], -1, 1);
+      }
+    }
+  }
+  return TINY_NO_ERROR;
+
 }

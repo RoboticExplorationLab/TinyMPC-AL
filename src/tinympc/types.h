@@ -8,7 +8,6 @@ extern "C" {
 
 #include "slap/slap.h"
 #include "constants.h"
-#include "utils.h"
 #include "errors.h"
 
 // for a horizon of N x(0)->x(N-1), need N-1 matrices
@@ -37,14 +36,15 @@ typedef struct {
   Matrix* X;      ///< State trajectory solution 
   Matrix* U;      ///< Input trajectory solution
 
-  Matrix* YX;     ///< Input duals associated to \f$l <= A*X[k] <= u\f$
-  Matrix* YU;     ///< State duals associated to \f$l <= A*U[k] <= u\f$
-  Matrix  YG;     ///< Goal dual associated to \f$X[N] = xg\f$
-
   Matrix* K;
   Matrix* d;
   Matrix* P;
   Matrix* p;
+  
+  Matrix* YX;     ///< Input duals associated to \f$l <= A*X[k] <= u\f$
+  Matrix* YU;     ///< State duals associated to \f$l <= A*U[k] <= u\f$
+  Matrix  YG;     ///< Goal dual associated to \f$X[N] = xg\f$
+
   int data_size;
 } tiny_Solution;
 

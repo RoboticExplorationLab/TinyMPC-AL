@@ -126,6 +126,8 @@ int main() {
 
   tiny_UpdateLinearCost(&work);
 
+  tiny_WarmStartInput(&work, Uref_data);
+
   if (0) {
     printf("\nProblem Info: \n");
     PrintMatrix(work.data->model->A[10]);
@@ -144,7 +146,7 @@ int main() {
   stgs.en_cstr_goal = 0;
   stgs.en_cstr_inputs = 1;
   stgs.en_cstr_states = 1;
-  stgs.max_iter_riccati = 1;
+  stgs.max_iter_riccati = 2;
   stgs.max_iter_al = 6;
   stgs.verbose = 0;
   stgs.reg_min = 1e-6;
@@ -176,6 +178,7 @@ int main() {
 
     // Solve optimization problem using Augmented Lagrangian TVLQR
     tiny_SolveAlLqr(&work);
+    // PrintSolveInfo(&work);
     if(work.info->status_val != TINY_SOLVED) {
       printf("!!! NOT SOLVED !!!\n");
       return 0;

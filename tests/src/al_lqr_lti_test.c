@@ -41,15 +41,45 @@ void MpcLtiTest() {
   sfloat xmin_data[NSTATES] = {-2, -2, -2, -2};
   sfloat xmax_data[NSTATES] = {6, 8, 3, 2};
   // Put constraints on u, x
-  sfloat Acstr_input_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
-  sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
+  sfloat Acu_data[2 * NINPUTS * NINPUTS] = {0};  // A1*u <= b1
+  sfloat Acx_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
   // [u_max, -u_min]
-  sfloat bcstr_input_data[2 * NINPUTS] = {5, 5, 5, 5};
+  sfloat bcu_data[2 * NINPUTS] = {5, 5, 5, 5};
   // [x_max, -x_min]
-  sfloat bcstr_state_data[2 * NSTATES] = {6, 8, 3, 2, 2, 2, 2, 2};
-  sfloat input_dual_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
-  sfloat state_dual_data[2 * NSTATES * (NHORIZON)] = {0};
-  sfloat goal_dual_data[NSTATES] = {0};
+  sfloat bcx_data[2 * NSTATES] = {6, 8, 3, 2, 2, 2, 2, 2};
+  sfloat YU_data[2 * NINPUTS * (NHORIZON - 1)] = {0};
+  sfloat YX_data[2 * NSTATES * (NHORIZON)] = {0};
+  sfloat YG_data[NSTATES] = {0};
+
+  Matrix X[NHORIZON];
+  Matrix U[NHORIZON - 1];
+  Matrix Xref[NHORIZON];
+  Matrix Uref[NHORIZON - 1];
+  Matrix K[NHORIZON - 1];
+  Matrix d[NHORIZON - 1];
+  Matrix P[NHORIZON];
+  Matrix p[NHORIZON];
+  Matrix YU[NHORIZON - 1];
+  Matrix YX[NHORIZON];
+  Matrix q[NHORIZON-1];
+  Matrix r[NHORIZON-1];
+  Matrix A;
+  Matrix B;
+  Matrix f;
+  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
+
+  sfloat* Xref_ptr = Xref_data;
+  sfloat* Uref_ptr = Uref_data;
+
+  for (int i = 0; i < NHORIZON; ++i) {
+    if (i < NHORIZON - 1) {
+      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
+      Uref_ptr += NINPUTS;
+    }
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
+    slap_Copy(Xref[i], xg);
+    Xref_ptr += NSTATES;
+  }
 
   tiny_Model model;
   tiny_InitModel(&model, NSTATES, NINPUTS, NHORIZON, 0, 1, 0.1);
@@ -68,111 +98,23 @@ void MpcLtiTest() {
 
   tiny_InitWorkspaceTempData(&work, temp_data);
 
-  Matrix A;
-  Matrix B;
-  Matrix f;
   tiny_InitModelFromArray(&model, &A, &B, &f, A_data, B_data, f_data);
 
-  Matrix xg = slap_MatrixFromArray(NSTATES, 1, xg_data);
+  tiny_InitSolnTrajFromArray(&work, X, U, X_data, U_data);
+  tiny_InitSolnDualsFromArray(&work, YX, YU, YX_data, YU_data, YG_data);
+  tiny_InitSolnGainsFromArray(&work, K, d, P, p, K_data, d_data, P_data, p_data);
 
-  Matrix X[NHORIZON];
-  Matrix U[NHORIZON - 1];
-  Matrix Xref[NHORIZON];
-  Matrix Uref[NHORIZON - 1];
-  Matrix K[NHORIZON - 1];
-  Matrix d[NHORIZON - 1];
-  Matrix P[NHORIZON];
-  Matrix p[NHORIZON];
-  Matrix YU[NHORIZON - 1];
-  Matrix YX[NHORIZON];
-  Matrix q[NHORIZON-1];
-  Matrix r[NHORIZON-1];
-
-  sfloat* Xptr = X_data;
-  sfloat* Xref_ptr = Xref_data;
-  sfloat* Uptr = U_data;
-  sfloat* Uref_ptr = Uref_data;
-  sfloat* Kptr = K_data;
-  sfloat* dptr = d_data;
-  sfloat* Pptr = P_data;
-  sfloat* pptr = p_data;
-  sfloat* udual_ptr = input_dual_data;
-  sfloat* xdual_ptr = state_dual_data;
-  sfloat* qptr = q_data;
-  sfloat* rptr = r_data;
-
-  for (int i = 0; i < NHORIZON; ++i) {
-    if (i < NHORIZON - 1) {
-      U[i] = slap_MatrixFromArray(NINPUTS, 1, Uptr);
-      slap_SetConst(U[i], 0.01);
-      Uptr += NINPUTS;
-      Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
-      Uref_ptr += NINPUTS;
-      K[i] = slap_MatrixFromArray(NINPUTS, NSTATES, Kptr);
-      Kptr += NINPUTS * NSTATES;
-      d[i] = slap_MatrixFromArray(NINPUTS, 1, dptr);
-      dptr += NINPUTS;
-      YU[i] = slap_MatrixFromArray(2 * NINPUTS, 1, udual_ptr);
-      udual_ptr += 2 * NINPUTS;
-      q[i] = slap_MatrixFromArray(NSTATES, 1, qptr);
-      qptr += NSTATES;
-      r[i] = slap_MatrixFromArray(NINPUTS, 1, rptr);
-      rptr += NINPUTS;   
-    }
-    X[i] = slap_MatrixFromArray(NSTATES, 1, Xptr);
-    Xptr += NSTATES;
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xref_ptr);
-    slap_Copy(Xref[i], xg);
-    Xref_ptr += NSTATES;
-    P[i] = slap_MatrixFromArray(NSTATES, NSTATES, Pptr);
-    Pptr += NSTATES * NSTATES;
-    p[i] = slap_MatrixFromArray(NSTATES, 1, pptr);
-    pptr += NSTATES;
-    YX[i] = slap_MatrixFromArray(2 * NSTATES, 1, xdual_ptr);
-    xdual_ptr += 2 * NSTATES;
-  }
-
-  soln.X = X;
-  soln.U = U;
-  soln.YU = YU;
-  soln.YX = YX;
-  soln.YG = slap_MatrixFromArray(NSTATES, 1, goal_dual_data);
-  soln.K = K;
-  soln.d = d;
-  soln.P = P;
-  soln.p = p;
-
-  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // check if possible
+  data.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  
   data.X_ref = Xref;
   data.U_ref = Uref;
-  data.q = q;
-  data.r = r;
-  data.qf = slap_MatrixFromArray(NSTATES, 1, qf_data);    
+  tiny_InitDataQuadCostFromArray(&work, Q_data, R_data, Qf_data);
+  slap_SetIdentity(data.Q, 1);  
+  slap_SetIdentity(data.R, 1);  
+  slap_SetIdentity(data.Qf, 10);
+  tiny_InitDataLinearCostFromArray(&work, q, r, q_data, r_data, qf_data);
 
-  data.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(data.Q, 1.0);
-  data.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(data.R, 1.0);
-  data.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(data.Qf, 10.0);
-
-  data.Acx =
-      slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
-  Matrix upper_half =
-      slap_CreateSubMatrix(data.Acx, 0, 0, NSTATES, NSTATES);
-  Matrix lower_half =
-      slap_CreateSubMatrix(data.Acx, NSTATES, 0, NSTATES, NSTATES);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-  data.Acu =
-      slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
-  upper_half = slap_CreateSubMatrix(data.Acu, 0, 0, NINPUTS, NINPUTS);
-  lower_half =
-      slap_CreateSubMatrix(data.Acu, NINPUTS, 0, NINPUTS, NINPUTS);
-  slap_SetIdentity(upper_half, 1);
-  slap_SetIdentity(lower_half, -1);
-  data.bcx = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-  data.bcu = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+  tiny_SetInputBound(&work, Acu_data, bcu_data);
+  tiny_SetStateBound(&work, Acx_data, bcx_data);
 
   tiny_UpdateLinearCost(&work);
 

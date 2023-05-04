@@ -14,7 +14,7 @@
 #define H 0.02       // dt
 #define NSTATES 12   // no. of states (error state)
 #define NINPUTS 4    // no. of controls
-#define NHORIZON 15  // horizon steps (NHORIZON states and NHORIZON-1 controls)
+#define NHORIZON 5  // horizon steps (NHORIZON states and NHORIZON-1 controls)
 #define NSIM 100     // simulation steps (fixed with reference data)
 
 int main() {
@@ -145,7 +145,7 @@ int main() {
   // slap_SetIdentity(prob.Q, 1000e-1);
   sfloat Qdiag[NSTATES] = {10, 10, 10, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1};
   slap_SetDiagonal(data.Q, Qdiag, NSTATES);
-  slap_SetIdentity(data.R, 0.1);
+  slap_SetIdentity(data.R, 0.01);
   slap_Copy(data.Qf, data.Q);
   tiny_InitDataLinearCostFromArray(&work, q, r, q_data, r_data, qf_data);
 

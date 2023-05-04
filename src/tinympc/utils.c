@@ -1,5 +1,15 @@
 #include "utils.h"
 
+void PrintSolveInfo(tiny_Workspace* work) {
+  tiny_Info* info = work->info;
+  printf("Solve info: \n");
+  printf(" Status: %d\n", info->status_val);
+  printf(" Iter Riccati: %d, Iter AL: %d\n", info->iter_riccati, info->iter_al);   
+  printf(" Primal obj: %f, AL obj: %f\n", info->obj_pri, info->obj_al);
+  printf(" Primal res: %f, dual res: %f\n", info->pri_res, info->dua_res);
+}
+
+
 // //========================================
 // // Read data from file
 // //========================================

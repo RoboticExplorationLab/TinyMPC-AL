@@ -1,8 +1,8 @@
 #include "al_lqr.h"
 
 enum tiny_ErrorCode tiny_ConstrainedForwardPass(tiny_Workspace* work) {
-  // tiny_RollOutClosedLoop(work);
-  tiny_RollOutClosedLoopCost(work);
+  tiny_RollOutClosedLoop(work);  // faster without cost compute
+  // tiny_RollOutClosedLoopCost(work);
   return TINY_NO_ERROR;
 }
 
@@ -390,7 +390,7 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
     return TINY_NO_ERROR;
   }
 
-  // int exitflag;
+  int exitflag = 0;
   int verbose = work->stgs->verbose;         // Boolean whether you can print
   // int compute_cost_function; // Boolean: compute the cost function in the loop or not
 
@@ -400,9 +400,9 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
   // int m = model[0].ninputs;
 
   // Roll-out initial guess
-  tiny_RollOutOpenLoop(work);
+  // tiny_RollOutOpenLoop(work);
 
-  for (work->info->iter_al = 0; work->info->iter_al < work->stgs->max_iter_al;
+  for (work->info->iter_al = 1; work->info->iter_al <= work->stgs->max_iter_al;
        ++work->info->iter_al) {
     for (int iter = 0; iter < work->stgs->max_iter_riccati; ++iter) {
       work->info->iter_riccati += 1;
@@ -410,83 +410,57 @@ enum tiny_ErrorCode tiny_SolveAlLqr(tiny_Workspace* work) {
       tiny_ConstrainedBackwardPass(work);
       if (verbose > 1) printf("forward pass\n");
       tiny_ConstrainedForwardPass(work);
-      tiny_CheckRiccati(work);
+      // tiny_CheckRiccati(work);
     }
 
-    work->info->dua_res = 0.0;
-    sfloat norm_inf = 0.0;   // temporary var to save inf norm of vector
+    // check AL termination
+    exitflag = tiny_CheckAl(work);
 
+    // printing
+    if (verbose > 0) {
+      if (work->info->iter_al == 1) {
+        printf("AL iter           J           d      convio       reg       rho\n");
+        printf("---------------------------------------------------------------\n");
+      }
+      printf("%7d%12.2e%12.2e%12.2e%10.1e%10.1e\n", 
+            work->info->iter_al, work->info->obj_pri, work->info->pri_res,
+            work->info->dua_res, work->reg, work->penalty);
+    }
+
+    if (exitflag) {
+      work->info->status_val = TINY_SOLVED;
+      return TINY_NO_ERROR;
+    }
+
+    // update duals
     if (work->stgs->en_cstr_inputs) {
-      for (int k = 0; k < N - 1; ++k) {
-        //========= Control constraints ==========
-        tiny_EvalInputConstraint(work, k);  // work->cu size = 2*NINPUTS
+      for (int k = 0; k < N - 1; ++k) { 
         tiny_ActiveIneqMask(&(work->cu_mask), work->soln->YU[k], work->cu);
         slap_ScaleByConst(work->cu_mask, work->penalty);  // mask = ρ*mask
-        // Constraint violation
-        slap_ArgMax(work->cu, &norm_inf);
-        norm_inf = norm_inf > 0.0 ? norm_inf : 0.0;
-        norm_inf = norm_inf * 2;
-        // convio = max(convio,norm(hxv + abs.(hxv),Inf))
-        work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
-        // Update duals
         slap_Copy(work->YU_hat, work->soln->YU[k]);
         slap_MatMulAdd(work->YU_hat, work->cu_mask, work->data->bcu, -1, 1);  //μ[k] - ρ*mask * g
         tiny_ProjectOrthantDuals(&(work->soln->YU[k]), work->YU_hat);
       }
     }
-
     if (work->stgs->en_cstr_states) {
-      for (int k = 0; k < N; ++k) {
-        //========= State constraints ==========
-        tiny_EvalStateConstraint(work, k);  // work->cu size = 2*NINPUTS
+      for (int k = 0; k < N; ++k) {    
         tiny_ActiveIneqMask(&(work->cx_mask), work->soln->YX[k], work->cx);
         slap_ScaleByConst(work->cx_mask, work->penalty);  // mask = ρ*mask
-        // Constraint violation
-        slap_ArgMax(work->cx, &norm_inf);
-        norm_inf = norm_inf > 0.0 ? norm_inf : 0.0;
-        norm_inf = norm_inf * 2;
-        // convio = max(convio,norm(hxv + abs.(hxv),Inf))
-        work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
-        // Update duals
-        // tiny_IneqStatesOffset(&ineq_state, *prob);  // g
         slap_Copy(work->YX_hat, work->soln->YX[k]);
         slap_MatMulAdd(work->YX_hat, work->cx_mask, work->data->bcx, -1, 1);  //μ[k] - ρ*mask * g
         tiny_ProjectOrthantDuals(&(work->soln->YX[k]), work->YX_hat);
       }
     }
-
     if (work->stgs->en_cstr_goal) {
-      //========= Goal constraints ==========
-      slap_MatrixAddition(work->cg, work->soln->X[N - 1], work->data->X_ref[N - 1], -1);
-      norm_inf = slap_NormInf(work->cg);
-      work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
       // λ -= ρ*h
       slap_Copy(work->cg, work->data->X_ref[N - 1]);  // h = xg
       slap_MatrixAddition(work->soln->YG, work->soln->YG, work->cg, -work->penalty);
-    }    
-
-    // printing
-    if (verbose > 0) {
-      if (work->info->iter_al == 0) {
-        printf("iter           J           d      convio       reg       rho\n");
-        printf("------------------------------------------------------------\n");
-      }
-      printf("%4d%12.2e%12.2e%12.2e%10.1e%10.1e\n", 
-             work->info->iter_al, work->info->obj_pri, work->info->pri_res,
-             work->info->dua_res, work->reg, work->penalty);
-    }
-
-    // check AL termination
-    if (tiny_CheckAl(work)) {
-      work->penalty = work->stgs->penalty_init;
-      work->info->status_val = TINY_SOLVED;
-      return TINY_NO_ERROR;
     }
 
     // update penalty
     work->penalty = work->penalty * work->stgs->penalty_mul;    
   }
-  work->penalty = work->stgs->penalty_init;
+
   work->info->status_val = TINY_MAX_ITER_AL_REACHED;
   return TINY_NO_ERROR;
 }
@@ -507,6 +481,43 @@ int tiny_CheckRiccati(tiny_Workspace* work) {
 }
  
 int tiny_CheckAl(tiny_Workspace* work) {
+  int N = work->data->model->nhorizon;
+  work->info->dua_res = 0.0;
+  sfloat norm_inf = 0.0;   // temporary var to save inf norm of vector
+
+  if (work->stgs->en_cstr_inputs) {
+    for (int k = 0; k < N - 1; ++k) {
+      //========= Control constraints ==========
+      tiny_EvalInputConstraint(work, k);  // work->cu size = 2*NINPUTS
+      // Constraint violation
+      slap_ArgMax(work->cu, &norm_inf);
+      norm_inf = norm_inf > 0.0 ? norm_inf : 0.0;
+      norm_inf = norm_inf * 2;
+      // convio = max(convio,norm(hxv + abs.(hxv),Inf))
+      work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
+    }
+  }
+
+  if (work->stgs->en_cstr_states) {
+    for (int k = 0; k < N; ++k) {
+      //========= State constraints ==========
+      tiny_EvalStateConstraint(work, k);  // work->cu size = 2*NINPUTS
+      // Constraint violation
+      slap_ArgMax(work->cx, &norm_inf);
+      norm_inf = norm_inf > 0.0 ? norm_inf : 0.0;
+      norm_inf = norm_inf * 2;
+      // convio = max(convio,norm(hxv + abs.(hxv),Inf))
+      work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
+    }
+  }
+
+  if (work->stgs->en_cstr_goal) {
+    //========= Goal constraints ==========
+    slap_MatrixAddition(work->cg, work->soln->X[N - 1], work->data->X_ref[N - 1], -1);
+    norm_inf = slap_NormInf(work->cg);
+    work->info->dua_res = work->info->dua_res < norm_inf ? norm_inf : work->info->dua_res;
+  }    
+
   if (work->info->dua_res < work->stgs->tol_abs_cstr) {
     return 1;  // dual residual/constraint violation within tolerance
   }
@@ -519,5 +530,14 @@ enum tiny_ErrorCode tiny_ResetWorkspace(tiny_Workspace* work) {
   work->alpha = ALPHA;
   work->penalty = work->stgs->penalty_init;
   tiny_ResetInfo(work);
+  return TINY_NO_ERROR;
+}
+
+enum tiny_ErrorCode tiny_WarmStartInput(tiny_Workspace* work, sfloat* U_data) {
+  int N = work->data->model->nhorizon;
+  int m = work->data->model->ninputs;
+  for (int i = 0; i < N - 1; ++i) {
+    slap_CopyFromArray(work->soln->U[i], &U_data[i * m]);
+  }
   return TINY_NO_ERROR;
 }

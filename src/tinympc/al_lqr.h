@@ -25,6 +25,8 @@ int tiny_CheckAl(tiny_Workspace* work);
 
 enum tiny_ErrorCode tiny_ResetWorkspace(tiny_Workspace* work);
 
+enum tiny_ErrorCode tiny_WarmStartInput(tiny_Workspace* work, sfloat* U_data);
+
 # ifdef __cplusplus
 }
 # endif // ifdef __cplusplus

@@ -68,6 +68,7 @@ extern "C" {
     printf(" LTV: %d, affine: %d\n", model.ltv, model.affine); \
   }
 
+void PrintSolveInfo(tiny_Workspace* work);
 //========================================
 // Read data from file
 //========================================

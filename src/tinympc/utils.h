@@ -106,6 +106,15 @@ void tiny_ShiftFill(Matrix* mats, const int length);
 void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length);
 
 
+//========================================
+// Raw matrix operators, ignore all metadata
+//========================================
+void SwapVectors(sfloat **a, sfloat **b);
+void MatAdd(Matrix C, Matrix A, Matrix B, sfloat alpha);
+void MatCpy(Matrix des, Matrix src);
+void MatScale(Matrix A, sfloat alpha);
+void MatMulAdd(Matrix C, Matrix A, Matrix B, sfloat alpha, sfloat beta);
+
 # ifdef __cplusplus
 }
 # endif // ifdef __cplusplus

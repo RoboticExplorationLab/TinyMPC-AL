@@ -40,8 +40,8 @@ enum tiny_ErrorCode tiny_ExpandStageCost(tiny_Workspace* work, const int k) {
 
 enum tiny_ErrorCode tiny_ExpandTerminalCost(tiny_Workspace* work) {
   int N = work->data->model[0].nhorizon;
-  slap_Copy(work->soln->P[N-1], work->data->Qf);
-  slap_Copy(work->soln->p[N-1], work->data->qf);
+  MatCpy(work->soln->P[N-1], work->data->Qf);
+  MatCpy(work->soln->p[N-1], work->data->qf);
   return TINY_NO_ERROR;
 }
 

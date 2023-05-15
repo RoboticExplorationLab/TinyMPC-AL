@@ -48,8 +48,8 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work) {
       // Stage cost expansion: Qxx = Q; Qx = q; Quu = R; Qu = r;
       tiny_ExpandStageCost(work, k);
       // State Gradient: Qx = q + A'(P*f + p)
-      slap_Copy(work->soln->p[k], work->soln->p[k + 1]);
-      slap_MatMulAdd(work->soln->p[k], work->soln->P[k + 1], model[0].f[k], 1,
+      MatCpy(work->soln->p[k], work->soln->p[k + 1]);
+      MatMulAdd(work->soln->p[k], work->soln->P[k + 1], model[0].f[k], 1,
                     1);  // p[k] = P[k+1]*f + p[k+1]
       slap_MatMulAdd(work->Qx, slap_Transpose(model[0].A[k]), work->soln->p[k], 1, 1);
 
@@ -57,7 +57,7 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work) {
       slap_MatMulAdd(work->Qu, slap_Transpose(model[0].B[k]), work->soln->p[k], 1, 1);
 
       // State Hessian: Qxx = Q + A'P*A
-      slap_MatMulAdd(work->soln->P[k], work->soln->P[k + 1], model[0].A[k], 1,
+      MatMulAdd(work->soln->P[k], work->soln->P[k + 1], model[0].A[k], 1,
                     0);  // P[k] = P[k+1]*A
       slap_MatMulAdd(work->Qxx, slap_Transpose(model[0].A[k]), work->soln->P[k], 1,
                     1);  // Qxx = Q + A'P*A
@@ -305,7 +305,7 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work) {
       slap_MatMulAdd(work->Qu, slap_Transpose(model[0].B[0]), work->soln->p[k + 1], 1, 1);
 
       // State Hessian: Qxx = Q + A'P*A
-      slap_MatMulAdd(work->soln->P[k], work->soln->P[k + 1], model[0].A[0], 1,
+      MatMulAdd(work->soln->P[k], work->soln->P[k + 1], model[0].A[0], 1,
                     0);  // P[k] = P[k+1]*A
       slap_MatMulAdd(work->Qxx, slap_Transpose(model[0].A[0]), work->soln->P[k], 1,
                     1);  // Qxx = Q + A'P*A
@@ -375,7 +375,7 @@ enum tiny_ErrorCode tiny_ConstrainedBackwardPass(tiny_Workspace* work) {
     }
   }  
   // tiny_ExpandTerminalCost(work);
-  slap_Copy(work->soln->P[N-1], work->data->Qf);
+  MatCpy(work->soln->P[N-1], work->data->Qf);
   // Replace P[N] since we used it for Quu_temp (need improving later)
   return TINY_NO_ERROR;
 }

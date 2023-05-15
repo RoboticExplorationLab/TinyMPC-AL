@@ -9,7 +9,6 @@ void PrintSolveInfo(tiny_Workspace* work) {
   printf(" Primal res: %f, dual res: %f\n", info->pri_res, info->dua_res);
 }
 
-
 // //========================================
 // // Read data from file
 // //========================================
@@ -166,4 +165,52 @@ void tiny_ShiftFillWith(Matrix* mats, const sfloat* x, const int length) {
     slap_Copy(mats[k], mats[k + 1]);
   }
   slap_CopyFromArray(mats[length - 1], x);
+}
+
+void SwapVectors(sfloat **a, sfloat **b) {
+  sfloat *temp;
+
+  temp = *b;
+  *b   = *a;
+  *a   = temp;
+}
+
+void MatAdd(Matrix C, Matrix A, Matrix B, sfloat alpha) {
+  for (int i = 0; i < C.cols * C.rows; ++i) {
+    C.data[i] = A.data[i] + B.data[i] * alpha;
+  }
+}
+
+void MatCpy(Matrix des, Matrix src) {
+  for (int i = 0; i < des.cols * des.rows; ++i) {
+    des.data[i] = src.data[i];
+  }
+}
+
+void MatScale(Matrix A, sfloat alpha) {
+  for (int i = 0; i < A.cols * A.rows; ++i) {
+    A.data[i] = A.data[i] * alpha;
+  }
+}
+
+void MatMulAdd(Matrix C, Matrix A, Matrix B, sfloat alpha, sfloat beta) {
+  int n = A.rows;
+  int m = A.cols;
+  int p = B.cols;
+  sfloat Aik;
+  sfloat Bkj;
+  sfloat Cij;
+  int ij;
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < p; ++j) {
+      ij = i + j * n;
+      Cij = 0;
+      for (int k = 0; k < m; ++k) {  // columns of A, rows of B
+        Aik = A.data[i + n * k];
+        Bkj = B.data[k + m * j];
+        Cij += Aik * Bkj;
+      }
+      C.data[ij] = alpha * Cij + beta * C.data[ij];
+    }
+  }
 }

@@ -22,7 +22,7 @@ include(FetchContent)
 include(FindCPM)
 
 # Handle default build type
-set(TINY_DEFAULT_BUILD_TYPE "Debug")
+set(TINY_DEFAULT_BUILD_TYPE "Release")
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "No build type specified. Setting CMAKE_BUILD_TYPE to ${TINY_DEFAULT_BUILD_TYPE}")
   set(CMAKE_BUILD_TYPE ${TINY_DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)

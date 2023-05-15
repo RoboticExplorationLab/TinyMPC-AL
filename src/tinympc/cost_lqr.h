@@ -7,6 +7,7 @@ extern "C" {
 
 
 #include "types.h"
+#include "utils.h"
 
 enum tiny_ErrorCode tiny_AddStageCost(tiny_Workspace* work, const int k);
 

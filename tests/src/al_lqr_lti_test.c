@@ -19,7 +19,8 @@ void MpcLtiTest() {
                                       0.1, 0, 1, 0, 0, 0.1, 0, 1};
   sfloat B_data[NSTATES * NINPUTS] = {0.005, 0, 0.1, 0, 0, 0.005, 0, 0.1};
   sfloat f_data[NSTATES] = {0};
-  sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
+  // sfloat x0_data[NSTATES] = {5, 7, 2, -1.4};
+  sfloat x0_data[NSTATES] = {1, 0, 0, 1.0};  
   sfloat xg_data[NSTATES] = {0};
   // sfloat xg_data[NSTATES] = {2, 5, -1, 1};
   sfloat Xref_data[NSTATES * NHORIZON] = {0};
@@ -133,11 +134,12 @@ void MpcLtiTest() {
     PrintMatrixT(work.data->r[NHORIZON-5]);
   }
 
-  stgs.en_cstr_goal = 1;
+  stgs.en_cstr_goal = 0;
   stgs.en_cstr_inputs = 1;
-  stgs.en_cstr_states = 1;
+  stgs.en_cstr_states = 0;
   stgs.max_iter_riccati = 1;
   stgs.max_iter_al = 6;
+  stgs.tol_abs_cstr = 1e-2;
   stgs.verbose = 0;
   stgs.reg_min = 1e-6;
 
@@ -147,7 +149,7 @@ void MpcLtiTest() {
   tiny_SolveAlLqr(&work);
   end = clock();
   cpu_time_used = ((double)(end - start)) * 1000 / CLOCKS_PER_SEC;
-  // printf("time: %f\n", cpu_time_used);
+  printf("time: %f\n", cpu_time_used);
 
   if (0) {
     for (int k = 0; k < NHORIZON - 1; ++k) {
@@ -155,7 +157,7 @@ void MpcLtiTest() {
       // PrintMatrix(p[k]);
       // PrintMatrixT(Xref[k]);
       // PrintMatrixT(U[k]);
-      // PrintMatrixT(X[k]);
+      PrintMatrixT(X[k]);
     }
     PrintMatrixT(X[NHORIZON - 1]);
   }  

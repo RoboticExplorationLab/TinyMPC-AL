@@ -1,3 +1,5 @@
+// Reference trajectory and control for bicycle 5d example
+
 #pragma once
 
 double Xref_data[505] = {

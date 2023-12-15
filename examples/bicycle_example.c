@@ -21,6 +21,7 @@
 #define NSIM 101
 
 int main(void) {
+  // DEFINE PROBLEM DATA
   double x0_data[NSTATES] = {1, -1, 0, 0, 0};
   // double xg_data[NSTATES] = {0};
   // double ug_data[NINPUTS] = {0};
@@ -52,6 +53,7 @@ int main(void) {
   // double xmin_data[NSTATES] = {-100, -100, -100, -100, -100};
   // double xmax_data[NSTATES] = {100, 100, 100, 100, 100};
 
+  // DEFINE VARIABLES
   Matrix X[NSIM];
   Matrix Xref[NSIM];
   Matrix Uref[NSIM - 1];
@@ -67,6 +69,7 @@ int main(void) {
   Matrix input_duals[NHORIZON - 1];
   Matrix state_duals[NHORIZON];
 
+  // DEFINE STRUCTS
   tiny_LtvModel model;
   tiny_InitLtvModel(&model);
   tiny_ProblemData prob;
@@ -74,6 +77,7 @@ int main(void) {
   tiny_Solver solver;
   tiny_InitSolver(&solver);
 
+  // DEFINE POINTERS
   double* Xhrz_ptr = Xhrz_data;
   double* Xptr = X_data;
   double* Xref_ptr = Xref_data;
@@ -89,6 +93,7 @@ int main(void) {
   double* udual_ptr = input_dual_data;
   double* xdual_ptr = state_dual_data;
 
+  // INITIALIZE MATRICES
   for (int i = 0; i < NSIM; ++i) {
     if (i < NSIM - 1) {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Uref_ptr);
@@ -129,6 +134,7 @@ int main(void) {
     xdual_ptr += 2 * NSTATES;
   }
 
+  // INITIALIZE STRUCTS
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);
@@ -189,7 +195,7 @@ int main(void) {
 
     // Solve optimization problem using Augmented Lagrangian TVLQR, benchmark
     // this
-    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 1);
+    tiny_MpcLtv(Xhrz, Uhrz, &prob, &solver, model, 0);
 
     // Test control constraints here (since we didn't save U)
     // TEST(slap_NormInf(Uhrz[0]) < slap_NormInf(prob.u_max) + solver.cstr_tol);

@@ -1,8 +1,11 @@
-# TinyMPC
+# TinyMPC-AL
 Under Development
 
+This is a previous attempt of TinyMPC that uses augmented Lagrange method and solve TVLQR online. No tricks are played here so it is slow.
 
-# README
+New developments are at [https://tinympc.org/](https://tinympc.org/)
+
+## Descriptions
 
 - This is a full library, embedded (optimized) version is under development.
 However, it aims at highly modular integration. You can just use part of the
@@ -17,19 +20,28 @@ systems. Check `test/al_lqr_test` for all tests, experiments and examples. Check
 and goal constraint within stabilization or tracking problems for nonlinear
 systems.
 
-## How to compile and run
+## How to compile and run (tested on Linux)
 
-1. Inside `TinyMPC/c` directory, use `cmake -S. -Bbuild`. This creates a new
-`build` directory and configuration.  
+1. Clone this repo
 
-2. To build the entire project, use `cmake --build build`. Alternatively, you
-can build a particular target by `cmake --build build -t target_name`. Let's
-try `cmake --build build -t bicycle_example`.  
+```bash
+git clone https://github.com/RoboticExplorationLab/TinyMPC-AL.git
+```
 
-3. To run `bicycle_example` executable, use `./build/examples/bicycle_example` while
-still inside `TinyMPC/c` directory.  
+2. Build the source code
 
-4. Iterate via 2 to develop your programs.  
+```bash
+cd TinyMPC-AL
+cmake -S. -Bbuild
+cd build
+make
+```
+
+3. Run the bicycle example
+
+```bash
+./examples/bicycle_example
+```
 
 ## Notes
 

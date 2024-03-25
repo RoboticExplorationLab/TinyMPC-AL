@@ -1,7 +1,7 @@
 # TinyMPC-AL
 Under Development
 
-This is a previous attempt of TinyMPC that uses augmented Lagrange method and solve TVLQR online. No tricks are played here so it is slow.
+This is a previous attempt of TinyMPC that uses augmented Lagrange method and solve TVLQR online (applicable to nonlinear dynamics). No tricks are played here so it is slow.
 
 New developments are at [https://tinympc.org/](https://tinympc.org/)
 

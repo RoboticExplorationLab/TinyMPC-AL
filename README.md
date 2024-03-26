@@ -37,6 +37,13 @@ cd build
 make
 ```
 
+If using Windows outside of WSL, run 
+
+```cmake --build .
+```
+
+instead of `make`
+
 3. Run the bicycle example
 
 ```bash

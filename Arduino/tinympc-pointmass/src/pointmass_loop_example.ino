@@ -20,7 +20,7 @@
 #define NSTATES     2           // no. of states
 #define NINPUTS     2           // no. of controls
 #define NHORIZON    15          // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM        150         // simulation steps (fixed with reference data)
+#define NSIM        100         // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
 
@@ -61,9 +61,9 @@ sfloat bcstr_input_data[2 * NINPUTS] = {0.5, 0.5, 0.5, 0.5};
 sfloat bcstr_state_data[2 * NSTATES] = {100, 100,
                                         100, 100.0};
 // an obstacle
-sfloat x_obs_data[NSTATES] = {0, 0.0};
-sfloat r_obs = 1.0;
-sfloat r_obs_buff = 0.2;  // since mpc cannot solve till convergence, make some safety buffer
+sfloat x_obs_data[NSTATES] = {0, 0.0};  // obstacle origin (circle)
+sfloat r_obs = 1.0;  // obstacle radius 
+sfloat r_obs_buff = 0.1;  // since mpc cannot solve till convergence, make some safety buffer
 sfloat vecXC_data[NSTATES] = {0.0};
 sfloat vecXI_data[NSTATES] = {0.0};
 
@@ -182,7 +182,7 @@ void setup() {
   prob.input_duals = input_duals;
   prob.state_duals = state_duals;
 
-  solver.max_outer_iters = 15;   // Often takes less than 5, even work fine with 2
+  solver.max_outer_iters = 15;   
   solver.cstr_tol = 1e-2;       // AL convergence tolerance (on constraints)
 
   srand(3);  // random seed
@@ -220,7 +220,7 @@ void loop() {
     sprintf(bufferTxSer, "  d2o = %.4f", distance - (r_obs-r_obs_buff));
     Serial.println(bufferTxSer);
     if (distance < 2.0) {
-      distance = slap_NormedDifference(Xhrz[5], x_obs);
+      distance = slap_NormedDifference(Xhrz[5], x_obs);  // number 10 helps
       prob.Acstr_state = slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
       prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
       Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);              

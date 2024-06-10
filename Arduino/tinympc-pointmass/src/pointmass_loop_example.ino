@@ -58,8 +58,8 @@ sfloat Acstr_state_data[2 * NSTATES * NSTATES] = {0};  // A2*x <= b2
 // [u_max, -u_min]
 sfloat bcstr_input_data[2 * NINPUTS] = {0.5, 0.5, 0.5, 0.5};
 // [x_max, -x_min]
-sfloat bcstr_state_data[2 * NSTATES] = {2.5, 2.5,
-                                        2.5, 2.5};
+sfloat bcstr_state_data[2 * NSTATES] = {2.0, 2.5,
+                                        2.0, 2.5};
 
 // ===== Created matrices =====
 Matrix X[NSIM];
@@ -101,7 +101,7 @@ void setup() {
       Uref[i] = slap_MatrixFromArray(NINPUTS, 1, Ug_data);
     }
     X[i] = slap_MatrixFromArray(NSTATES, 1, &X_data[i * NSTATES]);
-    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xzeros);
+    Xref[i] = slap_MatrixFromArray(NSTATES, 1, Xg_data);
     // tiny_Print(Xref[i]);
   }
   Xg = slap_MatrixFromArray(NSTATES, 1, Xg_data);
@@ -127,7 +127,6 @@ void setup() {
   model.ninputs = NSTATES;
   model.nstates = NINPUTS;
   model.x0 = slap_MatrixFromArray(NSTATES, 1, x0_data);  // delta x0
-  slap_MatrixAddition(model.x0, model.x0, Xg, -1);  // initial state
   model.get_jacobians =
       tiny_PointMassGetJacobians;  // have analytical functions to compute
                                    // Jacobians, or you can assign manually for
@@ -139,22 +138,22 @@ void setup() {
   model.B = B;
   model.f = f;
   slap_Copy(X[0], model.x0);
-  slap_MatrixAddition(X[0], X[0], Xg, 1);  // initial state
 
   prob.ninputs = NINPUTS;
   prob.nstates = NSTATES;
   prob.nhorizon = NHORIZON;
 
   prob.Q = slap_MatrixFromArray(NSTATES, NSTATES, Q_data);
-  slap_SetIdentity(prob.Q, 10e-1);
+  slap_SetIdentity(prob.Q, 10e0);
   prob.R = slap_MatrixFromArray(NINPUTS, NINPUTS, R_data);
-  slap_SetIdentity(prob.R, 1e-9);
+  slap_SetIdentity(prob.R, 1e0);
   prob.Qf = slap_MatrixFromArray(NSTATES, NSTATES, Qf_data);
-  slap_SetIdentity(prob.Qf, 10e-1);
+  slap_SetIdentity(prob.Qf, 10e0);
 
   // Set up constraints
   prob.ncstr_inputs = 1;
-  prob.ncstr_states = 0;
+  prob.ncstr_states = 1;
+  prob.ncstr_goal = 0;
 
   prob.Acstr_state =
       slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
@@ -228,7 +227,6 @@ void loop() {
     X[k].data[1] += X[k].data[1] * NOISE(2);
     X[k].data[2] += X[k].data[2] * NOISE(2);
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
-    slap_MatrixAddition(Xhrz[0], Xhrz[0], Xg, -1);  // tracking error
     
     // Update A, B within horizon (as we have Jacobians function)
     tiny_UpdateHorizonJacobians(&model, prob);  // since we are using LTI so no needs to update
@@ -252,6 +250,8 @@ void loop() {
     sprintf(bufferTxSer, "  ||ex[%d]|| = %.4f", k, slap_NormedDifference(X[k], Xg));
     Serial.println(bufferTxSer);
     sprintf(bufferTxSer, "  x = %.4f, %.4f", X[k].data[0], X[k].data[1]);
+    Serial.println(bufferTxSer);
+    sprintf(bufferTxSer, "  u = %.4f, %.4f", Uhrz[0].data[0], Uhrz[0].data[1]);
     Serial.println(bufferTxSer);
     // tiny_Print(slap_Transpose(Uhrz[0]));  
 

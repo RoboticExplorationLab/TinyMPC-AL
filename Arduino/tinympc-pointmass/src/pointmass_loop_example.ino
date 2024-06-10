@@ -20,7 +20,7 @@
 #define NSTATES     2           // no. of states
 #define NINPUTS     2           // no. of controls
 #define NHORIZON    15          // horizon steps (NHORIZON states and NHORIZON-1 controls)
-#define NSIM        100         // simulation steps (fixed with reference data)
+#define NSIM        300         // simulation steps (fixed with reference data)
 
 #define NOISE(percent) (((2 * ((float)rand() / RAND_MAX)) - 1)/100*percent)
 
@@ -32,7 +32,6 @@ int sim_step = 0;
 
 // ===== Created data =====
 sfloat x0_data[NSTATES] = {1.0, -2.0};  // initial state
-// sfloat x0_data[NSTATES] = {-1, -1, 0.2};  // initial state
 sfloat Xhrz_data[NSTATES * NHORIZON] = {0};  // save X for one horizon
 sfloat X_data[NSTATES * NSIM] = {0};         // save X for the whole run
 sfloat Uhrz_data[NINPUTS * (NHORIZON - 1)] = {0};
@@ -194,7 +193,7 @@ void loop() {
   sfloat temp_data[temp_size];
   memset(temp_data, 0, sizeof(temp_data));  // temporary data, should not be changed
   
-  // ===== Delta formulation =====
+  // ===== Absolute formulation =====
   // Warm-starting since horizon data is reused
   // At each time step (stop earlier as horizon exceeds the end)
   // Put this into loop() when you have a unlimited reference/real-world system
@@ -204,16 +203,16 @@ void loop() {
     Serial.println(bufferTxSer);
     // === 1. Setup and solve MPC ===
     // Update reference
-    prob.X_ref = &Xref[k];  // zeros
-    prob.U_ref = &Uref[k];  // zeros
-    if (k < 100) {
+    prob.X_ref = &Xref[k];  
+    prob.U_ref = &Uref[k]; 
+    if (k < 150) {
       Xg_data[0] = 0.0;
       Xg_data[1] = 2.0;
     }
-    // if (k >= 100) {
-    //   Xg_data[0] = -1.0;
-    //   Xg_data[1] = -2.0;
-    // }
+    if (k >= 150) {
+      Xg_data[0] = -1.0;
+      Xg_data[1] = -2.0;
+    }
     
     // Update state constraint
     sfloat distance = slap_NormedDifference(X[k], x_obs);
@@ -261,8 +260,6 @@ void loop() {
     if (Uhrz[0].data[0] <= -bcstr_input_data[0]) Uhrz[0].data[0] = -bcstr_input_data[0];
     if (Uhrz[0].data[1] <= -bcstr_input_data[1]) Uhrz[0].data[1] = -bcstr_input_data[1];
     tiny_PointMassDynamics(&X[k + 1], X[k], Uhrz[0]);
-    // tiny_PointMassNonlinearDynamics(&X[k + 1], X[k], Uref[k]);
-
     // tiny_ShiftFill(Uhrz, NHORIZON - 1);  // doesn't matter
 
     // Print norm of tracking error

@@ -159,15 +159,22 @@ void setup() {
 
   // Set up constraints
   prob.ncstr_inputs = 1;
-  prob.ncstr_states = 0;
+  prob.ncstr_states = 1;
   prob.ncstr_goal = 0;
 
   prob.Acstr_input = slap_MatrixFromArray(2 * NINPUTS, NINPUTS, Acstr_input_data);
+  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
   Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_input, 0, 0, NINPUTS, NINPUTS);
   Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_input, NINPUTS, 0, NINPUTS, NINPUTS);
   slap_SetIdentity(upper_half, 1);
   slap_SetIdentity(lower_half, -1);
-  prob.bcstr_input = slap_MatrixFromArray(2 * NINPUTS, 1, bcstr_input_data);
+
+  prob.Acstr_state = slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
+  prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
+  upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);              
+  lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);                      
+  slap_SetIdentity(upper_half, 1);
+  slap_SetIdentity(lower_half, -1);
 
   r_obs = r_obs + r_obs_buff;
 
@@ -214,28 +221,6 @@ void loop() {
       Xg_data[1] = -2.0;
     }
     
-    // Update state constraint
-    sfloat distance = slap_NormedDifference(X[k], x_obs);
-    sprintf(bufferTxSer, "  d2o = %.4f", distance - (r_obs-r_obs_buff));
-    Serial.println(bufferTxSer);
-    if (distance < 2.0) {
-      prob.Acstr_state = slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
-      prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
-      Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);              
-      Matrix lower_half = slap_CreateSubMatrix(prob.Acstr_state, NSTATES, 0, NSTATES, NSTATES);                      
-      slap_SetIdentity(upper_half, 1);
-      slap_SetIdentity(lower_half, -1);
-      
-      distance = slap_NormedDifference(Xhrz[5], x_obs);  // number 10 helps, tunable
-      vecXI_data[0] = (x_obs_data[0] - Xhrz[0].data[0]) * (distance - r_obs) / distance;
-      vecXI_data[1] = (x_obs_data[1] - Xhrz[0].data[1]) * (distance - r_obs) / distance;
-      Acstr_state_data[0] = -2 * (Xhrz[0].data[0] + vecXI_data[0] - x_obs_data[0]);
-      Acstr_state_data[1] = -2 * (Xhrz[0].data[1] + vecXI_data[1] - x_obs_data[1]);
-      bcstr_state_data[0] = Acstr_state_data[0] * vecXI_data[0] + Acstr_state_data[1] * vecXI_data[1];
-      prob.ncstr_states = 1;
-    }
-    else prob.ncstr_states = 0;
-
     // Update current measurement, assuming some noises
     // X[k].data[0] += X[k].data[0] * NOISE(2);  // noise within 2% of current X
     // X[k].data[1] += X[k].data[1] * NOISE(2);
@@ -259,7 +244,11 @@ void loop() {
     if (Uhrz[0].data[1] >= bcstr_input_data[1]) Uhrz[0].data[1] = bcstr_input_data[1];
     if (Uhrz[0].data[0] <= -bcstr_input_data[0]) Uhrz[0].data[0] = -bcstr_input_data[0];
     if (Uhrz[0].data[1] <= -bcstr_input_data[1]) Uhrz[0].data[1] = -bcstr_input_data[1];
+    
     tiny_PointMassDynamics(&X[k + 1], X[k], Uhrz[0]);
+    // convert Uhrz[0] => u1, u2 using the inverse map
+    // send u1, u2 to the mixer/robot
+    
     // tiny_ShiftFill(Uhrz, NHORIZON - 1);  // doesn't matter
 
     // Print norm of tracking error

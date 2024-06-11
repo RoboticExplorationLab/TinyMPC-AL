@@ -219,7 +219,6 @@ void loop() {
     sprintf(bufferTxSer, "  d2o = %.4f", distance - (r_obs-r_obs_buff));
     Serial.println(bufferTxSer);
     if (distance < 2.0) {
-      distance = slap_NormedDifference(Xhrz[5], x_obs);  // number 10 helps
       prob.Acstr_state = slap_MatrixFromArray(2 * NSTATES, NSTATES, Acstr_state_data);
       prob.bcstr_state = slap_MatrixFromArray(2 * NSTATES, 1, bcstr_state_data);
       Matrix upper_half = slap_CreateSubMatrix(prob.Acstr_state, 0, 0, NSTATES, NSTATES);              
@@ -227,6 +226,7 @@ void loop() {
       slap_SetIdentity(upper_half, 1);
       slap_SetIdentity(lower_half, -1);
       
+      distance = slap_NormedDifference(Xhrz[5], x_obs);  // number 10 helps, tunable
       vecXI_data[0] = (x_obs_data[0] - Xhrz[0].data[0]) * (distance - r_obs) / distance;
       vecXI_data[1] = (x_obs_data[1] - Xhrz[0].data[1]) * (distance - r_obs) / distance;
       Acstr_state_data[0] = -2 * (Xhrz[0].data[0] + vecXI_data[0] - x_obs_data[0]);
@@ -243,7 +243,7 @@ void loop() {
     slap_Copy(Xhrz[0], X[k]);  // update current measurement
     
     // Update A, B within horizon (as we have Jacobians function)
-    tiny_UpdateHorizonJacobians(&model, prob);  // since we are using LTI so no needs to update
+    tiny_UpdateHorizonJacobians(&model, prob);
     run_time = micros();
     
     // Solve optimization problem using Augmented Lagrangian TVLQR
